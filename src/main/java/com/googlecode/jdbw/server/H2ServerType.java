@@ -16,11 +16,19 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.dialect;
+package com.googlecode.jdbw.server;
 
 /**
  *
  * @author mabe02
  */
-public class PostgreSQLTraits extends DefaultDatabaseServerTraits {
+public enum H2ServerType {
+
+    IN_MEMORY,
+    LOCAL_FILE,
+    ENCRYPTED_FILE_AES,
+    ENCRYPTED_FILE_XTEA,
+    REMOTE_TCP,
+    REMOTE_SSL,
+    ;
 }

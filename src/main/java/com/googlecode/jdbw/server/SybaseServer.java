@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.dialect;
+package com.googlecode.jdbw.server;
 
 import com.googlecode.jdbw.*;
 import java.sql.*;
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author mabe02
  */
-public class SybaseServer extends DefaultDatabaseServer {
+public class SybaseServer extends StandardDatabaseServer {
 
     private final String procName;
 
@@ -104,7 +104,7 @@ public class SybaseServer extends DefaultDatabaseServer {
 
     private static class SybaseDatabaseConnectionPool extends DefaultDatabaseConnection {
 
-        public SybaseDatabaseConnectionPool(DefaultDatabaseServer databaseServer) {
+        public SybaseDatabaseConnectionPool(StandardDatabaseServer databaseServer) {
             super(databaseServer);
         }
 

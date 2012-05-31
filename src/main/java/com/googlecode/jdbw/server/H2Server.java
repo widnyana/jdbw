@@ -16,19 +16,17 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.dialect;
+package com.googlecode.jdbw.server;
 
 import java.io.File;
 import java.util.Properties;
-import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.impl.DefaultDatabaseServer;
 
 /**
  *
  * @author mabe02
  */
-public class H2Server extends DefaultDatabaseServer {
+public class H2Server extends StandardDatabaseServer {
 
     private final H2ServerType serverType;
     private final String fileKey;

@@ -17,18 +17,16 @@
  * Copyright (C) 2009-2012 mabe02
  */
 
-package com.googlecode.jdbw.dialect;
+package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.impl.DefaultDatabaseServer;
 import java.util.Properties;
 
 /**
  *
  * @author mabe02
  */
-public class PostgreSQLServer extends DefaultDatabaseServer
+public class PostgreSQLServer extends StandardDatabaseServer
 {
     private PostgreSQLServer(String hostname, int port, String catalog, String username, String password)
     {

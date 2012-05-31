@@ -19,6 +19,7 @@
 
 package com.googlecode.jdbw.impl;
 
+import com.googlecode.jdbw.server.StandardDatabaseServer;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,7 +41,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDatabaseConnection.class);
     private static final int MAX_EXCEPTION_QUEUE_SIZE = 1000;
 
-    private final DefaultDatabaseServer databaseServer;
+    private final StandardDatabaseServer databaseServer;
     private final ManagerThread managerThread;
     private final ConnectionPool connectionPool;
     
@@ -50,7 +51,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection
     private Queue<SQLException> exceptionQueue;
     private List<DefaultDatabaseConnectionListener> listeners;
 
-    protected DefaultDatabaseConnection(DefaultDatabaseServer databaseServer)
+    protected DefaultDatabaseConnection(StandardDatabaseServer databaseServer)
     {                
         this.closed = false;
         this.maxNumberOfConnections = 1;

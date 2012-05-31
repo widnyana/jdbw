@@ -16,88 +16,48 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.dialect;
+package com.googlecode.jdbw.server;
 
+import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.impl.DefaultMetaDataResolver;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import com.googlecode.jdbw.DatabaseServer;
-import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.SQLExecutor;
-import com.googlecode.jdbw.impl.DefaultDatabaseServer;
-import com.googlecode.jdbw.impl.DefaultMetaDataResolver;
 
 /**
  *
  * @author mabe02
  */
-public class MySQLServer extends DefaultDatabaseServer {
+public class MySQLServer extends StandardDatabaseServer {
 
-    private MySQLServer(String hostname, int port, String catalog, String username, String password) {
-        super(hostname, port, catalog, username, password);
+    public MySQLServer(String hostname, int port, String catalog, String username, String password) {
+        this(new MySQLDefaultJDBCDriverDescriptor(), hostname, port, catalog, username, password);
     }
 
-    public static MySQLServer newInstance(String hostname, String catalog, String username, String password) {
-        return newInstance(hostname, "3306", catalog, username, password);
-    }
-
-    public static MySQLServer newInstance(String hostname, String port, String catalog, String username, String password) {
-        return newInstance(hostname, new Integer(port), catalog, username, password);
-    }
-
-    public static MySQLServer newInstance(String hostname, int port, String catalog, String username, String password) {
-        return new MySQLServer(hostname, port, catalog, username, password);
+    public MySQLServer(JDBCDriverDescriptor driverDescriptor, String hostname, int port, String catalog, String username, String password) {
+        super(driverDescriptor, hostname, port, catalog, username, password);
     }
 
     @Override
     public DatabaseServerType getServerType() {
         return DatabaseServerType.MYSQL;
     }
-
-    @Override
-    protected Properties getConnectionProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("user", getUsername());
-        properties.setProperty("password", getPassword());
-        return properties;
-    }
-
-    @Override
-    protected String getJDBCUrl() {
-        return "jdbc:mysql://" + getHostname() + ":" + getPort() + "/" + getCatalog()
-                + "?useUnicode=yes"
-                + "&characterEncoding=UTF-8"
-                + "&rewriteBatchedStatements=true"
-                + "&continueBatchOnError=false"
-                + "&allowMultiQueries=true"
-                + "&useCompression=true"
-                + "&zeroDateTimeBehavior=convertToNull";
-    }
-
-    @Override
-    protected void loadDriver() {
-        loadDriver("com.mysql.jdbc.Driver");
-    }
-
+    
     @Override
     public DatabaseServerTraits getServerTraits() {
         return new MySQLTraits();
     }
 
     @Override
-    public String toString() {
-        return "mysql://" + getHostname() + ":" + getPort() + "/" + getCatalog();
-    }
-
-    @Override
-    protected boolean isConnectionError(SQLException e) {
-        if("MySQLSyntaxErrorException".equals(e.getClass().getSimpleName())) {
-            return false;
-        }
-
-        return super.isConnectionError(e);
+    public Properties getConnectionProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("user", getUsername());
+        properties.setProperty("password", getPassword());
+        return properties;
     }
 
     private static class MySQLMetaDataResolver extends DefaultMetaDataResolver {

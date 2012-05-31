@@ -19,8 +19,8 @@
 
 package com.googlecode.jdbw;
 
-import com.googlecode.jdbw.dialect.DatabaseServerTraits;
 import com.googlecode.jdbw.metadata.Catalog;
+import com.googlecode.jdbw.server.DatabaseServerTraits;
 import java.sql.SQLException;
 import java.util.List;
 

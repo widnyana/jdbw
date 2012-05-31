@@ -16,19 +16,25 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.dialect;
+
+package com.googlecode.jdbw.server;
+
+import com.googlecode.jdbw.DataSourceFactory;
+import com.googlecode.jdbw.DatabaseServerType;
+import java.util.Properties;
+import javax.sql.DataSource;
 
 /**
  *
  * @author mabe02
  */
-public enum H2ServerType {
+public interface DatabaseServer {
 
-    IN_MEMORY,
-    LOCAL_FILE,
-    ENCRYPTED_FILE_AES,
-    ENCRYPTED_FILE_XTEA,
-    REMOTE_TCP,
-    REMOTE_SSL,
-    ;
+    DatabaseServerTraits getServerTraits();
+
+    DatabaseServerType getServerType();
+
+    DataSource connect(DataSourceFactory dataSourceFactory);
+    
+    Properties getConnectionProperties();
 }

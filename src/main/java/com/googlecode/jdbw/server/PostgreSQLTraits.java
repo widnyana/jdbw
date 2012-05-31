@@ -16,12 +16,11 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-
-package com.googlecode.jdbw.dialect;
+package com.googlecode.jdbw.server;
 
 /**
  *
  * @author mabe02
  */
-public class H2Traits extends DefaultDatabaseServerTraits {
+public class PostgreSQLTraits extends DefaultDatabaseServerTraits {
 }

@@ -17,28 +17,11 @@
  * Copyright (C) 2009-2012 mabe02
  */
 
-package com.googlecode.jdbw;
-
-import com.googlecode.jdbw.dialect.DatabaseServerTraits;
+package com.googlecode.jdbw.server;
 
 /**
  *
  * @author mabe02
  */
-public interface DatabaseServer {
-
-    String getCatalog();
-
-    String getHostname();
-
-    String getPassword();
-
-    int getPort();
-
-    DatabaseServerTraits getServerTraits();
-
-    DatabaseServerType getServerType();
-
-    String getUsername();
-
+public class H2Traits extends DefaultDatabaseServerTraits {
 }
