@@ -19,9 +19,10 @@
 
 package com.googlecode.jdbw.dialect;
 
-import java.util.Properties;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.impl.DefaultDatabaseServer;
+import java.util.Properties;
 
 /**
  *
@@ -81,14 +82,5 @@ public class PostgreSQLServer extends DefaultDatabaseServer
     public DatabaseServerTraits getServerTraits()
     {
         return new PostgreSQLTraits();
-    }
-
-    public static class Factory extends DatabaseServerFactory
-    {
-        @Override
-        public DatabaseServer createDatabaseServer(String hostname, int port, String catalog, String username, String password)
-        {
-            return new PostgreSQLServer(hostname, port, catalog, username, password);
-        }
     }
 }

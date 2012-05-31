@@ -26,6 +26,8 @@ import java.util.Properties;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.impl.DefaultDatabaseServer;
+import com.googlecode.jdbw.impl.DefaultMetaDataResolver;
 
 /**
  *
@@ -96,36 +98,6 @@ public class MySQLServer extends DefaultDatabaseServer {
         }
 
         return super.isConnectionError(e);
-    }
-
-    @Override
-    protected DefaultDatabaseConnection createDatabaseConnection() {
-        return new MySQLDatabaseConnectionPool(this);
-    }
-
-    public static class Factory extends DatabaseServerFactory {
-
-        @Override
-        public DatabaseServer createDatabaseServer(String hostname, int port, String catalog, String username, String password) {
-            return new MySQLServer(hostname, port, catalog, username, password);
-        }
-    }
-
-    private static class MySQLDatabaseConnectionPool extends DefaultDatabaseConnection {
-
-        public MySQLDatabaseConnectionPool(DefaultDatabaseServer databaseServer) {
-            super(databaseServer);
-        }
-
-        @Override
-        protected MetaDataResolver createMetaDataResolver() {
-            return new MySQLMetaDataResolver(this);
-        }
-
-        @Override
-        protected PooledDatabaseConnection newPooledDatabaseConnection(Connection connection) {
-            return new MySQLPooledDatabaseConnection(connection);
-        }
     }
 
     private static class MySQLMetaDataResolver extends DefaultMetaDataResolver {

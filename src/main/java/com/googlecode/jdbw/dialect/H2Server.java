@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.Properties;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.impl.DefaultDatabaseServer;
 
 /**
  *
@@ -191,48 +192,5 @@ public class H2Server extends DefaultDatabaseServer {
 
     public static H2Server newTCPServer(String hostname, int port, String catalog, String username, String password) {
         return new H2Server(H2ServerType.REMOTE_TCP, hostname, port, catalog, username, password, null);
-    }
-
-    @Override
-    protected DefaultDatabaseConnection createDatabaseConnection() {
-        return new H2DatabaseConnectionPool(serverType, getCatalog(), this);
-    }
-
-    public static class H2DatabaseConnectionPool extends DefaultDatabaseConnection {
-
-        private final H2ServerType serverType;
-        private final String catalog;
-
-        public H2DatabaseConnectionPool(H2ServerType serverType, String catalog, DefaultDatabaseServer databaseServer) {
-            super(databaseServer);
-            this.serverType = serverType;
-            this.catalog = catalog;
-        }
-
-        @Override
-        public void setPoolSize(int poolSize) {
-            //Local file doesn't support multiple connections
-            if(serverType == H2ServerType.LOCAL_FILE
-                    || serverType == H2ServerType.ENCRYPTED_FILE_AES
-                    || serverType == H2ServerType.ENCRYPTED_FILE_XTEA) {
-                return;
-            }
-
-            //Anonymous in-memory doesn't support multiple connections either
-            if(serverType == H2ServerType.IN_MEMORY
-                    && catalog == null) {
-                return;
-            }
-
-            super.setPoolSize(poolSize);
-        }
-    }
-
-    public static class Factory extends DatabaseServerFactory {
-
-        @Override
-        public DatabaseServer createDatabaseServer(String hostname, int port, String catalog, String username, String password) {
-            return new H2Server(H2ServerType.REMOTE_TCP, hostname, port, catalog, username, password, null);
-        }
     }
 }
