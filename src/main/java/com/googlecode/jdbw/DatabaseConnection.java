@@ -40,4 +40,6 @@ public interface DatabaseConnection {
     
     List<Catalog> getCatalogs() throws SQLException;
     Catalog getCatalog(String catalogName) throws SQLException;
+    
+    void close();
 }

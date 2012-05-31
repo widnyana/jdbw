@@ -19,53 +19,29 @@
 
 package com.googlecode.jdbw.impl;
 
-import com.googlecode.jdbw.server.StandardDatabaseServer;
+import com.googlecode.jdbw.DatabaseConnection;
+import com.googlecode.jdbw.TransactionIsolation;
+import com.googlecode.jdbw.server.DatabaseServer;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
  *
  * @author mabe02
  */
-public class DefaultDatabaseConnection implements DatabaseConnection
-{
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDatabaseConnection.class);
-    private static final int MAX_EXCEPTION_QUEUE_SIZE = 1000;
+public class DefaultDatabaseConnection implements DatabaseConnection {
+    private final DatabaseServer databaseServer;
+    private final DataSource dataSource;
 
-    private final StandardDatabaseServer databaseServer;
-    private final ManagerThread managerThread;
-    private final ConnectionPool connectionPool;
-    
-    private int maxNumberOfConnections;
-    private boolean closed;
-    
-    private Queue<SQLException> exceptionQueue;
-    private List<DefaultDatabaseConnectionListener> listeners;
-
-    protected DefaultDatabaseConnection(StandardDatabaseServer databaseServer)
-    {                
-        this.closed = false;
-        this.maxNumberOfConnections = 1;
+    public DefaultDatabaseConnection(DataSource dataSource, DatabaseServer databaseServer) { 
+        this.dataSource = dataSource;
         this.databaseServer = databaseServer;
-        
-        this.managerThread = new ManagerThread();
-        this.connectionPool = new ConnectionPool();
-        this.exceptionQueue = new ConcurrentLinkedQueue<SQLException>();
-        this.listeners = new ArrayList<DefaultDatabaseConnectionListener>();
-    }
-
-    void start()
-    {
-        managerThread.start();
     }
 
     @Override
@@ -75,19 +51,9 @@ public class DefaultDatabaseConnection implements DatabaseConnection
     }
 
     @Override
-    public SQLException getNextConnectionError()
-    {
-        return exceptionQueue.poll();
-    }
-
-    @Override
     public void close()
     {
-        closed = true;
-        try {
-            managerThread.join();
-        }
-        catch(InterruptedException e) {}
+        dataSource.
     }
 
     @Override
