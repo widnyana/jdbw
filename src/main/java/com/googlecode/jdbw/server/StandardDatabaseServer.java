@@ -18,11 +18,13 @@
  */
 package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.DataSourceFactory;
+import com.googlecode.jdbw.DataSourceBuilder;
+import com.googlecode.jdbw.DataSourceCloser;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.DefaultDatabaseConnection;
 import java.util.Properties;
+import javax.sql.DataSource;
 
 /**
  *
@@ -81,8 +83,15 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
         return driverDescriptor.formatJDBCUrl(hostname, port, catalog);
     }
 
-    public DatabaseConnection connect(DataSourceFactory dataSourceFactory) {
-        return new DefaultDatabaseConnection(dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()), this);
+    public DatabaseConnection connect(final DataSourceBuilder dataSourceFactory) {
+        return new DefaultDatabaseConnection(
+                dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),
+                new DataSourceCloser() {
+                    public void closeDataSource(DataSource dataSource) {
+                        dataSourceFactory.close(dataSource);
+                    }
+                },
+                this);
     }
 
 //    protected void loadDriver(String className) {

@@ -16,19 +16,16 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-
 package com.googlecode.jdbw.impl;
 
-import com.googlecode.jdbw.DatabaseConnection;
-import com.googlecode.jdbw.TransactionIsolation;
+import com.googlecode.jdbw.*;
+import com.googlecode.jdbw.metadata.Catalog;
+import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.DatabaseServer;
-import java.io.PrintWriter;
+import com.googlecode.jdbw.server.DatabaseServerTraits;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import javax.sql.DataSource;
 
 /**
@@ -36,29 +33,48 @@ import javax.sql.DataSource;
  * @author mabe02
  */
 public class DefaultDatabaseConnection implements DatabaseConnection {
+
     private final DatabaseServer databaseServer;
     private final DataSource dataSource;
+    private final DataSourceCloser dataSourceCloser;
 
-    public DefaultDatabaseConnection(DataSource dataSource, DatabaseServer databaseServer) { 
+    public DefaultDatabaseConnection(Connection connection) {
+        this(connection, null);
+    }
+
+    public DefaultDatabaseConnection(Connection connection, DatabaseServer databaseServer) {
+        this(new OneSharedConnectionDataSource(connection),
+                new DataSourceCloser() {
+
+                    public void closeDataSource(DataSource dataSource) {
+                        ((OneSharedConnectionDataSource) dataSource).close();
+                    }
+                },
+                databaseServer);
+    }
+
+    public DefaultDatabaseConnection(DataSource dataSource, DataSourceCloser dataSourceCloser) {
+        this(dataSource, dataSourceCloser, null);
+    }
+
+    public DefaultDatabaseConnection(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServer databaseServer) {
         this.dataSource = dataSource;
         this.databaseServer = databaseServer;
+        this.dataSourceCloser = dataSourceCloser;
     }
 
     @Override
-    public TransactionIsolation getDefaultTransactionIsolation()
-    {
+    public TransactionIsolation getDefaultTransactionIsolation() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void close()
-    {
-        dataSource.
+    public void close() {
+        dataSourceCloser.closeDataSource(dataSource);
     }
 
     @Override
-    public DatabaseTransaction beginTransaction(TransactionIsolation transactionIsolation)
-    {
+    public DatabaseTransaction beginTransaction(TransactionIsolation transactionIsolation) {
         PooledDatabaseConnection pooledConnection = getPooledConnection();
         final DefaultDatabaseTransaction databaseConnection = new DefaultDatabaseTransaction(pooledConnection, transactionIsolation);
         pooledConnection.connectionUser(databaseConnection);
@@ -66,224 +82,33 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public SQLExecutor createAutoExecutor()
-    {
+    public SQLExecutor createAutoExecutor() {
         return new DefaultAutoExecutor(this);
     }
 
-    public DataSource createDataSource() 
-    {
-        return new DataSource() {
-            public Connection getConnection() throws SQLException {
-                PooledDatabaseConnection pooledConnection = getPooledConnection();
-                DataSourcedConnection dataSourcedConnection = new DataSourcedConnection(pooledConnection);
-                pooledConnection.connectionUser(dataSourcedConnection);
-                return dataSourcedConnection;
-            }
-
-            public Connection getConnection(String username, String password) throws SQLException {
-                return getConnection();
-            }
-
-            public PrintWriter getLogWriter() throws SQLException {
-                throw new UnsupportedOperationException("getLogWriter() is not supported.");
-            }
-
-            public void setLogWriter(PrintWriter out) throws SQLException {
-                throw new UnsupportedOperationException("setLogWriter() is not supported.");
-            }
-
-            public void setLoginTimeout(int seconds) throws SQLException {
-                throw new UnsupportedOperationException("setLoginTimeout() is not supported.");
-            }
-
-            public int getLoginTimeout() throws SQLException {
-                throw new UnsupportedOperationException("getLoginTimeout() is not supported.");
-            }
-
-            public <T> T unwrap(Class<T> iface) throws SQLException {
-                throw new SQLException("DefaultDatabaseConnection$DataSource is not a wrapper.");
-            }
-
-            public boolean isWrapperFor(Class<?> iface) throws SQLException {
-                return false;
-            }
-        };
-    }
-
     @Override
-    public String getDefaultCatalogName()
-    {
-        return databaseServer.getCatalog();
-    }
-
-    @Override
-    public List<Catalog> getCatalogs() throws SQLException
-    {
+    public List<Catalog> getCatalogs() throws SQLException {
         MetaDataResolver metaDataResolver = createMetaDataResolver();
         return metaDataResolver.getCatalogs();
     }
 
     @Override
-    public Catalog getCatalog(String catalogName) throws SQLException
-    {
+    public Catalog getCatalog(String catalogName) throws SQLException {
         MetaDataResolver metaDataResolver = createMetaDataResolver();
         return metaDataResolver.getCatalog(catalogName);
     }
 
     @Override
-    public DatabaseServerTraits getTraits()
-    {
+    public DatabaseServerTraits getTraits() {
         return databaseServer.getServerTraits();
     }
 
     @Override
-    public DatabaseServerType getServerType()
-    {
+    public DatabaseServerType getServerType() {
         return databaseServer.getServerType();
     }
 
-    @Override
-    public void addListener(DefaultDatabaseConnectionListener listener)
-    {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(DefaultDatabaseConnectionListener listener)
-    {
-        listeners.remove(listener);
-    }
-
-    public void reconnect() {
-        while(connectionPool.removeFreeConnection() != null);
-    }
-
-    public int getPoolSize() {
-        return maxNumberOfConnections;
-    }
-
-    public void setPoolSize(int poolSize) {
-        if(poolSize > 0)
-            this.maxNumberOfConnections = poolSize;
-    }
-    
-    protected MetaDataResolver createMetaDataResolver()
-    {
+    protected MetaDataResolver createMetaDataResolver() {
         return new DefaultMetaDataResolver(this);
-    }
-
-    void createConnection() throws SQLException {
-        allocateNewConnection();
-    }
-
-    PooledDatabaseConnection getPooledConnection()
-    {
-        return connectionPool.aquireConnection();
-    }
-
-    boolean isConnectionError(SQLException e)
-    {
-        return databaseServer.isConnectionError(e);
-    }
-
-    protected PooledDatabaseConnection newPooledDatabaseConnection(Connection connection)
-    {
-        return new PooledDatabaseConnection(connection);
-    }
-
-    private void allocateNewConnection() throws SQLException
-    {
-        try {
-            Connection connection = DriverManager.getConnection(databaseServer.getJDBCUrl(), databaseServer.getConnectionProperties());
-            connection.setAutoCommit(true);
-            LOGGER.log(Level.FINE, "Allocated a new connection thread to {0}", databaseServer.toString());
-
-            PooledDatabaseConnection pooledConnection = newPooledDatabaseConnection(connection);
-            connectionPool.addNewConnection(pooledConnection);
-        }
-        catch(SQLException e) {
-            exceptionQueue.add(e);
-            while(exceptionQueue.size() > MAX_EXCEPTION_QUEUE_SIZE)
-                exceptionQueue.poll();
-            throw e;
-        }
-    }
-
-    private class ManagerThread extends Thread
-    {
-        public ManagerThread()
-        {
-            super(databaseServer.toString() + " pool manager");
-        }
-
-        @Override
-        public void run()
-        {
-            int subsequentConnectionFailedCount = 0;
-            
-            while(!closed)
-            {
-                //Sleep 5 ms before checking
-                DefaultDatabaseConnection.this.sleep(5);
-
-                //Step 1: allocate new connections if needed
-                if(connectionPool.getTotalConnections() < maxNumberOfConnections) {
-                    try {
-                        allocateNewConnection();
-                        subsequentConnectionFailedCount = 0;
-                        for(DefaultDatabaseConnectionListener listener: new ArrayList<DefaultDatabaseConnectionListener>(listeners))
-                            listener.onConnectionEstablished();
-                    }
-                    catch(SQLException e) {
-                        LOGGER.log(Level.SEVERE, "Error allocating a new connection to {0}: {1}",
-                                new Object[]{databaseServer.toString(), e.getMessage()});
-
-                        for(DefaultDatabaseConnectionListener listener: listeners)
-                            listener.onConnectionFailed(e);
-
-                        //If we have 10 failed connection attempts, sleep a bit longer
-                        if(++subsequentConnectionFailedCount >= 10)
-                            DefaultDatabaseConnection.this.sleep(30 * 1000);
-                        else
-                            DefaultDatabaseConnection.this.sleep(1 * 1000);
-                    }
-                }
-                //Step 2: close excessive connections, if any
-                else if(connectionPool.getTotalConnections() > maxNumberOfConnections) {
-                    PooledDatabaseConnection connection = connectionPool.removeFreeConnection();
-                    if(connection != null) {
-                        connection.close();
-                        LOGGER.log(Level.FINE, "Closed a connection to {0}", databaseServer.toString());
-                    }
-                }
-                //Step 3: return done connections and close bad connections
-                else if(connectionPool.returnDoneConnections() || 
-                        connectionPool.dropBadConnections()) {
-                    //Nothing?
-                }
-                //Step 4: Keep-alive on unused connections
-                else {
-                    connectionPool.pingUnusedConnections();
-                }
-            }
-
-            //Exiting, so close all connections
-            while(connectionPool.getTotalConnections() > 0) {
-                connectionPool.returnDoneConnections();
-                connectionPool.dropBadConnections();
-                connectionPool.removeFreeConnection();
-                LOGGER.log(Level.FINE, "Closed a connection to {0}", databaseServer.toString());
-                Thread.yield();
-            }
-        }
-    }
-
-    private void sleep(int milliseconds)
-    {
-        try {
-            Thread.sleep(milliseconds);
-        }
-        catch(InterruptedException e) {}
     }
 }

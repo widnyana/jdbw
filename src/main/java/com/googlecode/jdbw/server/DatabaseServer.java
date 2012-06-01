@@ -19,7 +19,7 @@
 
 package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.DataSourceFactory;
+import com.googlecode.jdbw.DataSourceBuilder;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseServerType;
 import java.util.Properties;
@@ -34,7 +34,7 @@ public interface DatabaseServer {
 
     DatabaseServerType getServerType();
 
-    DatabaseConnection connect(DataSourceFactory dataSourceFactory);
+    DatabaseConnection connect(DataSourceBuilder dataSourceFactory);
     
     Properties getConnectionProperties();
 }
