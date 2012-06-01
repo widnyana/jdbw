@@ -19,6 +19,10 @@
 
 package com.googlecode.jdbw.impl;
 
+import com.googlecode.jdbw.BatchUpdateHandler;
+import com.googlecode.jdbw.ExecuteResultHandler;
+import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.util.NullValue;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -31,13 +35,11 @@ import java.util.List;
  */
 public class DefaultSQLExecutor implements SQLExecutor
 {
-    protected final PooledDatabaseConnection pooledConnection;
     protected final Connection connection;
 
-    public DefaultSQLExecutor(PooledDatabaseConnection pooledConnection)
+    public DefaultSQLExecutor(Connection connection)
     {
-        this.pooledConnection = pooledConnection;
-        this.connection = pooledConnection.getConnection();
+        this.connection = connection;
     }
 
     @Override

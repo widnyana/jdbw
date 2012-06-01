@@ -16,9 +16,11 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-
 package com.googlecode.jdbw.impl;
 
+import com.googlecode.jdbw.BatchUpdateHandler;
+import com.googlecode.jdbw.ExecuteResultHandler;
+import com.googlecode.jdbw.SQLExecutor;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -27,113 +29,91 @@ import java.util.List;
  *
  * @author mabe02
  */
-class DefaultAutoExecutor implements SQLExecutor, PooledConnectionUser
-{
+class DefaultAutoExecutor implements SQLExecutor {
+
     private final DefaultDatabaseConnection sourcePool;
 
-    DefaultAutoExecutor(DefaultDatabaseConnection sourcePool)
-    {
+    DefaultAutoExecutor(DefaultDatabaseConnection sourcePool) {
         this.sourcePool = sourcePool;
     }
 
     @Override
-    public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException
-    {
-        PooledDatabaseConnection connection = null;
+    public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException {
+        Connection connection = null;
         while(true) {
             try {
                 connection = getNewConnection();
-                SQLExecutor executor = connection.createExecutor();
+                SQLExecutor executor = new DefaultSQLExecutor(connection);
                 executor.execute(handler, SQL, parameters);
-                connection.done();
                 return;
-            }
-            catch(SQLException e) {
+            } catch(SQLException e) {
                 if(sourcePool.isConnectionError(e)) {
-                    connection.bad();
                     sleep(500);
                     continue;
+                } else {
+                    throw e;  //Syntax error?
                 }
-                else {
-                    connection.done(); //Syntax error?
-                    throw e;
-                }
+            } finally {
+                connection.close();
             }
         }
     }
 
     @Override
-    public void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
-    {
-        PooledDatabaseConnection connection = null;
+    public void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException {
+        Connection connection = null;
         while(true) {
             try {
                 connection = getNewConnection();
-                SQLExecutor executor = connection.createExecutor();
+                SQLExecutor executor = new DefaultSQLExecutor(connection);
                 executor.batchWrite(handler, SQL, parameters);
-                connection.done();
                 return;
-            }
-            catch(SQLException e) {
+            } catch(SQLException e) {
                 if(sourcePool.isConnectionError(e)) {
-                    connection.bad();
                     sleep(500);
                     continue;
+                } else {
+                    throw e;  //Syntax error?
                 }
-                else {
-                    connection.done(); //Syntax error?
-                    throw e;
-                }
+            } finally {
+                connection.close();
             }
         }
     }
 
     @Override
-    public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException
-    {
-        PooledDatabaseConnection connection = null;
+    public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException {
+        Connection connection = null;
         while(true) {
             try {
                 connection = getNewConnection();
-                SQLExecutor executor = connection.createExecutor();
+                SQLExecutor executor = new DefaultSQLExecutor(connection);
                 executor.batchWrite(handler, batchedSQL);
-                connection.done();
                 return;
-            }
-            catch(SQLException e) {
+            } catch(SQLException e) {
                 if(sourcePool.isConnectionError(e)) {
-                    connection.bad();
                     sleep(500);
                     continue;
-                }
-                else {
-                    connection.done(); //Syntax error?
+                } else {
                     throw e;
                 }
+            } finally {
+                connection.close();
             }
         }
     }
 
-    private PooledDatabaseConnection getNewConnection() throws SQLException
-    {
-        PooledDatabaseConnection connection;
-        connection = sourcePool.getPooledConnection();
-        connection.connectionUser(this);
+    private Connection getNewConnection() throws SQLException {
+        Connection connection = sourcePool.getConnection();
         connection.setAutoCommit(true);
         connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
         return connection;
     }
 
-    public void reset() 
-    {
-        //No action needed
-    }
-
-    private void sleep(int milliseconds)
-    {
+    private void sleep(int milliseconds) {
         try {
             Thread.sleep(milliseconds);
+        } catch(InterruptedException e) {
         }
-        catch(InterruptedException e) {}
     }
 }

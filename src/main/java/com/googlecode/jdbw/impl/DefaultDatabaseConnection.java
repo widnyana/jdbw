@@ -85,6 +85,10 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     public SQLExecutor createAutoExecutor() {
         return new DefaultAutoExecutor(this);
     }
+    
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
 
     @Override
     public List<Catalog> getCatalogs() throws SQLException {
@@ -109,6 +113,9 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
 
     protected MetaDataResolver createMetaDataResolver() {
-        return new DefaultMetaDataResolver(this);
+        return new MetaDataResolver(this);
+    }
+
+    boolean isConnectionError(SQLException e) {
     }
 }

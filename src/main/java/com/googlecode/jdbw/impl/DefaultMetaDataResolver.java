@@ -19,6 +19,7 @@
 
 package com.googlecode.jdbw.impl;
 
+import com.googlecode.jdbw.metadata.DefaultMetaDataFactory;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

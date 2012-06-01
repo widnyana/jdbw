@@ -19,6 +19,8 @@
 
 package com.googlecode.jdbw.impl;
 
+import com.googlecode.jdbw.*;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -26,19 +28,19 @@ import java.util.List;
  *
  * @author mabe02
  */
-class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectionUser
+class DefaultDatabaseTransaction implements DatabaseTransaction
 {
     private final TransactionIsolation transactionIsolation;
-    private PooledDatabaseConnection pooledConnection;
+    private Connection connection;
     private SQLExecutor executor;
     private boolean initialized;
 
-    DefaultDatabaseTransaction(PooledDatabaseConnection pooledConnection,
+    DefaultDatabaseTransaction(Connection connection,
             TransactionIsolation transactionIsolation)
     {
-        this.pooledConnection = pooledConnection;
+        this.connection = connection;
         this.transactionIsolation = transactionIsolation;
-        this.executor = pooledConnection.createExecutor();
+        this.executor = new DefaultSQLExecutor(connection);
         this.initialized = false;
     }
 
@@ -46,10 +48,10 @@ class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectio
     public synchronized void commit() throws SQLException
     {
         if(initialized)        
-            pooledConnection.getConnection().commit();
+            connection.commit();
         
-        pooledConnection.done();
-        pooledConnection = null;
+        connection.close();
+        connection = null;
         executor = null;
     }
 
@@ -57,14 +59,13 @@ class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectio
     public synchronized void rollback() throws SQLException
     {
         executor = null;
-        if(pooledConnection != null) {
+        if(connection != null) {
             try {
                 if(initialized)
-                    pooledConnection.getConnection().rollback();
+                    connection.rollback();
             }
             finally {
-                pooledConnection.done();    //Always mark as done!
-                pooledConnection = null;
+                connection = null;
             }
         }
     }
@@ -81,7 +82,7 @@ class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectio
     @Override
     public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException
     {
-        if(pooledConnection == null)
+        if(connection == null)
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
 
         if(!initialized)
@@ -94,7 +95,7 @@ class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectio
     @Override
     public synchronized void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
     {
-        if(pooledConnection == null)
+        if(connection == null)
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
 
         if(!initialized)
@@ -106,7 +107,7 @@ class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectio
     @Override
     public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException
     {
-        if(pooledConnection == null)
+        if(connection == null)
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
 
         if(!initialized)
@@ -117,13 +118,8 @@ class DefaultDatabaseTransaction implements DatabaseTransaction, PooledConnectio
 
     private void initialize() throws SQLException
     {
-        pooledConnection.setAutoCommit(false);
-        pooledConnection.setTransactionIsolation(transactionIsolation.getConstant());
-        /*
-        Statement statement = pooledConnection.getConnection().createStatement();
-        statement.execute("BEGIN TRAN");
-        statement.close();
-        */
+        connection.setAutoCommit(false);
+        connection.setTransactionIsolation(transactionIsolation.getConstant());
         initialized = true;
     }
 }
