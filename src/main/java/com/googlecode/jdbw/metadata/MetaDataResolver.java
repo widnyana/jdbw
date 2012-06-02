@@ -26,11 +26,11 @@ import java.util.*;
  *
  * @author mabe02
  */
-public abstract class MetaDataResolver {
+public class MetaDataResolver {
 
     protected final DefaultDatabaseConnection connectionPool;
 
-    protected MetaDataResolver(DefaultDatabaseConnection connectionPool) {
+    public MetaDataResolver(DefaultDatabaseConnection connectionPool) {
         this.connectionPool = connectionPool;
     }
 

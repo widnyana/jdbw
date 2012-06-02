@@ -32,7 +32,7 @@ public interface DatabaseConnection {
     DatabaseServerType getServerType();
     DatabaseServerTraits getTraits();
 
-    DatabaseTransaction beginTransaction(TransactionIsolation isolation);
+    DatabaseTransaction beginTransaction(TransactionIsolation isolation) throws SQLException;
     SQLExecutor createAutoExecutor();
 
     String getDefaultCatalogName();

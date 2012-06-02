@@ -22,6 +22,7 @@ package com.googlecode.jdbw.server;
 import com.googlecode.jdbw.DataSourceBuilder;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseServerType;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -37,4 +38,6 @@ public interface DatabaseServer {
     DatabaseConnection connect(DataSourceBuilder dataSourceFactory);
     
     Properties getConnectionProperties();
+
+    boolean isConnectionError(SQLException e);
 }

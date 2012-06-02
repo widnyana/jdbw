@@ -23,6 +23,8 @@ import com.googlecode.jdbw.DataSourceCloser;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.DefaultDatabaseConnection;
+import com.googlecode.jdbw.metadata.MetaDataResolver;
+import java.sql.*;
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -93,6 +95,23 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
                 },
                 this);
     }
+    
+    @Override
+    public boolean isConnectionError(SQLException e)
+    {
+        if(e instanceof SQLTransientException)
+            return true;
+        if(e instanceof SQLNonTransientException)
+            return true;    //Try again...
+        if(e instanceof SQLRecoverableException)
+            return true;
+        
+        if(e instanceof SQLSyntaxErrorException)
+            return false;
+
+        //Other than that, dunno...! You'll have to implement this for every database vendor!
+        return false;
+    }
 
 //    protected void loadDriver(String className) {
 //        try {
@@ -102,6 +121,10 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
 //            //LOGGER.log(Level.WARNING, "Couldn''t load JDBC driver \"{0}\", did you include the right .jar file?", className);
 //        }
 //    }
+    
+    public MetaDataResolver createMetaDataResolver(DefaultDatabaseConnection connection) {
+        return new MetaDataResolver(connection);
+    }
 
     public Properties getConnectionProperties() {
         return new Properties();

@@ -43,7 +43,7 @@ class DefaultAutoExecutor implements SQLExecutor {
         while(true) {
             try {
                 connection = getNewConnection();
-                SQLExecutor executor = new DefaultSQLExecutor(connection);
+                SQLExecutor executor = createSQLExecutor(connection);
                 executor.execute(handler, SQL, parameters);
                 return;
             } catch(SQLException e) {
@@ -65,7 +65,7 @@ class DefaultAutoExecutor implements SQLExecutor {
         while(true) {
             try {
                 connection = getNewConnection();
-                SQLExecutor executor = new DefaultSQLExecutor(connection);
+                SQLExecutor executor = createSQLExecutor(connection);
                 executor.batchWrite(handler, SQL, parameters);
                 return;
             } catch(SQLException e) {
@@ -87,7 +87,7 @@ class DefaultAutoExecutor implements SQLExecutor {
         while(true) {
             try {
                 connection = getNewConnection();
-                SQLExecutor executor = new DefaultSQLExecutor(connection);
+                SQLExecutor executor = createSQLExecutor(connection);
                 executor.batchWrite(handler, batchedSQL);
                 return;
             } catch(SQLException e) {
@@ -101,6 +101,10 @@ class DefaultAutoExecutor implements SQLExecutor {
                 connection.close();
             }
         }
+    }
+    
+    protected SQLExecutor createSQLExecutor(Connection connection) {
+        return new DefaultSQLExecutor(connection);
     }
 
     private Connection getNewConnection() throws SQLException {

@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.impl;
 
+import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.metadata.Catalog;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
@@ -74,11 +75,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public DatabaseTransaction beginTransaction(TransactionIsolation transactionIsolation) {
-        PooledDatabaseConnection pooledConnection = getPooledConnection();
-        final DefaultDatabaseTransaction databaseConnection = new DefaultDatabaseTransaction(pooledConnection, transactionIsolation);
-        pooledConnection.connectionUser(databaseConnection);
-        return databaseConnection;
+    public DatabaseTransaction beginTransaction(TransactionIsolation transactionIsolation) throws SQLException {
+        return new DefaultDatabaseTransaction(getConnection(), transactionIsolation);
     }
 
     @Override
@@ -112,10 +110,15 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return databaseServer.getServerType();
     }
 
-    protected MetaDataResolver createMetaDataResolver() {
-        return new MetaDataResolver(this);
+    boolean isConnectionError(SQLException e) {
+        return databaseServer.isConnectionError(e);
     }
 
-    boolean isConnectionError(SQLException e) {
+    public String getDefaultCatalogName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    protected MetaDataResolver createMetaDataResolver() {
+        return new MetaDataResolver(this);
     }
 }
