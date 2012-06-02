@@ -17,14 +17,26 @@
  * Copyright (C) 2009-2012 mabe02
  */
 
-package com.googlecode.jdbw;
+package com.googlecode.jdbw.server.mysql;
 
-import javax.sql.DataSource;
+import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.JDBWObjectFactory;
+import com.googlecode.jdbw.server.DatabaseServerTraits;
 
 /**
  *
  * @author mabe02
  */
-public interface DataSourceCloser {
-    void closeDataSource(DataSource dataSource);
+public class MySQLServerType implements DatabaseServerType {
+    public String getName() {
+        return "MySQL";
+    }
+
+    public DatabaseServerTraits getTraits() {
+        return new MySQLTraits();
+    }
+
+    public JDBWObjectFactory getJDBWObjectFactory() {
+        return new MySQLJDBWObjectFactory();
+    }
 }

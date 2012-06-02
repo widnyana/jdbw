@@ -35,12 +35,14 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     private SQLExecutor executor;
     private boolean initialized;
 
-    DatabaseTransactionImpl(Connection connection,
+    DatabaseTransactionImpl(
+            Connection connection,
+            SQLExecutor executor,
             TransactionIsolation transactionIsolation)
     {
         this.connection = connection;
         this.transactionIsolation = transactionIsolation;
-        this.executor = new SQLExecutorImpl(connection);
+        this.executor = executor;
         this.initialized = false;
     }
 

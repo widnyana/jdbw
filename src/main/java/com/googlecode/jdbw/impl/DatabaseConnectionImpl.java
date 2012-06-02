@@ -21,7 +21,7 @@ package com.googlecode.jdbw.impl;
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.metadata.Catalog;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
-import com.googlecode.jdbw.server.DatabaseServer;
+import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.server.DatabaseServerTraits;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 import java.sql.Connection;
@@ -76,15 +76,19 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public DatabaseTransaction beginTransaction(TransactionIsolation transactionIsolation) throws SQLException {
-        return new DatabaseTransactionImpl(getConnection(), transactionIsolation);
+        Connection connection = getConnection();
+        return new DatabaseTransactionImpl(
+                connection, 
+                getServerType().getJDBWObjectFactory().createExecutor(connection),
+                transactionIsolation);
     }
 
     @Override
     public SQLExecutor createAutoExecutor() {
-        return new AutoExecutorImpl(this);
+        return getServerType().getJDBWObjectFactory().createAutoExecutor(this);
     }
     
-    public Connection getConnection() throws SQLException {
+    Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
@@ -108,10 +112,6 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     @Override
     public DatabaseServerType getServerType() {
         return databaseServer.getServerType();
-    }
-
-    boolean isConnectionError(SQLException e) {
-        return databaseServer.isConnectionError(e);
     }
 
     public String getDefaultCatalogName() {

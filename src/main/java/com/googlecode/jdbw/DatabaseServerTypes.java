@@ -19,12 +19,22 @@
 
 package com.googlecode.jdbw;
 
-import javax.sql.DataSource;
+import com.googlecode.jdbw.server.mysql.MySQLServerType;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  *
  * @author mabe02
  */
-public interface DataSourceCloser {
-    void closeDataSource(DataSource dataSource);
+public class DatabaseServerTypes {
+    private DatabaseServerTypes() {}
+    
+    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new ConcurrentSkipListSet<DatabaseServerType>();
+    
+    public static final DatabaseServerType MYSQL = new MySQLServerType();
+    
+    static {
+        ALL_KNOWN_SERVER_TYPES.add(MYSQL);
+    }
 }

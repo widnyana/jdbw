@@ -18,33 +18,16 @@
  */
 package com.googlecode.jdbw;
 
+import com.googlecode.jdbw.server.DatabaseServerTraits;
+import java.sql.SQLException;
+
 /**
  *
  * @author mabe02
  */
-public enum DatabaseServerType {
-
-    MYSQL("MySQL"),
-    POSTGRESQL("PostgreSQL"),
-    SYBASE_ASE("Sybase ASE"),
-    H2("H2") //HYPERSQL("HyperSQL");
-    ;
-
-    public static DatabaseServerType valueOfFriendlyString(String text) {
-        for(DatabaseServerType type : DatabaseServerType.values()) {
-            if(type.toFriendlyString().equals(text)) {
-                return type;
-            }
-        }
-        return null;
-    }
-    private final String friendlyString;
-
-    private DatabaseServerType(String friendlyString) {
-        this.friendlyString = friendlyString;
-    }
-
-    public String toFriendlyString() {
-        return friendlyString;
-    }
+public interface DatabaseServerType {
+    String getName();
+    DatabaseServerTraits getTraits();
+    JDBWObjectFactory getJDBWObjectFactory(DatabaseConnection connection);
+    boolean isConnectionError(SQLException e);
 }

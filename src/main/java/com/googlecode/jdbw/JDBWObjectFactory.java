@@ -19,12 +19,16 @@
 
 package com.googlecode.jdbw;
 
-import javax.sql.DataSource;
+import com.googlecode.jdbw.metadata.MetaDataResolver;
+import java.sql.Connection;
 
 /**
  *
  * @author mabe02
  */
-public interface DataSourceCloser {
-    void closeDataSource(DataSource dataSource);
+public interface JDBWObjectFactory {
+    
+    SQLExecutor createExecutor(Connection connection);
+    
+    MetaDataResolver createMetaDataResolver();   
 }

@@ -104,7 +104,7 @@ class AutoExecutorImpl implements SQLExecutor {
     }
     
     protected SQLExecutor createSQLExecutor(Connection connection) {
-        return new SQLExecutorImpl(connection);
+        return sourcePool.getServerType().getJDBWObjectFactory().createExecutor(connection);
     }
 
     private Connection getNewConnection() throws SQLException {

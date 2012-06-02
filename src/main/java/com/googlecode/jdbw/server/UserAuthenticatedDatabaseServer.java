@@ -19,6 +19,8 @@
 
 package com.googlecode.jdbw.server;
 
+import com.googlecode.jdbw.DatabaseServer;
+
 /**
  *
  * @author mabe02
