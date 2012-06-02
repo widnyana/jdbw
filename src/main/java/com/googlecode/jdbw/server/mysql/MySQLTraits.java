@@ -32,8 +32,12 @@ import java.util.List;
  *
  * @author mabe02
  */
-public class MySQLTraits extends DefaultDatabaseServerTraits {
+class MySQLTraits extends DefaultDatabaseServerTraits {
 
+    //Package private
+    MySQLTraits() {
+    }
+    
     private static final DateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final DateFormat mysqlDecimalDateFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
@@ -45,6 +49,7 @@ public class MySQLTraits extends DefaultDatabaseServerTraits {
             return super.formatDecimal(value);
         }
     }
+    
     private static final String HEXES = "0123456789ABCDEF";
 
     private String getHex(byte[] raw) {

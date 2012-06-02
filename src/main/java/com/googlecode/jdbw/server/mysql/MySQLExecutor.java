@@ -31,7 +31,7 @@ import java.sql.Statement;
  */
 class MySQLExecutor extends SQLExecutorImpl {
 
-    public MySQLExecutor(Connection connection) {
+    MySQLExecutor(Connection connection) {
         super(connection);
     }
 

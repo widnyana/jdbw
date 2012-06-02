@@ -34,7 +34,7 @@ import javax.sql.DataSource;
  */
 class MySQLMetaDataResolver extends MetaDataResolver {
 
-    public MySQLMetaDataResolver(DataSource dataSource) {
+    MySQLMetaDataResolver(DataSource dataSource) {
         super(dataSource);
     }
 
