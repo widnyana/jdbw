@@ -32,7 +32,7 @@ public class AutoExecutor implements SQLExecutor {
     private final DataSource dataSource;
     private final DatabaseServerType serverType;
 
-    AutoExecutor(DataSource dataSource, DatabaseServerType serverType) {
+    public AutoExecutor(DataSource dataSource, DatabaseServerType serverType) {
         this.dataSource = dataSource;
         this.serverType = serverType;
     }

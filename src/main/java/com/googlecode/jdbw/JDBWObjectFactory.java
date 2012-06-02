@@ -30,5 +30,5 @@ import javax.sql.DataSource;
 public interface JDBWObjectFactory {
     AutoExecutor createAutoExecutor(DataSource dataSource, DatabaseServerType serverType);
     SQLExecutor createExecutor(Connection connection);
-    MetaDataResolver createMetaDataResolver();   
+    MetaDataResolver createMetaDataResolver(DataSource dataSource);   
 }
