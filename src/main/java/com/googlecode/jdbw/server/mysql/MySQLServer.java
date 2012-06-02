@@ -19,6 +19,7 @@
 package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
 import com.googlecode.jdbw.impl.SQLExecutorImpl;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.sql.DataSource;
 
 /**
  *
@@ -47,12 +49,7 @@ public class MySQLServer extends StandardDatabaseServer {
 
     @Override
     public DatabaseServerType getServerType() {
-        return DatabaseServerType.MYSQL;
-    }
-    
-    @Override
-    public DatabaseServerTraits getServerTraits() {
-        return new MySQLTraits();
+        return DatabaseServerTypes.MYSQL;
     }
 
     @Override
@@ -63,15 +60,10 @@ public class MySQLServer extends StandardDatabaseServer {
         return properties;
     }
 
-    @Override
-    public MetaDataResolver createMetaDataResolver(DatabaseConnectionImpl connection) {
-        return new MySQLMetaDataResolver(connection);
-    }
-
     private static class MySQLMetaDataResolver extends MetaDataResolver {
 
-        public MySQLMetaDataResolver(DatabaseConnectionImpl connectionPool) {
-            super(connectionPool);
+        public MySQLMetaDataResolver(DataSource dataSource) {
+            super(dataSource);
         }
 
         @Override
