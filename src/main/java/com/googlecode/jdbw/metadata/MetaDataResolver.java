@@ -18,7 +18,7 @@
  */
 package com.googlecode.jdbw.metadata;
 
-import com.googlecode.jdbw.impl.DefaultDatabaseConnection;
+import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
 import java.sql.*;
 import java.util.*;
 
@@ -28,9 +28,9 @@ import java.util.*;
  */
 public class MetaDataResolver {
 
-    protected final DefaultDatabaseConnection connectionPool;
+    protected final DatabaseConnectionImpl connectionPool;
 
-    public MetaDataResolver(DefaultDatabaseConnection connectionPool) {
+    public MetaDataResolver(DatabaseConnectionImpl connectionPool) {
         this.connectionPool = connectionPool;
     }
 

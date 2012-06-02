@@ -29,11 +29,11 @@ import java.util.List;
  *
  * @author mabe02
  */
-class DefaultAutoExecutor implements SQLExecutor {
+class AutoExecutorImpl implements SQLExecutor {
 
-    private final DefaultDatabaseConnection sourcePool;
+    private final DatabaseConnectionImpl sourcePool;
 
-    DefaultAutoExecutor(DefaultDatabaseConnection sourcePool) {
+    AutoExecutorImpl(DatabaseConnectionImpl sourcePool) {
         this.sourcePool = sourcePool;
     }
 
@@ -104,7 +104,7 @@ class DefaultAutoExecutor implements SQLExecutor {
     }
     
     protected SQLExecutor createSQLExecutor(Connection connection) {
-        return new DefaultSQLExecutor(connection);
+        return new SQLExecutorImpl(connection);
     }
 
     private Connection getNewConnection() throws SQLException {

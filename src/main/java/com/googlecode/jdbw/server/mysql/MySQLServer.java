@@ -20,8 +20,8 @@ package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
-import com.googlecode.jdbw.impl.DefaultDatabaseConnection;
-import com.googlecode.jdbw.impl.DefaultSQLExecutor;
+import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
+import com.googlecode.jdbw.impl.SQLExecutorImpl;
 import com.googlecode.jdbw.metadata.*;
 import com.googlecode.jdbw.server.DatabaseServerTraits;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
@@ -64,13 +64,13 @@ public class MySQLServer extends StandardDatabaseServer {
     }
 
     @Override
-    public MetaDataResolver createMetaDataResolver(DefaultDatabaseConnection connection) {
+    public MetaDataResolver createMetaDataResolver(DatabaseConnectionImpl connection) {
         return new MySQLMetaDataResolver(connection);
     }
 
     private static class MySQLMetaDataResolver extends MetaDataResolver {
 
-        public MySQLMetaDataResolver(DefaultDatabaseConnection connectionPool) {
+        public MySQLMetaDataResolver(DatabaseConnectionImpl connectionPool) {
             super(connectionPool);
         }
 
@@ -124,7 +124,7 @@ public class MySQLServer extends StandardDatabaseServer {
         }
     }
 
-    private static class MySQLExecutor extends DefaultSQLExecutor {
+    private static class MySQLExecutor extends SQLExecutorImpl {
 
         public MySQLExecutor(Connection connection) {
             super(connection);

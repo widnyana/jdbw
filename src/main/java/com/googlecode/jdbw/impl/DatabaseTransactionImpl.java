@@ -28,19 +28,19 @@ import java.util.List;
  *
  * @author mabe02
  */
-class DefaultDatabaseTransaction implements DatabaseTransaction
+class DatabaseTransactionImpl implements DatabaseTransaction
 {
     private final TransactionIsolation transactionIsolation;
     private Connection connection;
     private SQLExecutor executor;
     private boolean initialized;
 
-    DefaultDatabaseTransaction(Connection connection,
+    DatabaseTransactionImpl(Connection connection,
             TransactionIsolation transactionIsolation)
     {
         this.connection = connection;
         this.transactionIsolation = transactionIsolation;
-        this.executor = new DefaultSQLExecutor(connection);
+        this.executor = new SQLExecutorImpl(connection);
         this.initialized = false;
     }
 

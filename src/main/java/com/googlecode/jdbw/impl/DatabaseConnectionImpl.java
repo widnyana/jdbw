@@ -33,17 +33,17 @@ import javax.sql.DataSource;
  *
  * @author mabe02
  */
-public class DefaultDatabaseConnection implements DatabaseConnection {
+public class DatabaseConnectionImpl implements DatabaseConnection {
 
     private final DatabaseServer databaseServer;
     private final DataSource dataSource;
     private final DataSourceCloser dataSourceCloser;
 
-    public DefaultDatabaseConnection(Connection connection) {
+    public DatabaseConnectionImpl(Connection connection) {
         this(connection, null);
     }
 
-    public DefaultDatabaseConnection(Connection connection, DatabaseServer databaseServer) {
+    public DatabaseConnectionImpl(Connection connection, DatabaseServer databaseServer) {
         this(new OneSharedConnectionDataSource(connection),
                 new DataSourceCloser() {
 
@@ -54,11 +54,11 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
                 databaseServer);
     }
 
-    public DefaultDatabaseConnection(DataSource dataSource, DataSourceCloser dataSourceCloser) {
+    public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser) {
         this(dataSource, dataSourceCloser, null);
     }
 
-    public DefaultDatabaseConnection(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServer databaseServer) {
+    public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServer databaseServer) {
         this.dataSource = dataSource;
         this.databaseServer = databaseServer;
         this.dataSourceCloser = dataSourceCloser;
@@ -76,12 +76,12 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     @Override
     public DatabaseTransaction beginTransaction(TransactionIsolation transactionIsolation) throws SQLException {
-        return new DefaultDatabaseTransaction(getConnection(), transactionIsolation);
+        return new DatabaseTransactionImpl(getConnection(), transactionIsolation);
     }
 
     @Override
     public SQLExecutor createAutoExecutor() {
-        return new DefaultAutoExecutor(this);
+        return new AutoExecutorImpl(this);
     }
     
     public Connection getConnection() throws SQLException {

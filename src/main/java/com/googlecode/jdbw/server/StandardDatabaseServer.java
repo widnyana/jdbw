@@ -22,7 +22,7 @@ import com.googlecode.jdbw.DataSourceBuilder;
 import com.googlecode.jdbw.DataSourceCloser;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
-import com.googlecode.jdbw.impl.DefaultDatabaseConnection;
+import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import java.sql.*;
 import java.util.Properties;
@@ -86,7 +86,7 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
     }
 
     public DatabaseConnection connect(final DataSourceBuilder dataSourceFactory) {
-        return new DefaultDatabaseConnection(
+        return new DatabaseConnectionImpl(
                 dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),
                 new DataSourceCloser() {
                     public void closeDataSource(DataSource dataSource) {
@@ -122,7 +122,7 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
 //        }
 //    }
     
-    public MetaDataResolver createMetaDataResolver(DefaultDatabaseConnection connection) {
+    public MetaDataResolver createMetaDataResolver(DatabaseConnectionImpl connection) {
         return new MetaDataResolver(connection);
     }
 

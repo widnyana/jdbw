@@ -33,11 +33,11 @@ import java.util.List;
  *
  * @author mabe02
  */
-public class DefaultSQLExecutor implements SQLExecutor
+public class SQLExecutorImpl implements SQLExecutor
 {
     protected final Connection connection;
 
-    public DefaultSQLExecutor(Connection connection)
+    public SQLExecutorImpl(Connection connection)
     {
         this.connection = connection;
     }
