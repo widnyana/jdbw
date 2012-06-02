@@ -21,12 +21,14 @@ package com.googlecode.jdbw;
 
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import java.sql.Connection;
+import javax.sql.DataSource;
 
 /**
  *
  * @author mabe02
  */
 public interface JDBWObjectFactory {
+    AutoExecutor createAutoExecutor(DataSource dataSource, DatabaseServerType serverType);
     SQLExecutor createExecutor(Connection connection);
     MetaDataResolver createMetaDataResolver();   
 }
