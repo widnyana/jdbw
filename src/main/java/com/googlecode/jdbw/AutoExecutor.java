@@ -27,7 +27,7 @@ import javax.sql.DataSource;
  *
  * @author mabe02
  */
-class AutoExecutor implements SQLExecutor {
+public class AutoExecutor implements SQLExecutor {
 
     private final DataSource dataSource;
     private final DatabaseServerType serverType;
