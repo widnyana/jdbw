@@ -19,8 +19,6 @@
 
 package com.googlecode.jdbw;
 
-import com.googlecode.jdbw.server.DatabaseServerTraits;
-import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -28,8 +26,6 @@ import java.util.Properties;
  * @author mabe02
  */
 public interface DatabaseServer {
-
-    DatabaseServerTraits getServerTraits();
 
     DatabaseServerType getServerType();
 
