@@ -96,36 +96,6 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
                 this);
     }
     
-    @Override
-    public boolean isConnectionError(SQLException e)
-    {
-        if(e instanceof SQLTransientException)
-            return true;
-        if(e instanceof SQLNonTransientException)
-            return true;    //Try again...
-        if(e instanceof SQLRecoverableException)
-            return true;
-        
-        if(e instanceof SQLSyntaxErrorException)
-            return false;
-
-        //Other than that, dunno...! You'll have to implement this for every database vendor!
-        return false;
-    }
-
-//    protected void loadDriver(String className) {
-//        try {
-//            //LOGGER.log(Level.FINER, "Loading JDBC driver: {0}", className);
-//            Class.forName(className);
-//        } catch (ClassNotFoundException e) {
-//            //LOGGER.log(Level.WARNING, "Couldn''t load JDBC driver \"{0}\", did you include the right .jar file?", className);
-//        }
-//    }
-    
-    public MetaDataResolver createMetaDataResolver(DatabaseConnectionImpl connection) {
-        return new MetaDataResolver(connection);
-    }
-
     public Properties getConnectionProperties() {
         return new Properties();
     }
