@@ -19,15 +19,15 @@
 
 package com.googlecode.jdbw.server.mysql;
 
-import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.JDBWObjectFactory;
+import com.googlecode.jdbw.server.AbstractDatabaseType;
 import com.googlecode.jdbw.server.DatabaseServerTraits;
 
 /**
  *
  * @author mabe02
  */
-public class MySQLServerType implements DatabaseServerType {
+public class MySQLServerType extends AbstractDatabaseType {
     public String getName() {
         return "MySQL";
     }
