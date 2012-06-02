@@ -18,9 +18,9 @@
  */
 package com.googlecode.jdbw.metadata;
 
-import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
 import java.sql.*;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  *
@@ -28,10 +28,10 @@ import java.util.*;
  */
 public class MetaDataResolver {
 
-    protected final DatabaseConnectionImpl connectionPool;
+    protected final DataSource dataSource;
 
-    public MetaDataResolver(DatabaseConnectionImpl connectionPool) {
-        this.connectionPool = connectionPool;
+    public MetaDataResolver(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public List<Catalog> getCatalogs() throws SQLException {
@@ -68,7 +68,7 @@ public class MetaDataResolver {
     }
 
     protected List<String> getCatalogNames() throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
             return readResultSetColumn(databaseMetaData.getCatalogs(), 1);
@@ -78,7 +78,7 @@ public class MetaDataResolver {
     }
 
     protected List<String> getSchemaNames(String catalogName) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
             List<String> resultList = new ArrayList<String>();
@@ -119,7 +119,7 @@ public class MetaDataResolver {
     }
 
     private List<String> getTableNames(String catalogName, String schemaName, String tableType) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
             return readResultSetColumn(databaseMetaData.getTables(catalogName, schemaName, null, new String[]{tableType}), 3);
@@ -129,7 +129,7 @@ public class MetaDataResolver {
     }
 
     protected List<String> getStoredProcedureNames(String catalogName, String schemaName) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
             return readResultSetColumn(databaseMetaData.getProcedures(catalogName, schemaName, null), 3);
@@ -139,7 +139,7 @@ public class MetaDataResolver {
     }
 
     protected List<String> getFunctionNames(String catalogName, String schemaName) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
             return readResultSetColumn(databaseMetaData.getFunctions(catalogName, schemaName, null), 3);
@@ -149,7 +149,7 @@ public class MetaDataResolver {
     }
 
     protected List<Column> getColumns(String catalogName, String schemaName, Table table) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         List<Column> columns = new ArrayList<Column>();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
@@ -166,7 +166,7 @@ public class MetaDataResolver {
     }
 
     protected List<Index> getIndexes(String catalogName, String schemaName, Table table) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         Map<String, Index> indexMap = new HashMap<String, Index>();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
@@ -183,7 +183,7 @@ public class MetaDataResolver {
     }
 
     protected List<String> getProcedureInputParameterNames(String catalogName, String schemaName, StoredProcedure procedure) throws SQLException {
-        Connection pooledConnection = connectionPool.getConnection();
+        Connection pooledConnection = dataSource.getConnection();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
             return readResultSetColumn(databaseMetaData.getProcedureColumns(catalogName, schemaName, procedure.getName(), null), 4);

@@ -85,7 +85,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public SQLExecutor createAutoExecutor() {
-        return getServerType().getJDBWObjectFactory().createAutoExecutor(this);
+        return getServerType().getJDBWObjectFactory().createAutoExecutor(dataSource, getServerType());
     }
     
     Connection getConnection() throws SQLException {
@@ -114,6 +114,6 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     }
 
     protected MetaDataResolver createMetaDataResolver() {
-        return new MetaDataResolver(this);
+        return new MetaDataResolver(dataSource);
     }
 }
