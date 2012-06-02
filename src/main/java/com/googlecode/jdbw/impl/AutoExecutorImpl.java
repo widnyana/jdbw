@@ -21,7 +21,6 @@ package com.googlecode.jdbw.impl;
 import com.googlecode.jdbw.BatchUpdateHandler;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.ExecuteResultHandler;
-import com.googlecode.jdbw.JDBWObjectFactory;
 import com.googlecode.jdbw.SQLExecutor;
 import java.sql.Connection;
 import java.sql.SQLException;
