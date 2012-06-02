@@ -29,6 +29,7 @@ import java.util.List;
  * @author mabe02
  */
 public interface DatabaseConnection {
+    
     DatabaseServerType getServerType();
     DatabaseServerTraits getTraits();
 
