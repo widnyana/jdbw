@@ -20,7 +20,6 @@
 package com.googlecode.jdbw;
 
 import com.googlecode.jdbw.metadata.Catalog;
-import com.googlecode.jdbw.server.DatabaseServerTraits;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -31,8 +30,7 @@ import java.util.List;
 public interface DatabaseConnection {
     
     DatabaseServerType getServerType();
-    DatabaseServerTraits getTraits();
-
+    
     DatabaseTransaction beginTransaction(TransactionIsolation isolation) throws SQLException;
     SQLExecutor createAutoExecutor();
 
