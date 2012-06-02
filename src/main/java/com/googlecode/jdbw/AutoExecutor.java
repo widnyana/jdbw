@@ -16,12 +16,8 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.impl;
+package com.googlecode.jdbw;
 
-import com.googlecode.jdbw.BatchUpdateHandler;
-import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.ExecuteResultHandler;
-import com.googlecode.jdbw.SQLExecutor;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -31,12 +27,12 @@ import javax.sql.DataSource;
  *
  * @author mabe02
  */
-class AutoExecutorImpl implements SQLExecutor {
+class AutoExecutor implements SQLExecutor {
 
     private final DataSource dataSource;
     private final DatabaseServerType serverType;
 
-    AutoExecutorImpl(DataSource dataSource, DatabaseServerType serverType) {
+    AutoExecutor(DataSource dataSource, DatabaseServerType serverType) {
         this.dataSource = dataSource;
         this.serverType = serverType;
     }
