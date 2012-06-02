@@ -17,7 +17,7 @@
  * Copyright (C) 2009-2012 mabe02
  */
 
-package com.googlecode.jdbw.server;
+package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 

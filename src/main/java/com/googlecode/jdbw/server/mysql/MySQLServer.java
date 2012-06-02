@@ -16,13 +16,15 @@
  * 
  * Copyright (C) 2009-2012 mabe02
  */
-package com.googlecode.jdbw.server;
+package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.DefaultDatabaseConnection;
 import com.googlecode.jdbw.impl.DefaultSQLExecutor;
 import com.googlecode.jdbw.metadata.*;
+import com.googlecode.jdbw.server.DatabaseServerTraits;
+import com.googlecode.jdbw.server.StandardDatabaseServer;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
