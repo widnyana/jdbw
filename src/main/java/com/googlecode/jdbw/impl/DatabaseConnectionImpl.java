@@ -18,12 +18,12 @@
  */
 package com.googlecode.jdbw.impl;
 
-import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.metadata.Catalog;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.DatabaseServer;
 import com.googlecode.jdbw.server.DatabaseServerTraits;
+import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
