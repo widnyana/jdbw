@@ -105,11 +105,6 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     }
 
     @Override
-    public DatabaseServerTraits getTraits() {
-        return databaseServer.getServerTraits();
-    }
-
-    @Override
     public DatabaseServerType getServerType() {
         return databaseServer.getServerType();
     }

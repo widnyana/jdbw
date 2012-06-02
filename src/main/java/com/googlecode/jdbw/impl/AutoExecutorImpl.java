@@ -19,11 +19,14 @@
 package com.googlecode.jdbw.impl;
 
 import com.googlecode.jdbw.BatchUpdateHandler;
+import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.ExecuteResultHandler;
+import com.googlecode.jdbw.JDBWObjectFactory;
 import com.googlecode.jdbw.SQLExecutor;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  *
@@ -31,10 +34,12 @@ import java.util.List;
  */
 class AutoExecutorImpl implements SQLExecutor {
 
-    private final DatabaseConnectionImpl sourcePool;
+    private final DataSource dataSource;
+    private final DatabaseServerType serverType;
 
-    AutoExecutorImpl(DatabaseConnectionImpl sourcePool) {
-        this.sourcePool = sourcePool;
+    AutoExecutorImpl(DataSource dataSource, DatabaseServerType serverType) {
+        this.dataSource = dataSource;
+        this.serverType = serverType;
     }
 
     @Override
@@ -47,7 +52,7 @@ class AutoExecutorImpl implements SQLExecutor {
                 executor.execute(handler, SQL, parameters);
                 return;
             } catch(SQLException e) {
-                if(sourcePool.isConnectionError(e)) {
+                if(serverType.isConnectionError(e)) {
                     sleep(500);
                     continue;
                 } else {
@@ -69,7 +74,7 @@ class AutoExecutorImpl implements SQLExecutor {
                 executor.batchWrite(handler, SQL, parameters);
                 return;
             } catch(SQLException e) {
-                if(sourcePool.isConnectionError(e)) {
+                if(serverType.isConnectionError(e)) {
                     sleep(500);
                     continue;
                 } else {
@@ -91,7 +96,7 @@ class AutoExecutorImpl implements SQLExecutor {
                 executor.batchWrite(handler, batchedSQL);
                 return;
             } catch(SQLException e) {
-                if(sourcePool.isConnectionError(e)) {
+                if(serverType.isConnectionError(e)) {
                     sleep(500);
                     continue;
                 } else {
@@ -104,11 +109,11 @@ class AutoExecutorImpl implements SQLExecutor {
     }
     
     protected SQLExecutor createSQLExecutor(Connection connection) {
-        return sourcePool.getServerType().getJDBWObjectFactory().createExecutor(connection);
+        return serverType.getJDBWObjectFactory().createExecutor(connection);
     }
 
     private Connection getNewConnection() throws SQLException {
-        Connection connection = sourcePool.getConnection();
+        Connection connection = dataSource.getConnection();
         connection.setAutoCommit(true);
         connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
         return connection;

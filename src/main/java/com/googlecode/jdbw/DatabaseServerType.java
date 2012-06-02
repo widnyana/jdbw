@@ -28,6 +28,6 @@ import java.sql.SQLException;
 public interface DatabaseServerType {
     String getName();
     DatabaseServerTraits getTraits();
-    JDBWObjectFactory getJDBWObjectFactory(DatabaseConnection connection);
+    JDBWObjectFactory getJDBWObjectFactory();
     boolean isConnectionError(SQLException e);
 }

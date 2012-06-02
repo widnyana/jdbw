@@ -27,8 +27,6 @@ import java.sql.Connection;
  * @author mabe02
  */
 public interface JDBWObjectFactory {
-    
     SQLExecutor createExecutor(Connection connection);
-    
     MetaDataResolver createMetaDataResolver();   
 }
