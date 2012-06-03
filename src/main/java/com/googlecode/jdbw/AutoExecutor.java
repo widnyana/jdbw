@@ -107,7 +107,7 @@ public class AutoExecutor implements SQLExecutor {
     }
     
     protected SQLExecutor createSQLExecutor(Connection connection) {
-        return serverType.getJDBWObjectFactory().createExecutor(connection);
+        return serverType.createExecutor(connection);
     }
 
     private Connection getNewConnection() throws SQLException {

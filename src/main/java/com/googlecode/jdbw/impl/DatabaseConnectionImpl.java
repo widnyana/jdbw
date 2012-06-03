@@ -79,13 +79,13 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
         Connection connection = getConnection();
         return new DatabaseTransactionImpl(
                 connection, 
-                getServerType().getJDBWObjectFactory().createExecutor(connection),
+                getServerType().createExecutor(connection),
                 transactionIsolation);
     }
 
     @Override
-    public SQLExecutor createAutoExecutor() {
-        return getServerType().getJDBWObjectFactory().createAutoExecutor(dataSource, getServerType());
+    public AutoExecutor createAutoExecutor() {
+        return getServerType().createAutoExecutor(dataSource);
     }
     
     Connection getConnection() throws SQLException {

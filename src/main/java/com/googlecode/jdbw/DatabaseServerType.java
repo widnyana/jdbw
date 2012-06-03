@@ -18,8 +18,11 @@
  */
 package com.googlecode.jdbw;
 
+import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.DatabaseServerTraits;
+import java.sql.Connection;
 import java.sql.SQLException;
+import javax.sql.DataSource;
 
 /**
  * This interface represents a type ('MySQL', 'PostgreSQL', etc) of database,
@@ -40,9 +43,25 @@ public interface DatabaseServerType {
     DatabaseServerTraits getTraits();
     
     /**
-     * @return Factory to be used for creating special implementations of JDBW classes
+     * Creates an AutoExecutor for this server type
+     * @param dataSource DataSource that is backing the auto executor
+     * @return AutoExecutor-implementation for this server type
      */
-    JDBWObjectFactory getJDBWObjectFactory();
+    AutoExecutor createAutoExecutor(DataSource dataSource);
+    
+    /**
+     * Creates an SQLExecutor for this server type
+     * @param connection Connection to be used by the SQLExecutor
+     * @return SQLExecutor-implementation for this server type
+     */
+    SQLExecutor createExecutor(Connection connection);
+    
+    /**
+     * Creates a MetaDataResolver for this server type
+     * @param dataSource DataSource to be used by this MetaDataResolver
+     * @return MetaDataResolver-implementation for this server type
+     */
+    MetaDataResolver createMetaDataResolver(DataSource dataSource);   
     
     /**
      * Check an SQLException with this server type if it is considered a connection error

@@ -19,9 +19,13 @@
 
 package com.googlecode.jdbw.server.mysql;
 
-import com.googlecode.jdbw.JDBWObjectFactory;
+import com.googlecode.jdbw.AutoExecutor;
+import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
 import com.googlecode.jdbw.server.DatabaseServerTraits;
+import java.sql.Connection;
+import javax.sql.DataSource;
 
 /**
  *
@@ -36,7 +40,18 @@ public class MySQLServerType extends AbstractDatabaseType {
         return new MySQLTraits();
     }
 
-    public JDBWObjectFactory getJDBWObjectFactory() {
-        return new MySQLJDBWObjectFactory();
+    @Override
+    public AutoExecutor createAutoExecutor(DataSource dataSource) {
+        return new AutoExecutor(dataSource, this);
+    }
+
+    @Override
+    public SQLExecutor createExecutor(Connection connection) {
+        return new MySQLExecutor(connection);
+    }
+
+    @Override
+    public MetaDataResolver createMetaDataResolver(DataSource dataSource) {
+        return new MySQLMetaDataResolver(dataSource);
     }
 }
