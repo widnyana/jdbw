@@ -19,15 +19,36 @@
 
 package com.googlecode.jdbw.server;
 
+import com.googlecode.jdbw.AutoExecutor;
 import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.impl.SQLExecutorImpl;
+import com.googlecode.jdbw.metadata.MetaDataResolver;
 import java.sql.*;
+import javax.sql.DataSource;
 
 /**
- *
+ * Includes some fundamental checks for connection errors and default 
+ * implementations for some JDBW objects
  * @author mabe02
  */
 public abstract class AbstractDatabaseType implements DatabaseServerType {
-        
+
+    @Override
+    public AutoExecutor createAutoExecutor(DataSource dataSource) {
+        return new AutoExecutor(dataSource, this);
+    }
+
+    @Override
+    public SQLExecutor createExecutor(Connection connection) {
+        return new SQLExecutorImpl(connection);
+    }
+
+    @Override
+    public MetaDataResolver createMetaDataResolver(DataSource dataSource) {
+        return new MetaDataResolver(dataSource);
+    }
+    
     @Override
     public boolean isConnectionError(SQLException e)
     {
