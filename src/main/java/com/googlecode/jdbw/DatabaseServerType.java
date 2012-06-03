@@ -22,12 +22,32 @@ import com.googlecode.jdbw.server.DatabaseServerTraits;
 import java.sql.SQLException;
 
 /**
- *
+ * This interface represents a type ('MySQL', 'PostgreSQL', etc) of database,
+ * with methods used for helping you adapt to this particular server's dialect
+ * of SQL
+ * @see DatabaseServerTypes
  * @author mabe02
  */
 public interface DatabaseServerType {
+    /**
+     * @return Name of the database server type
+     */
     String getName();
+    
+    /**
+     * @return Traits of the database server type
+     */
     DatabaseServerTraits getTraits();
+    
+    /**
+     * @return Factory to be used for creating special implementations of JDBW classes
+     */
     JDBWObjectFactory getJDBWObjectFactory();
+    
+    /**
+     * Check an SQLException with this server type if it is considered a connection error
+     * @param e SQLException to check
+     * @return true if the SQLException is caused by connection problems, false otherwise
+     */
     boolean isConnectionError(SQLException e);
 }
