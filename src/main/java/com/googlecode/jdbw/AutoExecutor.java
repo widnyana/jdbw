@@ -24,7 +24,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 /**
- *
+ * An auto executor will automatically allocate a connection from the pool when
+ * its SQL methods are called and return the connection and all resources once
+ * done. If a query fails, it will investigate the error and retry if the
+ * error is judged to be retryable. 
  * @author mabe02
  */
 public class AutoExecutor implements SQLExecutor {
