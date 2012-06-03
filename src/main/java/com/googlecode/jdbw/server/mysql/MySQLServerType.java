@@ -19,7 +19,6 @@
 
 package com.googlecode.jdbw.server.mysql;
 
-import com.googlecode.jdbw.AutoExecutor;
 import com.googlecode.jdbw.SQLExecutor;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
