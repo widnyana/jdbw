@@ -22,14 +22,26 @@ package com.googlecode.jdbw;
 import java.util.Properties;
 
 /**
- *
+ * Represents a database server running somewhere
  * @author mabe02
  */
 public interface DatabaseServer {
 
+    /**
+     * @return Type of the server
+     */
     DatabaseServerType getServerType();
 
+    /**
+     * Created a new DataSource to this server and returns it wrapped in a 
+     * DatabaseConnection
+     * @param dataSourceFactory Factory to use when creating the DataSource
+     * @return DatabaseConnection connected to the server
+     */
     DatabaseConnection connect(DataSourceCreator dataSourceFactory);
     
+    /**
+     * @return Extra properties to use when connecting to this server
+     */
     Properties getConnectionProperties();
 }
