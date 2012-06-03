@@ -21,12 +21,24 @@ package com.googlecode.jdbw;
 import java.sql.SQLException;
 
 /**
- *
+ * Representing a ongoing database transaction
  * @author mabe02
  */
 public interface DatabaseTransaction extends SQLExecutor {
 
+    /**
+     * This will commit the transaction on the remote server and the connection
+     * will be returned to the pool. There object cannot be used after calling
+     * this method.
+     * @throws SQLException 
+     */
     void commit() throws SQLException;
 
+    /**
+     * This will rollback the transaction on the remote server and the connection
+     * will be returned to the pool. There object cannot be used after calling
+     * this method.
+     * @throws SQLException 
+     */
     void rollback() throws SQLException;
 }
