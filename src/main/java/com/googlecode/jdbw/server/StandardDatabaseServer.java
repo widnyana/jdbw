@@ -18,7 +18,7 @@
  */
 package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.DataSourceBuilder;
+import com.googlecode.jdbw.DataSourceCreator;
 import com.googlecode.jdbw.DataSourceCloser;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
@@ -85,7 +85,7 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
         return driverDescriptor.formatJDBCUrl(hostname, port, catalog);
     }
 
-    public DatabaseConnection connect(final DataSourceBuilder dataSourceFactory) {
+    public DatabaseConnection connect(final DataSourceCreator dataSourceFactory) {
         return new DatabaseConnectionImpl(
                 dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),
                 new DataSourceCloser() {

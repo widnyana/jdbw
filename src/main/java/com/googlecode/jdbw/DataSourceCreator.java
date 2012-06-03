@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  *
  * @author mabe02
  */
-public interface DataSourceBuilder {
+public interface DataSourceCreator {
     DataSource newDataSource(String jdbcUrl, Properties properties);
     void close(DataSource previouslyConstructedDataSource);
 }

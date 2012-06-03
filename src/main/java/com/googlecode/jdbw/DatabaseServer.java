@@ -29,7 +29,7 @@ public interface DatabaseServer {
 
     DatabaseServerType getServerType();
 
-    DatabaseConnection connect(DataSourceBuilder dataSourceFactory);
+    DatabaseConnection connect(DataSourceCreator dataSourceFactory);
     
     Properties getConnectionProperties();
 }
