@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  *
  * @author mabe02
  */
-public abstract class DefaultDatabaseServerTraits extends DatabaseServerTraits {
+public abstract class DefaultDatabaseServerTraits implements DatabaseServerTraits {
 
     private static final Pattern decimalTimestampPattern = Pattern.compile("..............\\...?.?");
     private static final DateFormat decimalTimestampFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");

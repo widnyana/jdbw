@@ -28,22 +28,22 @@ import java.util.List;
  *
  * @author mabe02
  */
-public abstract class DatabaseServerTraits {
-    public abstract boolean isCompatible(int fromSqlType, int toSqlType);
-    public abstract boolean isCompatible(Column fromColumn, Column toColumn);
-    public abstract boolean isCompatible(Object value, Column toColumn);
-    public abstract String escapeString(String string);
-    public abstract String escapeIdentifier(String identifier);
-    public abstract String getApproximateRowCountQuery(String tableName);
-    public abstract String getSingleLineCommentPrefix();
+public interface DatabaseServerTraits {
+    boolean isCompatible(int fromSqlType, int toSqlType);
+    boolean isCompatible(Column fromColumn, Column toColumn);
+    boolean isCompatible(Object value, Column toColumn);
+    String escapeString(String string);
+    String escapeIdentifier(String identifier);
+    String getApproximateRowCountQuery(String tableName);
+    String getSingleLineCommentPrefix();
 
-    public abstract String formatTime(Date date);
-    public abstract String formatDate(Date date);
-    public abstract String formatDateTime(Date timestamp);
-    public abstract String formatValue(Object value, int targetType);
-    public abstract String formatValue(Object value, Column targetColumn);
-    public abstract Object safeType(Column targetColumn, Object object);
+    String formatTime(Date date);
+    String formatDate(Date date);
+    String formatDateTime(Date timestamp);
+    String formatValue(Object value, int targetType);
+    String formatValue(Object value, Column targetColumn);
+    Object safeType(Column targetColumn, Object object);
 
-    public abstract String[] getCreateTableStatement(String schemaName, String name, List<Column> columns, List<Index> indexes);
-    public abstract String getDropTableStatement(String catalog, String schema, String tableName);
+    String[] getCreateTableStatement(String schemaName, String name, List<Column> columns, List<Index> indexes);
+    String getDropTableStatement(String catalog, String schema, String tableName);
 }
