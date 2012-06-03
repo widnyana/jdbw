@@ -24,7 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- *
+ * This is a repository of known database server types. You can add your own
+ * types at runtime if you need to.
  * @author mabe02
  */
 public class DatabaseServerTypes {
