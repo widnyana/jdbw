@@ -20,10 +20,22 @@
 package com.googlecode.jdbw;
 
 /**
- *
+ * This interface describes a JDBC driver and how to use it
  * @author mabe02
  */
 public interface JDBCDriverDescriptor {
+    /**
+     * @return The full path of the JDBC driver class to be loaded
+     */
     String getDriverClassName();
+    
+    /**
+     * Given a host, port and default catalog, return a JDBC URL formatted to
+     * be used by this driver
+     * @param host Hostname of the database server
+     * @param port Port number to connect on
+     * @param defaultCatalog Default catalog to use
+     * @return JDBC url formatted for this driver
+     */
     String formatJDBCUrl(String host, int port, String defaultCatalog);
 }
