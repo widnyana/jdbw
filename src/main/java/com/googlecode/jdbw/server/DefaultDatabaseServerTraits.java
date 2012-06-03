@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.server;
 
+import com.googlecode.jdbw.DatabaseServerTraits;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.util.NullValue;

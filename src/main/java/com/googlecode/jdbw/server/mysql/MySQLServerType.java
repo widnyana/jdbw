@@ -19,10 +19,10 @@
 
 package com.googlecode.jdbw.server.mysql;
 
+import com.googlecode.jdbw.DatabaseServerTraits;
 import com.googlecode.jdbw.SQLExecutor;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
-import com.googlecode.jdbw.server.DatabaseServerTraits;
 import java.sql.Connection;
 import javax.sql.DataSource;
 

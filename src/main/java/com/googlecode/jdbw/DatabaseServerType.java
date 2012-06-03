@@ -19,7 +19,6 @@
 package com.googlecode.jdbw;
 
 import com.googlecode.jdbw.metadata.MetaDataResolver;
-import com.googlecode.jdbw.server.DatabaseServerTraits;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;

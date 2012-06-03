@@ -21,17 +21,8 @@ package com.googlecode.jdbw.server.mysql;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
-import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
-import com.googlecode.jdbw.impl.SQLExecutorImpl;
-import com.googlecode.jdbw.metadata.*;
-import com.googlecode.jdbw.server.DatabaseServerTraits;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
-import java.sql.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import javax.sql.DataSource;
 
 /**
  *
