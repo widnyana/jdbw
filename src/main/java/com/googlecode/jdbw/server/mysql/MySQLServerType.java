@@ -41,11 +41,6 @@ public class MySQLServerType extends AbstractDatabaseType {
     }
 
     @Override
-    public AutoExecutor createAutoExecutor(DataSource dataSource) {
-        return new AutoExecutor(dataSource, this);
-    }
-
-    @Override
     public SQLExecutor createExecutor(Connection connection) {
         return new MySQLExecutor(connection);
     }
