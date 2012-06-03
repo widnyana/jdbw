@@ -29,16 +29,51 @@ import java.util.List;
  */
 public interface DatabaseConnection {
     
+    /**
+     * @return Type of the server this connection is connected to, or null if unknown
+     */
     DatabaseServerType getServerType();
     
+    /**
+     * Allocated a connection and begins a transaction
+     * @param isolation Isolation level for the new transaction
+     * @return DatabaseTransaction object representing the new transaction
+     * @throws SQLException 
+     */
     DatabaseTransaction beginTransaction(TransactionIsolation isolation) throws SQLException;
-    SQLExecutor createAutoExecutor();
+    
+    /**
+     * Creates an AutoExecutor using this database connection for supplying connections
+     * @return AutoExecutor using this connection
+     */
+    AutoExecutor createAutoExecutor();
 
+    /**
+     * @return Default catalog name of this connection
+     */
     String getDefaultCatalogName();
+    
+    /**
+     * @return Default transaction isolation of this connection
+     */
     TransactionIsolation getDefaultTransactionIsolation();
     
+    /**
+     * @return List of all catalogs available on this server
+     * @throws SQLException 
+     */
     List<Catalog> getCatalogs() throws SQLException;
+    
+    /**
+     * Looks up one catalog on the server
+     * @param catalogName Name of the catalog
+     * @return Catalog object representing the catalog or null if not found
+     * @throws SQLException 
+     */
     Catalog getCatalog(String catalogName) throws SQLException;
     
+    /**
+     * Closes this connection and any underlying data source
+     */
     void close();
 }
