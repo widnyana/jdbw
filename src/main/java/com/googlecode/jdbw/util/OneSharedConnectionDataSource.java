@@ -23,6 +23,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
@@ -31,16 +33,28 @@ import javax.sql.DataSource;
  * @author mabe02
  */
 public class OneSharedConnectionDataSource implements DataSource {
+    
+    private final Queue<Connection> connectionQueue;
 
     public OneSharedConnectionDataSource(Connection connection) {
+        this.connectionQueue = new ArrayBlockingQueue<Connection>(1);
+        this.connectionQueue.add(connection);
     }
 
     public void close() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        try {
+            connectionQueue.poll().close();
+        }
+        catch(SQLException e) {
+        }
     }
 
     public Connection getConnection() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DelegatingConnection(connectionQueue.poll()) {
+            public void close() throws SQLException {
+                connectionQueue.add(_conn);
+            }
+        };
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
@@ -74,6 +88,4 @@ public class OneSharedConnectionDataSource implements DataSource {
     public <T> T unwrap(Class<T> iface) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
- 
-    
 }

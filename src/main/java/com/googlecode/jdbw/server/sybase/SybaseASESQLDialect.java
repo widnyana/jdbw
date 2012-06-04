@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author mabe02
  */
-public class SybaseSQLDialect extends DefaultDatabaseServerTraits {
+public class SybaseASESQLDialect extends DefaultDatabaseServerTraits {
     @Override
     public String escapeString(String string)
     {

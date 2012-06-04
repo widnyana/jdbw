@@ -33,7 +33,7 @@ import javax.sql.DataSource;
  */
 public class DatabaseConnectionImpl implements DatabaseConnection {
 
-    private final DatabaseServer databaseServer;
+    private final DatabaseServerType databaseServerType;
     private final DataSource dataSource;
     private final DataSourceCloser dataSourceCloser;
 
@@ -41,7 +41,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
         this(connection, null);
     }
 
-    public DatabaseConnectionImpl(Connection connection, DatabaseServer databaseServer) {
+    public DatabaseConnectionImpl(Connection connection, DatabaseServerType databaseServerType) {
         this(new OneSharedConnectionDataSource(connection),
                 new DataSourceCloser() {
 
@@ -49,16 +49,16 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
                         ((OneSharedConnectionDataSource) dataSource).close();
                     }
                 },
-                databaseServer);
+                databaseServerType);
     }
 
     public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser) {
         this(dataSource, dataSourceCloser, null);
     }
 
-    public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServer databaseServer) {
+    public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServerType databaseServerType) {
         this.dataSource = dataSource;
-        this.databaseServer = databaseServer;
+        this.databaseServerType = databaseServerType;
         this.dataSourceCloser = dataSourceCloser;
     }
 
@@ -120,7 +120,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public DatabaseServerType getServerType() {
-        return databaseServer.getServerType();
+        return databaseServerType;
     }
 
     public String getDefaultCatalogName() {

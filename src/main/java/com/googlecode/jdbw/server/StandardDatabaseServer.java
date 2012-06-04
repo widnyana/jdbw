@@ -94,7 +94,7 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
                         dataSourceFactory.close(dataSource);
                     }
                 },
-                this);
+                getServerType());
     }
     
     public Properties getConnectionProperties() {
