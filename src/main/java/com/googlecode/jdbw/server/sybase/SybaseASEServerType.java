@@ -17,28 +17,24 @@
  * Copyright (C) 2009-2012 mabe02
  */
 
-package com.googlecode.jdbw;
+package com.googlecode.jdbw.server.sybase;
 
-import com.googlecode.jdbw.server.mysql.MySQLServerType;
-import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import com.googlecode.jdbw.DatabaseServerTraits;
+import com.googlecode.jdbw.server.AbstractDatabaseType;
 
 /**
- * This is a repository of known database server types. You can add your own
- * types at runtime if you need to.
+ *
  * @author mabe02
  */
-public class DatabaseServerTypes {
-    private DatabaseServerTypes() {}
+public class SybaseASEServerType extends AbstractDatabaseType {
     
-    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new ConcurrentSkipListSet<DatabaseServerType>();
-    
-    public static final DatabaseServerType MYSQL = new MySQLServerType();
-    public static final DatabaseServerType SYBASE_ASE = new SybaseASEServerType();
-    
-    static {
-        ALL_KNOWN_SERVER_TYPES.add(MYSQL);
-        ALL_KNOWN_SERVER_TYPES.add(SYBASE_ASE);
+    @Override
+    public String getName() {
+        return "Sybase ASE";
+    }
+
+    @Override
+    public DatabaseServerTraits getTraits() {
+        return new SybaseSQLDialect();
     }
 }

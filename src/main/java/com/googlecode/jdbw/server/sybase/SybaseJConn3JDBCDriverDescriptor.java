@@ -17,28 +17,23 @@
  * Copyright (C) 2009-2012 mabe02
  */
 
-package com.googlecode.jdbw;
+package com.googlecode.jdbw.server.sybase;
 
-import com.googlecode.jdbw.server.mysql.MySQLServerType;
-import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
- * This is a repository of known database server types. You can add your own
- * types at runtime if you need to.
+ *
  * @author mabe02
  */
-public class DatabaseServerTypes {
-    private DatabaseServerTypes() {}
-    
-    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new ConcurrentSkipListSet<DatabaseServerType>();
-    
-    public static final DatabaseServerType MYSQL = new MySQLServerType();
-    public static final DatabaseServerType SYBASE_ASE = new SybaseASEServerType();
-    
-    static {
-        ALL_KNOWN_SERVER_TYPES.add(MYSQL);
-        ALL_KNOWN_SERVER_TYPES.add(SYBASE_ASE);
+class SybaseJConn3JDBCDriverDescriptor implements JDBCDriverDescriptor {
+
+    @Override
+    public String formatJDBCUrl(String host, int port, String defaultCatalog) {
+        return "jdbc:sybase:Tds:" + host + ":" + port + "/" + defaultCatalog;
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return "com.sybase.jdbc3.jdbc.SybDriver";
     }
 }
