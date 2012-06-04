@@ -144,6 +144,6 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     }
 
     protected MetaDataResolver createMetaDataResolver() {
-        return new MetaDataResolver(dataSource);
+        return getServerType().createMetaDataResolver(dataSource);
     }
 }
