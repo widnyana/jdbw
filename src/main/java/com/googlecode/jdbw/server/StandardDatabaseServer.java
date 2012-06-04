@@ -18,13 +18,11 @@
  */
 package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.DataSourceCreator;
 import com.googlecode.jdbw.DataSourceCloser;
+import com.googlecode.jdbw.DataSourceCreator;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
-import com.googlecode.jdbw.metadata.MetaDataResolver;
-import java.sql.*;
 import java.util.Properties;
 import javax.sql.DataSource;
 
