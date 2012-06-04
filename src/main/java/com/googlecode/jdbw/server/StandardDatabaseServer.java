@@ -23,7 +23,9 @@ import com.googlecode.jdbw.DataSourceCreator;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import javax.sql.DataSource;
 
 /**
@@ -84,6 +86,7 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
     }
 
     public DatabaseConnection connect(final DataSourceCreator dataSourceFactory) {
+        registerJDBCDriver(driverDescriptor.getDriverClassName());
         return new DatabaseConnectionImpl(
                 dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),
                 new DataSourceCloser() {
@@ -139,5 +142,21 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
     @Override
     public String toString() {
         return getJDBCUrl();
+    }
+
+    private static final Set<String> REGISTERED_DRIVERS = new HashSet<String>();
+    private void registerJDBCDriver(String driverClassName) {
+        synchronized(REGISTERED_DRIVERS) {
+            if(REGISTERED_DRIVERS.contains(driverClassName))
+                return;
+            
+            try {
+                Class.forName(driverClassName).newInstance();
+                REGISTERED_DRIVERS.add(driverClassName);
+            }
+            catch(Exception e) {
+                throw new IllegalStateException("Unable to load the JDBC driver \"" + driverClassName + "\"");
+            }
+        }
     }
 }
