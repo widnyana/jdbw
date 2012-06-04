@@ -91,4 +91,13 @@ public enum TransactionIsolation {
         }
         return null;
     }
+
+    public static TransactionIsolation fromLevel(int level) {
+        for(TransactionIsolation isolation : values()) {
+            if(level == isolation.level) {
+                return isolation;
+            }
+        }
+        return null;
+    }
 }
