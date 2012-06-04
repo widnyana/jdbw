@@ -64,7 +64,23 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public TransactionIsolation getDefaultTransactionIsolation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection connection = null;
+        try {
+            try {
+                connection = getConnection();
+                return TransactionIsolation.fromLevel(connection.getTransactionIsolation());
+            }
+            catch(SQLException e) {}
+        }
+        finally {
+            if(connection != null) {
+                try {
+                    connection.close();
+                }
+                catch(SQLException e) {}
+            }
+        }
+        return null;
     }
 
     @Override
