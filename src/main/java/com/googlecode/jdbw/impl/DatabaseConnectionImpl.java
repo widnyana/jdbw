@@ -108,7 +108,23 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     }
 
     public String getDefaultCatalogName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Connection connection = null;
+        try {
+            try {
+                connection = getConnection();
+                return connection.getCatalog();
+            }
+            catch(SQLException e) {}
+        }
+        finally {
+            if(connection != null) {
+                try {
+                    connection.close();
+                }
+                catch(SQLException e) {}
+            }
+        }
+        return null;
     }
 
     protected MetaDataResolver createMetaDataResolver() {
