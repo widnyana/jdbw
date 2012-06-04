@@ -31,7 +31,7 @@ import java.util.Date;
  *
  * @author mabe02
  */
-public abstract class DefaultDatabaseServerTraits extends DefaultSQLDialect implements DatabaseServerTraits {
+public class DefaultDatabaseServerTraits extends DefaultSQLDialect implements DatabaseServerTraits {
 
     private static final DateFormat decimalTimestampFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
