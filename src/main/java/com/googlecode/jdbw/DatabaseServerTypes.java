@@ -22,7 +22,7 @@ package com.googlecode.jdbw;
 import com.googlecode.jdbw.server.mysql.MySQLServerType;
 import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * This is a repository of known database server types. You can add your own
@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class DatabaseServerTypes {
     private DatabaseServerTypes() {}
     
-    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new ConcurrentSkipListSet<DatabaseServerType>();
+    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new CopyOnWriteArraySet<DatabaseServerType>();
     
     public static final DatabaseServerType MYSQL = new MySQLServerType();
     public static final DatabaseServerType SYBASE_ASE = new SybaseASEServerType();
