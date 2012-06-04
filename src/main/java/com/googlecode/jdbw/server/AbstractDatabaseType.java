@@ -19,9 +19,7 @@
 
 package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.AutoExecutor;
-import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.impl.SQLExecutorImpl;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import java.sql.*;
@@ -34,6 +32,14 @@ import javax.sql.DataSource;
  */
 public abstract class AbstractDatabaseType implements DatabaseServerType {
 
+    public DatabaseServerTraits getTraits() {
+        return new DefaultDatabaseServerTraits();
+    }
+
+    public SQLDialect getSQLDialect() {
+        return new DefaultDatabaseServerTraits();
+    }
+    
     @Override
     public AutoExecutor createAutoExecutor(DataSource dataSource) {
         return new AutoExecutor(dataSource, this);
