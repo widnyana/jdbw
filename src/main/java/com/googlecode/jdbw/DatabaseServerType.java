@@ -42,6 +42,11 @@ public interface DatabaseServerType {
     DatabaseServerTraits getTraits();
     
     /**
+     * @return SQLDialect for the server type
+     */
+    SQLDialect getSQLDialect();
+    
+    /**
      * Creates an AutoExecutor for this server type
      * @param dataSource DataSource that is backing the auto executor
      * @return AutoExecutor-implementation for this server type
