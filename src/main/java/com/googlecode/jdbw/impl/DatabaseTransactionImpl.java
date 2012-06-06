@@ -49,36 +49,37 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     @Override
     public synchronized void commit() throws SQLException
     {
-        if(initialized)        
-            connection.commit();
-        
-        connection.close();
-        connection = null;
         executor = null;
+        try {
+            if(initialized)        
+                connection.commit();
+        }
+        finally {
+            try {
+                connection.close();
+            }
+            catch(SQLException e) {                
+            }
+        }
+        connection = null;
     }
 
     @Override
     public synchronized void rollback() throws SQLException
     {
         executor = null;
-        if(connection != null) {
-            try {
-                if(initialized)
-                    connection.rollback();
-            }
-            finally {
-                connection = null;
-            }
-        }
-    }
-
-    public void reset() 
-    {
         try {
-            rollback();
+            if(initialized)        
+                connection.rollback();
         }
-        catch(SQLException ex) {
+        finally {
+            try {
+                connection.close();
+            }
+            catch(SQLException e) {                
+            }
         }
+        connection = null;
     }
 
     @Override
