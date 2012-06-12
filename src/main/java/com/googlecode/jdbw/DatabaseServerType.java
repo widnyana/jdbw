@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
- * This interface represents a type ('MySQL', 'PostgreSQL', etc) of database,
+ * This interface represents a type (MySQL, PostgreSQL, etc...) of database,
  * with methods used for helping you adapt to this particular server's dialect
  * of SQL
  * @see DatabaseServerTypes
