@@ -19,10 +19,14 @@
 
 package com.googlecode.jdbw;
 
+import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import java.sql.SQLWarning;
 
 /**
- *
+ * This interface is used as a callback mechanism for handling results coming
+ * out of a batch query. If you don't need all methods, you can override 
+ * {@code BatchUpdateHandlerAdapter} instead.
+ * @see BatchUpdateHandlerAdapter
  * @author mabe02
  */
 public interface BatchUpdateHandler {
