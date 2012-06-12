@@ -21,7 +21,11 @@ package com.googlecode.jdbw;
 import java.sql.SQLException;
 
 /**
- * Representing a ongoing database transaction
+ * Representing a ongoing database transaction. Remember that it is important
+ * that you either commit() or rollback() the transaction when you are done with
+ * it. Remember this applies even when handling exceptions, you must declare
+ * yourself done with the transaction so that the connection can be returned to
+ * there original data source. Failure to do so may starve the connection pool.
  * @author mabe02
  */
 public interface DatabaseTransaction extends SQLExecutor {
