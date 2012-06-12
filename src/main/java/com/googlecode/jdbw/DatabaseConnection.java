@@ -30,7 +30,7 @@ import java.util.List;
 public interface DatabaseConnection {
     
     /**
-     * @return Type of the server this connection is connected to, or null if unknown
+     * @return Type of the server this connection is connected to
      */
     DatabaseServerType getServerType();
     
