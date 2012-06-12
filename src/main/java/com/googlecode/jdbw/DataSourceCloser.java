@@ -22,9 +22,18 @@ package com.googlecode.jdbw;
 import javax.sql.DataSource;
 
 /**
- *
+ * This interface is used for closing a {@code DataSource}. Since the {@code 
+ * DataSource} interface doesn't expose any close method, we need to delegate
+ * closing it to an external object. Normally, this object would be the same 
+ * that both creates and closes data sources, so it knows that implementation of
+ * {@code DataSource} that is used.
  * @author mabe02
  */
 public interface DataSourceCloser {
+    /**
+     * Called when a data source should be closed, trusting the implementing 
+     * class knows how to close the data source
+     * @param dataSource Data source to close
+     */
     void closeDataSource(DataSource dataSource);
 }
