@@ -106,7 +106,7 @@ public class AutoExecutor implements SQLExecutor {
         }
     }
     
-    protected SQLExecutor createSQLExecutor(Connection connection) {
+    private SQLExecutor createSQLExecutor(Connection connection) {
         return serverType.createExecutor(connection);
     }
 
