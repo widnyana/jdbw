@@ -21,7 +21,12 @@ package com.googlecode.jdbw;
 import java.sql.Connection;
 
 /**
- *
+ * This enum contains the various levels of transactional isolation supported by
+ * JDBC. These values are all derived from constants on the 
+ * {@code java.sql.Connection} class.
+ * 
+ * For more information, please see
+ * <a href="http://en.wikipedia.org/wiki/Transaction_isolation">wikipedia</a>.
  * @author mabe02
  */
 public enum TransactionIsolation {
