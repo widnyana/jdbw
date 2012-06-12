@@ -18,11 +18,18 @@
  */
 package com.googlecode.jdbw;
 
+import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
 import java.sql.SQLWarning;
 import java.util.List;
 
 /**
- *
+ * This interface is used to handle results when executing custom SQL code. It 
+ * is passed in to an SQLExecutor and when as the executor runs the SQL, it will
+ * call the methods on this handler as results are coming in.
+ * 
+ * If you don't need all methods of this interface, you can extend the 
+ * {@code ExecuteResultHandlerAdapter} instead.
+ * @see ExecuteResultHandlerAdapter
  * @author mabe02
  */
 public interface ExecuteResultHandler {
