@@ -22,7 +22,9 @@ package com.googlecode.jdbw;
 import java.util.Properties;
 
 /**
- * Represents a database server running somewhere
+ * This interface represents a database server and exposes methods for 
+ * inspecting the servers characteristics and establishing a 
+ * {@code DatabaseConnection} to it.
  * @author mabe02
  */
 public interface DatabaseServer {
