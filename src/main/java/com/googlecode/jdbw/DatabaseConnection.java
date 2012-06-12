@@ -24,7 +24,22 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- *
+ * This interface represents a connection to a database server, although in 
+ * reality this is probably more than one connection (probably a pool of them).
+ * The main methods used to interact with the database server are:
+ * <ul>
+ * <li>{@code beginTransaction} will start an open transaction and keep a 
+ * dedicated connection for this until you either rollback or commit. Please
+ * remember that if you don't properly rollback or commit, the underlying data
+ * source may starve out of connections and become unusable.
+ * <li>{@code createAutoExecutor} will create an object that exposes methods for
+ * sending SQL code to the database server, but will operate in auto commit 
+ * mode, and only allocates a connection from the underlying data source when
+ * required. You can't starve the data source using auto executors, they can't
+ * even be closed as they are stateless.
+ * <li>{@code getCatalog} will give you access to the meta data information on
+ * the remote server. These objects loads data from the server as you use it
+ * </ul>
  * @author mabe02
  */
 public interface DatabaseConnection {
