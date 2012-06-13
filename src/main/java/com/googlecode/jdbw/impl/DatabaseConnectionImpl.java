@@ -49,7 +49,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * rolling back) may leave the {@code DatabaseConnectionImpl} unusable with
      * some method calls blocking indefinitely.
      * 
-     * The type of the database server will be guessed, but you can also be
+     * <p>The type of the database server will be guessed, but you can also be
      * helpful and call the overloaded constructor which takes a 
      * {@code Connection} and a {@code DatabaseServerType} to specify what you
      * are connecting to.
@@ -96,13 +96,13 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * the {@code DataSource} throws an exception when no more connections can
      * be allocated, so will the {@code DatabaseConnectionImpl}.
      * 
-     * Please note that a {@code DataSource} doesn't expose any method for 
+     * <p>Please note that a {@code DataSource} doesn't expose any method for 
      * closing it, so calling {@code close()} on this 
      * {@code DatabaseConnectionImpl} won't do anything. If you want to be able
      * to close the underlying source through this object, please use one of the
      * constructor overloads with a {@code DataSourceCloser} parameter.
      * 
-     * The type of the database server will be guessed, but you can also be
+     * <p>The type of the database server will be guessed, but you can also be
      * helpful and call an overloaded constructor which takes a 
      * {@code DatabaseServerType} to specify what you are connecting to.
      * 
@@ -125,7 +125,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * the {@code DataSource} throws an exception when no more connections can
      * be allocated, so will the {@code DatabaseConnectionImpl}.
      * 
-     * Please note that a {@code DataSource} doesn't expose any method for 
+     * <p>Please note that a {@code DataSource} doesn't expose any method for 
      * closing it, so calling {@code close()} on this 
      * {@code DatabaseConnectionImpl} won't do anything. If you want to be able
      * to close the underlying source through this object, please use one of the
@@ -151,14 +151,14 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * the {@code DataSource} throws an exception when no more connections can
      * be allocated, so will the {@code DatabaseConnectionImpl}.
      * 
-     * Please note that a {@code DataSource} doesn't expose any method for 
+     * <p>Please note that a {@code DataSource} doesn't expose any method for 
      * closing it, that why this constructor takes a {@code DataSourceCloser}
      * interface as a parameter. It is assumed the closer knows how to close 
      * this particular {@code DataSource}. If you don't need to close the 
      * {@code DataSource} (through this {@code DatabaseConnectionImpl}), you can
      * pass null for this parameter.
      * 
-     * The type of the database server will be guessed, but you can also be
+     * <p>The type of the database server will be guessed, but you can also be
      * helpful and call the overloaded constructor which takes a 
      * {@code DataSource}, a {@code DataSourceCloser} and a 
      * {@code DatabaseServerType} to specify what you are connecting to.
@@ -186,7 +186,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * the {@code DataSource} throws an exception when no more connections can
      * be allocated, so will the {@code DatabaseConnectionImpl}.
      * 
-     * Please note that a {@code DataSource} doesn't expose any method for 
+     * <p>Please note that a {@code DataSource} doesn't expose any method for 
      * closing it, that why this constructor takes a {@code DataSourceCloser}
      * interface as a parameter. It is assumed the closer knows how to close 
      * this particular {@code DataSource}. If you don't need to close the 
