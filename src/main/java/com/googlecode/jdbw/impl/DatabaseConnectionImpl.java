@@ -301,8 +301,6 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     /**
      * Try to guess what database connection was passed in
-     * @param dataSource
-     * @return 
      */
     private DatabaseServerType guessDatabaseServerType(DataSource dataSource) {
         throw new IllegalArgumentException("Could not guess the database type of "
