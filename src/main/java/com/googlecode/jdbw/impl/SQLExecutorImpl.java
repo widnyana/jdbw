@@ -19,9 +19,7 @@
 
 package com.googlecode.jdbw.impl;
 
-import com.googlecode.jdbw.BatchUpdateHandler;
-import com.googlecode.jdbw.ExecuteResultHandler;
-import com.googlecode.jdbw.SQLExecutor;
+import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.util.NullValue;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -30,14 +28,27 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
+ * This class is an implementation of the {@code SQLExecutor} that provides
+ * most of the functionality required for sending queries and receiving data.
+ * This class does not deal with setting up and tearing down database 
+ * connections; rather it expects the user to pass in a valid connection and
+ * close it when done.
+ * 
+ * <p>Normally, you wouldn't use this class directly, but rather through 
+ * classes such as the {@code AutoExecutor} or the {@code DatabaseTransaction},
+ * which is using this class behind the scenes. You call methods on  
+ * {@code DatabaseConnection} to get one of those.
+ * 
+ * @see AutoExecutor
+ * @see DatabaseTransaction
+ * @see DatabaseConnection
  * @author mabe02
  */
-public class SQLExecutorImpl implements SQLExecutor
+public abstract class SQLExecutorImpl implements SQLExecutor
 {
     protected final Connection connection;
 
-    public SQLExecutorImpl(Connection connection)
+    protected SQLExecutorImpl(Connection connection)
     {
         this.connection = connection;
     }
@@ -152,6 +163,11 @@ public class SQLExecutorImpl implements SQLExecutor
         }
     }
 
+    //   -- INFO --
+    // Protected methods below are for sub-classes tuned for particular database
+    // servers which may or may not support all of JDBC. Please see 
+    // MySQLExecutor for an example.
+    
     protected PreparedStatement prepareQueryStatement(String SQL) throws SQLException
     {
         return connection.prepareStatement(SQL);
