@@ -18,23 +18,17 @@
  */
 package com.googlecode.jdbw.server;
 
-import com.googlecode.jdbw.DataSourceCloser;
-import com.googlecode.jdbw.DataSourceCreator;
-import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
-import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import javax.sql.DataSource;
 
 /**
- *
+ * A common base class for {@code DatabaseServer}s with are connected to over
+ * network and using a username/password for authentication. This class
+ * provides some helper methods and some default implementations for the
+ * interface methods. 
  * @author mabe02
  */
-public abstract class StandardDatabaseServer implements NetworkDatabaseServer, MultiCatalogDatabaseServer, UserAuthenticatedDatabaseServer {
+public abstract class StandardDatabaseServer extends AbstractDatabaseServer implements NetworkDatabaseServer, MultiCatalogDatabaseServer, UserAuthenticatedDatabaseServer {
 
-    private final JDBCDriverDescriptor driverDescriptor;
     private final String hostname;
     private final int port;
     private final String catalog;
@@ -48,7 +42,7 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
             String catalog, 
             String username, 
             String password) {
-        this.driverDescriptor = driverDescriptor;
+        super(driverDescriptor);
         this.hostname = hostname;
         this.port = port;
         this.catalog = catalog;
@@ -80,25 +74,9 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
     public String getPassword() {
         return password;
     }
-
-    private String getJDBCUrl() {
-        return driverDescriptor.formatJDBCUrl(hostname, port, catalog);
-    }
-
-    public DatabaseConnection connect(final DataSourceCreator dataSourceFactory) {
-        registerJDBCDriver(driverDescriptor.getDriverClassName());
-        return new DatabaseConnectionImpl(
-                dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),
-                new DataSourceCloser() {
-                    public void closeDataSource(DataSource dataSource) {
-                        dataSourceFactory.close(dataSource);
-                    }
-                },
-                getServerType());
-    }
     
-    public Properties getConnectionProperties() {
-        return new Properties();
+    protected String getJDBCUrl() {
+        return getDriverDescriptor().formatJDBCUrl(hostname, port, catalog);
     }
 
     @Override
@@ -142,21 +120,5 @@ public abstract class StandardDatabaseServer implements NetworkDatabaseServer, M
     @Override
     public String toString() {
         return getJDBCUrl();
-    }
-
-    private static final Set<String> REGISTERED_DRIVERS = new HashSet<String>();
-    private void registerJDBCDriver(String driverClassName) {
-        synchronized(REGISTERED_DRIVERS) {
-            if(REGISTERED_DRIVERS.contains(driverClassName))
-                return;
-            
-            try {
-                Class.forName(driverClassName).newInstance();
-                REGISTERED_DRIVERS.add(driverClassName);
-            }
-            catch(Exception e) {
-                throw new IllegalStateException("Unable to load the JDBC driver \"" + driverClassName + "\"");
-            }
-        }
     }
 }
