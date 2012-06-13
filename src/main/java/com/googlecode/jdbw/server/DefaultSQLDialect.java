@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- *
+ * A default implementation of {@code SQLDialect} providing some functionality
+ * which is common to most database servers.
  * @author mabe02
  */
 public class DefaultSQLDialect implements SQLDialect {
