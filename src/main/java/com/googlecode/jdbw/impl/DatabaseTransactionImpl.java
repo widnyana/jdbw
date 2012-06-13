@@ -25,7 +25,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- *
+ * Package private class used by {@code DatabaseConnectionImpl} as the 
+ * transaction implementation.
  * @author mabe02
  */
 class DatabaseTransactionImpl implements DatabaseTransaction
