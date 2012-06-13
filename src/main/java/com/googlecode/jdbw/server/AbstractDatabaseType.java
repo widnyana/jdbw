@@ -47,7 +47,7 @@ public abstract class AbstractDatabaseType implements DatabaseServerType {
 
     @Override
     public SQLExecutor createExecutor(Connection connection) {
-        return new SQLExecutorImpl(connection);
+        return new SQLExecutorImpl(connection) {};
     }
 
     @Override
