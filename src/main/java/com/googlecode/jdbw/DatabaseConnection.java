@@ -53,7 +53,8 @@ public interface DatabaseConnection {
      * Allocated a connection and begins a transaction
      * @param isolation Isolation level for the new transaction
      * @return DatabaseTransaction object representing the new transaction
-     * @throws SQLException 
+     * @throws SQLException If an error occurred when allocating a connection
+     * for this transaction
      */
     DatabaseTransaction beginTransaction(TransactionIsolation isolation) throws SQLException;
     
@@ -75,7 +76,8 @@ public interface DatabaseConnection {
     
     /**
      * @return List of all catalogs available on this server
-     * @throws SQLException 
+     * @throws SQLException If an error occurred when asking the database
+     * for catalog information
      */
     List<Catalog> getCatalogs() throws SQLException;
     
@@ -83,7 +85,8 @@ public interface DatabaseConnection {
      * Looks up one catalog on the server
      * @param catalogName Name of the catalog
      * @return Catalog object representing the catalog or null if not found
-     * @throws SQLException 
+     * @throws SQLException If an error occurred when asking the database
+     * for catalog information
      */
     Catalog getCatalog(String catalogName) throws SQLException;
     
