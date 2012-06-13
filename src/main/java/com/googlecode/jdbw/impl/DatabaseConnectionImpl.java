@@ -54,6 +54,8 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * {@code Connection} and a {@code DatabaseServerType} to specify what you
      * are connecting to.
      * @param connection Connection that is backing this {@code DatabaseConnection}
+     * @throws IllegalArgumentException If the database server type could not be
+     * figured out
      */
     public DatabaseConnectionImpl(Connection connection) {
         this(connection, null);
@@ -107,6 +109,8 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * {@code DatabaseServerType} to specify what you are connecting to.
      * 
      * @param dataSource Underlying database connection supplier
+     * @throws IllegalArgumentException If the database server type could not be
+     * figured out
      */
     public DatabaseConnectionImpl(DataSource dataSource) {
         this(dataSource, null, null);
@@ -166,6 +170,8 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      * @param dataSource Underlying database connection supplier
      * @param dataSourceCloser Object which knows how to close the data source,
      * or null if you want calls to {@code close()} be ignored
+     * @throws IllegalArgumentException If the database server type could not be
+     * figured out
      */
     public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser) {
         this(dataSource, dataSourceCloser, null);
@@ -200,8 +206,11 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
      */
     public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServerType databaseServerType) {
         this.dataSource = dataSource;
-        this.databaseServerType = databaseServerType;
         this.dataSourceCloser = dataSourceCloser;
+        if(databaseServerType != null)
+            this.databaseServerType = databaseServerType;
+        else
+            this.databaseServerType = guessDatabaseServerType(dataSource);
     }
 
     @Override
@@ -288,5 +297,15 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     protected MetaDataResolver createMetaDataResolver() {
         return getServerType().createMetaDataResolver(dataSource);
+    }
+
+    /**
+     * Try to guess what database connection was passed in
+     * @param dataSource
+     * @return 
+     */
+    private DatabaseServerType guessDatabaseServerType(DataSource dataSource) {
+        throw new IllegalArgumentException("Could not guess the database type of "
+                + "the supplied data source");
     }
 }
