@@ -28,7 +28,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- *
+ * A default {@code DatabaseServerTraits} implementation which only has some 
+ * basic functionality. For a particular database server type, you'd extend this
+ * class and provide some custom functionality.
+ * 
+ * <p>This class also extends {@code DefaultSQLDialect} so it has all the 
+ * methods from there available and by extending this you can cover dialect and 
+ * traits in one class.
+ * 
  * @author mabe02
  */
 public class DefaultDatabaseServerTraits extends DefaultSQLDialect implements DatabaseServerTraits {
