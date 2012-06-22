@@ -22,7 +22,7 @@ package com.googlecode.jdbw.server;
 import com.googlecode.jdbw.DatabaseServer;
 
 /**
- *
+ * A {@code DatabaseServer} which supports multiple catalogs
  * @author mabe02
  */
 public interface MultiCatalogDatabaseServer extends DatabaseServer {
