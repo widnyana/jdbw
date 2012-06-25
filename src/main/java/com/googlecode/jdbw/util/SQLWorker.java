@@ -98,6 +98,12 @@ public class SQLWorker
         return result;
     }
 
+    /**
+     * Sends a query to the database server and expects nothing to return.
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @throws SQLException If any database error occurred
+     */
     public void write(String SQL, Object... parameters) throws SQLException
     {
         executor.execute(new ExecuteResultHandlerAdapter(), SQL, parameters);
