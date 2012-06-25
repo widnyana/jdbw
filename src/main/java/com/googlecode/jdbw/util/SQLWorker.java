@@ -26,18 +26,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * This utility class can be very helpful when sending simple queries to the
+ * database and you don't want to get too involved in the details. It will help
+ * you to send queries and get result back in simple and familiar formats, as 
+ * well as grabbing only limited parts of the result set.
+ * 
+ * You normally create an SQLWorker on top of an auto-executor, but you can
+ * also use a normal transaction.
  * @author mabe02
  */
 public class SQLWorker
 {
     private final SQLExecutor executor;
 
+    /**
+     * Creates a new SQLWorker with a specified underlying SQLExecutor to use
+     * for the actual database communication.
+     * @param executor SQLExecutor send the queries to
+     */
     public SQLWorker(SQLExecutor executor)
     {
         this.executor = executor;
     }
 
+    /**
+     * Sends a query to the database and returns the whole ResultSet as a list of
+     * Object arrays.
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @return The entire result set, converted into a list of Object arrays, 
+     * where each array in the list is one row in the result set
+     * @throws SQLException If any database error occurred
+     */
     public List<Object[]> query(String SQL, Object... parameters) throws SQLException
     {
         final List<Object[]> result = new ArrayList<Object[]>();
@@ -52,6 +72,17 @@ public class SQLWorker
         return result;
     }
 
+    /**
+     * Sends a query to the database and returns the whole ResultSet as a list of
+     * String arrays.
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @return The entire result set, converted into a list of String arrays, 
+     * where each array in the list is one row in the result set and each element
+     * in the String arrays are the .toString() call on the underlying result 
+     * set object.
+     * @throws SQLException If any database error occurred
+     */
     public List<String[]> queryAsStrings(String string, Object... parameters) throws SQLException
     {
         List<String[]> result = new ArrayList<String[]>();
