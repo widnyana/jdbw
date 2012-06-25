@@ -35,16 +35,4 @@ public class StringUtils
         sb.delete(sb.length()-separator.length(), sb.length());
         return sb.toString();
     }
-
-    public static String passwordProtect(String string)
-    {
-        if(string == null)
-            return null;
-        
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < string.length(); i++)
-            sb.append("*");
-        
-        return sb.toString();
-    }
 }
