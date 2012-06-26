@@ -22,7 +22,8 @@ package com.googlecode.jdbw.server.sybase;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
- *
+ * This is a driver descriptor for the Sybase jconn3 driver, 
+ * {@code com.sybase.jdbc3.jdbc.SybDriver}.
  * @author mabe02
  */
 class SybaseJConn3JDBCDriverDescriptor implements JDBCDriverDescriptor {

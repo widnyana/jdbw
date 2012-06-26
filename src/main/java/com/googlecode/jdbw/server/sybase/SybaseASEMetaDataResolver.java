@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
 
 /**
- *
+ * A meta data resolver tuned to Sybase ASE
  * @author mabe02
  */
 class SybaseASEMetaDataResolver extends MetaDataResolver {

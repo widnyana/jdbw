@@ -19,7 +19,7 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- *
+ * Will hold metadata information about a function
  * @author mabe02
  */
 public class Function {

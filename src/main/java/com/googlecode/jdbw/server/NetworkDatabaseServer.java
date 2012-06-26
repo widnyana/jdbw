@@ -22,7 +22,7 @@ package com.googlecode.jdbw.server;
 import com.googlecode.jdbw.DatabaseServer;
 
 /**
- *
+ * A database server which is connected to over TCP/IP network
  * @author mabe02
  */
 public interface NetworkDatabaseServer extends DatabaseServer {

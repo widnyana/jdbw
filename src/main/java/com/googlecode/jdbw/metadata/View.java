@@ -19,7 +19,13 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- *
+ * A <i>View</i> in the database world is a kind of virtual table, defined by
+ * a SELECT statement that is being run every time you select from the view.
+ * Using views, you can make very complicated data models easier to read and
+ * access, providing joins and restrictions under the cover, so that users not
+ * familiar with the data model can still use it.
+ * 
+ * @see Schema
  * @author mabe02
  */
 public class View implements Comparable<View> {
@@ -34,14 +40,24 @@ public class View implements Comparable<View> {
         this.name = name;
     }
 
+    /**
+     * @return Name of the view
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return Schema owning this view
+     */
     public Schema getSchema() {
         return schema;
     }
 
+    /**
+     * @return Catalog this view is sorted under, i.e. the owner of the view's 
+     * Schema.
+     */
     public Catalog getCatalog() {
         return catalog;
     }

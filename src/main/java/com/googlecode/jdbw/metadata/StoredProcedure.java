@@ -23,7 +23,19 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
+ * A <i>stored procedure</i> is normally a piece of programming code that has 
+ * been pre-created on the server and has been compiled into some intermediate
+ * format, to be executed by a specific command. Normally this code is some kind 
+ * of imperative SQL-like language, but could really be anything.
+ * 
+ * <p>A stored procedure may or may not have input parameters and some database
+ * servers also supports output parameters to give data back to the caller.
+ * 
+ * <p>You normally won't create instances of this class yourself, but rather
+ * will be supplied with them by asking a {@code Schema} to give you the list 
+ * of stored procedures it has.
+ * 
+ * @see Schema
  * @author mabe02
  */
 public class StoredProcedure implements Comparable<StoredProcedure> {
@@ -42,18 +54,34 @@ public class StoredProcedure implements Comparable<StoredProcedure> {
         this.inputParameterNamesCache = null;
     }
 
+    /**
+     * @return Name of the stored procedure
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return Schema that owns this stored procedure
+     */
     public Schema getSchema() {
         return schema;
     }
 
+    /**
+     * @return Catalog this stored procedure is sorted under, i.e. the owner
+     * of this stored procedure's schema
+     */
     public Catalog getCatalog() {
         return catalog;
     }
 
+    /**
+     * @return List of input parameter names, in the order the stored procedure
+     * expects them
+     * @throws SQLException If an error occurred while reading the information
+     * from the database
+     */
     public List<String> getInputParameterNames() throws SQLException {
         if(inputParameterNamesCache == null) {
             inputParameterNamesCache = metaDataResolver.getProcedureInputParameterNames(catalog.getName(), schema.getName(), this);

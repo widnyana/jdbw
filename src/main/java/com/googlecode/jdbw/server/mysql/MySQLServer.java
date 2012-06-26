@@ -25,7 +25,8 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
 import java.util.Properties;
 
 /**
- *
+ * This class represents a MySQL database server that is connected to over a
+ * TCP/IP network. 
  * @author mabe02
  */
 public class MySQLServer extends StandardDatabaseServer {

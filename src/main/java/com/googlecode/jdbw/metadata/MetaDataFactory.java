@@ -19,7 +19,11 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- *
+ * A factory interface to be implemented by database servers to customize how
+ * and which meta data objects are constructed. This enables certain database
+ * services to give out specialized subclasses of the common meta data objects
+ * instead of the default implementation, if they need to override some 
+ * particular behavior. 
  * @author mabe02
  */
 public interface MetaDataFactory {

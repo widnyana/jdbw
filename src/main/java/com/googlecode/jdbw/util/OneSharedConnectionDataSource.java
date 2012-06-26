@@ -29,7 +29,11 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
- *
+ * Very primitive database connection source which only keeps one connection
+ * in the pool. There is no reconnection logic or anything, it just hands out
+ * the same connection to one user at a time. Calling getConnection() on this
+ * object while another process is using that connection will block until the
+ * connection is returned to the pool.
  * @author mabe02
  */
 public class OneSharedConnectionDataSource implements DataSource {

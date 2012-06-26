@@ -23,7 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * An index on a database is a kind of fast lookup-table over (usually) one or
+ * (sometimes) more columns in a database table. By adding an index, we can
+ * make searching for rows matching particular criteria a lot faster, since the
+ * lookup table can be used instead of looking through every row.
+ * 
+ * <p>This class represents such an index created on a database server. You 
+ * normally don't create instances of this class yourself, but get them by 
+ * asking a table to provide you with all the indexes that are created on this
+ * table.
+ * 
+ * @see Table
  * @author mabe02
  */
 public class Index implements Comparable<Index> {

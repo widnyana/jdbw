@@ -22,7 +22,8 @@ package com.googlecode.jdbw.server.mysql;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
- *
+ * This driver descriptor is designed to be used with the official MySQL JDBC
+ * driver. 
  * @author mabe02
  */
 public class MySQLDefaultJDBCDriverDescriptor implements JDBCDriverDescriptor {

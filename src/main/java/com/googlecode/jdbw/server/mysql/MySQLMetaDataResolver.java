@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 /**
- *
+ * A meta data resolver tuned for MySQL
  * @author mabe02
  */
 class MySQLMetaDataResolver extends MetaDataResolver {

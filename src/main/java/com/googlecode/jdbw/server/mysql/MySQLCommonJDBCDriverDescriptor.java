@@ -20,7 +20,18 @@
 package com.googlecode.jdbw.server.mysql;
 
 /**
- *
+ * This driver descriptor overrides the default MySQL JDBC driver descriptor and
+ * adds certain common parameters to the URL. These are:
+ * <ul>
+ * <li>{@code useUnicode=yes}
+ * <li>{@code characterEncoding=UTF-8}
+ * <li>{@code rewriteBatchedStatements=true}
+ * <li>{@code continueBatchOnError=false}
+ * <li>{@code allowMultiQueries=true}
+ * <li>{@code useCompression=true}
+ * <li>{@code zeroDateTimeBehavior=convertToNull}
+ * </ul>
+ * @see MySQLDefaultJDBCDriverDescriptor
  * @author mabe02
  */
 public class MySQLCommonJDBCDriverDescriptor extends MySQLDefaultJDBCDriverDescriptor {

@@ -23,7 +23,15 @@ import java.util.*;
 import javax.sql.DataSource;
 
 /**
- *
+ * The MetaDataResolver is used to extract meta data from the database server.
+ * It is mostly a wrapper around the {@code DatabaseMetaData} class, but can
+ * also be overridden to provide a custom behavior. This can be useful, for
+ * example, if the database server doesn't support concepts such as 
+ * <i>Catalog</i> or <i>Schema</i>.
+ * 
+ * @see Catalog
+ * @see Schema
+ * @see Table
  * @author mabe02
  */
 public class MetaDataResolver {

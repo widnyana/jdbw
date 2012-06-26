@@ -23,7 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * A database catalog, sometimes known as a "database" on the database server.
+ * This is normally the highest level of organization in the database, where
+ * each data domain is assigned a distinct catalog. A catalog will in turn
+ * consist of one or more <i>schemas</i> that divides the objects further.
+ * 
+ * <p>Some database servers only supports one catalog. If the concept of catalog
+ * doesn't exist in the terminology of the server you are using, JDBW can be
+ * expected to create a "dummy" catalog object for you.
+ * 
+ * @see Schema
  * @author mabe02
  */
 public class Catalog implements Comparable<Catalog> {

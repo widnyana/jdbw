@@ -21,7 +21,18 @@ package com.googlecode.jdbw.metadata;
 import java.sql.DatabaseMetaData;
 
 /**
- *
+ * A column is a part of a database table, holding a specific value for every
+ * row in the table. The column will have a determined type and depending on
+ * the type could also have additional data associated with it, such as maximum
+ * string length or decimal precision. A column is also either <i>nullable</i> (can 
+ * have the {@code null} value, representing the absence of a value) or <i>not
+ * nullable</i> (trying to assign {@code null} will give an error). 
+ * 
+ * <p>Normally you don't construct {@code Column} objects yourself, rather you
+ * get them by using methods on other objects that holds columns.
+ * 
+ * @see Table
+ * @see Index
  * @author mabe02
  */
 public class Column implements Comparable<Column> {
@@ -55,38 +66,74 @@ public class Column implements Comparable<Column> {
         this.table = table;
     }
 
+    /**
+     * @return The JDBC value of IS_AUTOINCREMENT for this column
+     */
     public String getAutoIncrement() {
         return autoIncrement;
     }
 
+    /**
+     * @return Name of the column
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return The max size of the column, for string type columns, or the max
+     * total number of digits for decimal types. For all other types, this is 
+     * undefined.
+     */
     public int getColumnSize() {
         return columnSize;
     }
 
+    /**
+     * @return For decimal or numeric columns, the max number of fractional 
+     * digits, for all other types undefined
+     */
     public int getDecimalDigits() {
         return decimalDigits;
     }
 
+    /**
+     * @return Nullability of this column
+     */
     public Nullability getNullable() {
         return nullable;
     }
 
+    /**
+     * @return Index of this column in its table, where the first column has 
+     * index 1
+     */
     public Integer getOrdinalPosition() {
         return ordinalPosition;
     }
 
+    /**
+     * Returns the datatype of this column, expressed as an integer which 
+     * matches a constant in java.sql.Types.
+     * 
+     * @see java.sql.Types
+     * @return Datatype of the column, matching a JDBC constant in {@code java.sql.Types}.
+     */
     public int getSqlType() {
         return sqlType;
     }
 
+    /**
+     * @return The native name of the data type for this column, as the server
+     * presents it to the JDBC driver
+     */
     public String getNativeTypeName() {
         return typeName;
     }
 
+    /**
+     * @return Table owning this column
+     */
     public Table getTable() {
         return table;
     }

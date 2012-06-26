@@ -24,6 +24,9 @@ import java.sql.SQLWarning;
 import java.util.List;
 
 /**
+ * This is a convenience class that implements ExecuteResultHandler and provides
+ * a default method implementation for this interface. You can then override 
+ * only the methods that you care about.
  * @author mabe02
  */
 public class ExecuteResultHandlerAdapter implements ExecuteResultHandler

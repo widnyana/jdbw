@@ -26,7 +26,12 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
 import java.util.Properties;
 
 /**
- *
+ * This class represents a Sybase ASE server connected to over a TCP/IP network.
+ * While all versions of Sybase ASE has not been tested for compatibility,
+ * indeed this mostly depends on the driver, versions 12.x to 15.x are expected
+ * to work with the functionality exposed by JDBW.
+ * 
+ * @see StandardDatabaseServer
  * @author mabe02
  */
 public class SybaseASEServer extends StandardDatabaseServer {

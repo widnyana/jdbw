@@ -22,7 +22,8 @@ package com.googlecode.jdbw.util;
 import java.util.List;
 
 /**
- *
+ * You shouldn't need to care about this class, we're just using it internally
+ * for some common string operations.
  * @author mabe02
  */
 public class StringUtils

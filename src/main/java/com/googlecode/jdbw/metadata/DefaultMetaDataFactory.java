@@ -21,7 +21,9 @@ package com.googlecode.jdbw.metadata;
 
 
 /**
- *
+ * A default meta data factory implementation that will create default 
+ * implementations of each meta data object ({@code Catalog}, {@code Table}, 
+ * {@code Column}, etc...)
  * @author mabe02
  */
 public class DefaultMetaDataFactory implements MetaDataFactory
