@@ -20,6 +20,7 @@
 package com.googlecode.jdbw;
 
 import com.googlecode.jdbw.server.mysql.MySQLServerType;
+import com.googlecode.jdbw.server.postgresql.PostgresqlServerType;
 import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -36,9 +37,11 @@ public class DatabaseServerTypes {
     
     public static final DatabaseServerType MYSQL = new MySQLServerType();
     public static final DatabaseServerType SYBASE_ASE = new SybaseASEServerType();
+    public static final DatabaseServerType POSTGRESQL = new PostgresqlServerType();
     
     static {
         ALL_KNOWN_SERVER_TYPES.add(MYSQL);
         ALL_KNOWN_SERVER_TYPES.add(SYBASE_ASE);
+        ALL_KNOWN_SERVER_TYPES.add(POSTGRESQL);
     }
 }
