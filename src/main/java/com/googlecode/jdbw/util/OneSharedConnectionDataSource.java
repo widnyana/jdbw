@@ -19,10 +19,13 @@
 
 package com.googlecode.jdbw.util;
 
+import com.googlecode.jdbw.DataSourceCreator;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Logger;
@@ -37,6 +40,22 @@ import javax.sql.DataSource;
  * @author mabe02
  */
 public class OneSharedConnectionDataSource implements DataSource {
+    
+    public static class Factory implements DataSourceCreator {
+        public DataSource newDataSource(String jdbcUrl, Properties properties) {
+            try {
+                return new OneSharedConnectionDataSource(
+                        DriverManager.getConnection(jdbcUrl, properties));
+            }
+            catch(SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        public void close(DataSource previouslyConstructedDataSource) {
+            ((OneSharedConnectionDataSource)previouslyConstructedDataSource).close();
+        }        
+    }
     
     private final Queue<Connection> connectionQueue;
 
