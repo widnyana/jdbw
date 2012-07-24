@@ -58,6 +58,8 @@ public class PostgresqlServer extends StandardDatabaseServer {
     @Override
     public Properties getConnectionProperties() {
         Properties properties = new Properties();
+        properties.setProperty("user", getUsername());
+        properties.setProperty("password", getPassword());
         return properties;
     }
 }
