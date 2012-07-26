@@ -20,6 +20,7 @@
 package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.DatabaseServerTraits;
+import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.SQLExecutor;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
@@ -35,7 +36,13 @@ public class MySQLServerType extends AbstractDatabaseType {
         return "MySQL";
     }
 
+    @Override
     public DatabaseServerTraits getTraits() {
+        return new MySQLTraits();
+    }
+
+    @Override
+    public SQLDialect getSQLDialect() {
         return new MySQLTraits();
     }
 
