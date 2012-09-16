@@ -19,7 +19,7 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- *
+ * Will hold metadata information about a system table
  * @author mabe02
  */
 public class SystemTable {

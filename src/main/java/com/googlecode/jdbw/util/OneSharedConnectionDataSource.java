@@ -19,20 +19,43 @@
 
 package com.googlecode.jdbw.util;
 
+import com.googlecode.jdbw.DataSourceFactory;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
- *
+ * Very primitive database connection source which only keeps one connection
+ * in the pool. There is no reconnection logic or anything, it just hands out
+ * the same connection to one user at a time. Calling getConnection() on this
+ * object while another process is using that connection will block until the
+ * connection is returned to the pool.
  * @author mabe02
  */
 public class OneSharedConnectionDataSource implements DataSource {
+    
+    public static class Factory implements DataSourceFactory {
+        public DataSource newDataSource(String jdbcUrl, Properties properties) {
+            try {
+                return new OneSharedConnectionDataSource(
+                        DriverManager.getConnection(jdbcUrl, properties));
+            }
+            catch(SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        public void close(DataSource previouslyConstructedDataSource) {
+            ((OneSharedConnectionDataSource)previouslyConstructedDataSource).close();
+        }        
+    }
     
     private final Queue<Connection> connectionQueue;
 

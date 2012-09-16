@@ -16,39 +16,35 @@
  * 
  * Copyright (C) 2007-2012 mabe02
  */
-package com.googlecode.jdbw.server.mysql;
+
+package com.googlecode.jdbw.server.h2;
 
 import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.DatabaseServerTypes;
-import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.server.MultiCatalogDatabaseServer;
+import com.googlecode.jdbw.server.NetworkDatabaseServer;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
+import com.googlecode.jdbw.server.UserAuthenticatedDatabaseServer;
 import java.util.Properties;
 
 /**
- * This class represents a MySQL database server that is connected to over a
- * TCP/IP network. 
+ *
  * @author mabe02
  */
-public class MySQLServer extends StandardDatabaseServer {
+public class H2NetworkServer extends StandardDatabaseServer implements NetworkDatabaseServer, MultiCatalogDatabaseServer, UserAuthenticatedDatabaseServer, H2Server {
 
-    public MySQLServer(String hostname, int port, String catalog, String username, String password) {
-        this(new MySQLDefaultJDBCDriverDescriptor(), hostname, port, catalog, username, password);
+    public H2NetworkServer(String hostname, int port, String catalog, String username, String password) {
+        super(new H2JDBCDriverDescriptor(), hostname, port, catalog, username, password);
     }
 
-    public MySQLServer(JDBCDriverDescriptor driverDescriptor, String hostname, int port, String catalog, String username, String password) {
-        super(driverDescriptor, hostname, port, catalog, username, password);
-    }
-
-    @Override
     public DatabaseServerType getServerType() {
-        return DatabaseServerTypes.MYSQL;
+        return new H2ServerTypes.Network();
     }
-
+    
     @Override
     public Properties getConnectionProperties() {
         Properties properties = new Properties();
-        properties.setProperty("user", getUsername());
-        properties.setProperty("password", getPassword());
+        properties.setProperty("USER", getUsername());
+        properties.setProperty("PASSWORD", getPassword());
         return properties;
     }
 }

@@ -16,25 +16,30 @@
  * 
  * Copyright (C) 2007-2012 mabe02
  */
+package com.googlecode.jdbw.server.h2;
 
-package com.googlecode.jdbw.server.sybase;
-
-import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.server.AbstractDatabaseType;
 
 /**
- * This is a driver descriptor for the Sybase jconn3 driver, 
- * {@code com.sybase.jdbc3.jdbc.SybDriver}.
+ *
  * @author mabe02
  */
-public class SybaseJConn3JDBCDriverDescriptor implements JDBCDriverDescriptor {
-
-    @Override
-    public String formatJDBCUrl(String host, int port, String defaultCatalog) {
-        return "jdbc:sybase:Tds:" + host + ":" + port + "/" + defaultCatalog;
+public class H2ServerTypes {
+    private H2ServerTypes() {}
+    
+    public static class InMemory extends AbstractDatabaseType {
+        public String getName() {
+            return "H2 in-memory";
+        }        
     }
-
-    @Override
-    public String getDriverClassName() {
-        return "com.sybase.jdbc3.jdbc.SybDriver";
+    public static class FileBased extends AbstractDatabaseType {
+        public String getName() {
+            return "H2 file based";
+        }        
+    }
+    public static class Network extends AbstractDatabaseType {
+        public String getName() {
+            return "H2 TCP/IP";
+        }        
     }
 }

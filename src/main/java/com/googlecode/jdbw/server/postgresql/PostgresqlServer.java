@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 mabe02
  */
-package com.googlecode.jdbw.server.mysql;
+package com.googlecode.jdbw.server.postgresql;
 
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
@@ -25,23 +25,34 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
 import java.util.Properties;
 
 /**
- * This class represents a MySQL database server that is connected to over a
- * TCP/IP network. 
+ * This class represents a PostgreSQL server connected to over a TCP/IP network.
+ * 
+ * @see StandardDatabaseServer
  * @author mabe02
  */
-public class MySQLServer extends StandardDatabaseServer {
-
-    public MySQLServer(String hostname, int port, String catalog, String username, String password) {
-        this(new MySQLDefaultJDBCDriverDescriptor(), hostname, port, catalog, username, password);
+public class PostgresqlServer extends StandardDatabaseServer {
+    public PostgresqlServer(
+            String hostname, 
+            int port, 
+            String catalog, 
+            String username, 
+            String password) {
+        this(new PostgresqlJDBCDriverDescriptor(), hostname, port, catalog, username, password);
     }
 
-    public MySQLServer(JDBCDriverDescriptor driverDescriptor, String hostname, int port, String catalog, String username, String password) {
+    public PostgresqlServer(
+            JDBCDriverDescriptor driverDescriptor, 
+            String hostname, 
+            int port, 
+            String catalog, 
+            String username, 
+            String password) {
         super(driverDescriptor, hostname, port, catalog, username, password);
     }
 
     @Override
     public DatabaseServerType getServerType() {
-        return DatabaseServerTypes.MYSQL;
+        return DatabaseServerTypes.POSTGRESQL;
     }
 
     @Override

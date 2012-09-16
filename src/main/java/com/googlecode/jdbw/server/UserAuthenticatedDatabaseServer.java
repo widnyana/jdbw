@@ -22,7 +22,7 @@ package com.googlecode.jdbw.server;
 import com.googlecode.jdbw.DatabaseServer;
 
 /**
- *
+ * A database server which is using username/password authentication for access
  * @author mabe02
  */
 public interface UserAuthenticatedDatabaseServer extends DatabaseServer {

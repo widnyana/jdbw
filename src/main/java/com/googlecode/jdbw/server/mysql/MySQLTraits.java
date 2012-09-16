@@ -29,7 +29,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
+ * This class implements various traits and dialectal features of the 
+ * MySQL-brand SQL.
  * @author mabe02
  */
 class MySQLTraits extends DefaultDatabaseServerTraits {

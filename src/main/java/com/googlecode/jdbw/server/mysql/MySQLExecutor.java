@@ -26,7 +26,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- *
+ * Special MySQL SQL executor that makes sure results are coming back streaming
+ * (instead of pre-caching the whole result) and also disables generated keys
+ * retrieval for batch queries (this causes errors otherwise).
+ * 
  * @author mabe02
  */
 class MySQLExecutor extends SQLExecutorImpl {

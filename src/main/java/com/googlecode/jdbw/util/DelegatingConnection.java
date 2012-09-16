@@ -1,22 +1,3 @@
-/*
- * This file is part of jdbw (http://code.google.com/p/jdbw/).
- * 
- * jdbw is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * Copyright (C) 2007-2012 mabe02
- */
-
 package com.googlecode.jdbw.util;
 
 import java.sql.*;
@@ -26,9 +7,13 @@ import java.util.concurrent.Executor;
 
 /**
  * This class is stolen from the Apache connection pool project,
- * I take no credit for it
+ * I take no credit for it!
+ * 
+ * <p>The class (in this form) is probably under an Apache license rather than 
+ * LGPL as the rest of this project is, since I derived it from Apache 
+ * licensed source code.
  */
-public abstract class DelegatingConnection implements Connection 
+abstract class DelegatingConnection implements Connection 
 {
     protected Connection _conn = null;
     protected boolean _closed = false;
@@ -42,7 +27,7 @@ public abstract class DelegatingConnection implements Connection
      *
      * @param c the {@link Connection} to delegate all calls to.
      */
-    public DelegatingConnection(Connection c) {
+    DelegatingConnection(Connection c) {
         super();
         _conn = c;
     }

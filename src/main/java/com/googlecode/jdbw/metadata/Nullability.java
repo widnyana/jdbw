@@ -19,12 +19,30 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- *
+ * This enum represents the state of table column as to whether it can be 
+ * assigned the {@code null} value or not. This special value has the meaning
+ * of marking the absence of a value from the column. If the column is <i>not 
+ * nullable</i>, it must always have a valid value that conforms to the data 
+ * type.
+ * 
+ * @see Column
  * @author mabe02
  */
 public enum Nullability {
 
+    /**
+     * The column may contain {@code null} values
+     */
     NULLABLE,
+    
+    /**
+     * The column may not contain {@code null} values
+     */
     NOT_NULLABLE,
+    
+    /**
+     * This value means that either the JDBC driver or the database server does
+     * not expose information of nullability to us
+     */
     UNKNOWN
 }

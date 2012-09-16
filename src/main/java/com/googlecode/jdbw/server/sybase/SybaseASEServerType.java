@@ -20,6 +20,7 @@
 package com.googlecode.jdbw.server.sybase;
 
 import com.googlecode.jdbw.DatabaseServerTraits;
+import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
 import javax.sql.DataSource;
@@ -40,6 +41,11 @@ public class SybaseASEServerType extends AbstractDatabaseType {
         return new SybaseASESQLDialect();
     }
 
+    @Override
+    public SQLDialect getSQLDialect() {
+        return new SybaseASESQLDialect();
+    }
+    
     @Override
     public MetaDataResolver createMetaDataResolver(DataSource dataSource) {
         return new SybaseASEMetaDataResolver(dataSource);

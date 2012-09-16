@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Sybase SQL dialect specific traits
  * @author mabe02
  */
 public class SybaseASESQLDialect extends DefaultDatabaseServerTraits {

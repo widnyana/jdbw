@@ -22,7 +22,8 @@ package com.googlecode.jdbw.util;
 import java.util.List;
 
 /**
- *
+ * You shouldn't need to care about this class, we're just using it internally
+ * for some common string operations.
  * @author mabe02
  */
 public class StringUtils
@@ -33,18 +34,6 @@ public class StringUtils
         for(String replicatedDatabase: list)
             sb.append(replicatedDatabase).append(separator);
         sb.delete(sb.length()-separator.length(), sb.length());
-        return sb.toString();
-    }
-
-    public static String passwordProtect(String string)
-    {
-        if(string == null)
-            return null;
-        
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < string.length(); i++)
-            sb.append("*");
-        
         return sb.toString();
     }
 }
