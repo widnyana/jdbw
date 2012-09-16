@@ -31,7 +31,7 @@ import javax.sql.DataSource;
  * provide a way to close this data source.
  * @author mabe02
  */
-public interface DataSourceCreator {
+public interface DataSourceFactory {
     /**
      * Creates a new {@code DataSource} using supplied connection configuration
      * @param jdbcUrl JDBC url to connect to

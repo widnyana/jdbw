@@ -48,7 +48,7 @@ public abstract class AbstractDatabaseServer implements DatabaseServer {
         return new Properties();
     }
     
-    public DatabaseConnection connect(final DataSourceCreator dataSourceFactory) {
+    public DatabaseConnection connect(final DataSourceFactory dataSourceFactory) {
         registerJDBCDriver(driverDescriptor.getDriverClassName());
         return new DatabaseConnectionImpl(
                 dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),

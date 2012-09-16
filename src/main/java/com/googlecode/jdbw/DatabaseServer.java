@@ -40,7 +40,7 @@ public interface DatabaseServer {
      * @param dataSourceFactory Factory to use when creating the DataSource
      * @return DatabaseConnection connected to the server
      */
-    DatabaseConnection connect(DataSourceCreator dataSourceFactory);
+    DatabaseConnection connect(DataSourceFactory dataSourceFactory);
     
     /**
      * @return Extra properties to use when connecting to this server
