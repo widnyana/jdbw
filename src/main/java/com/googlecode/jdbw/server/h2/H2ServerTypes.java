@@ -18,6 +18,8 @@
  */
 package com.googlecode.jdbw.server.h2;
 
+import com.googlecode.jdbw.DatabaseServerTraits;
+import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
 
 /**
@@ -29,6 +31,16 @@ public class H2ServerTypes {
     
     public static abstract class H2ServerType extends AbstractDatabaseType {
         protected H2ServerType() {}
+
+        @Override
+        public DatabaseServerTraits getTraits() {
+            return new H2Traits();
+        }
+
+        @Override
+        public SQLDialect getSQLDialect() {
+            return new H2Traits();
+        }
     }
     
     public static class InMemory extends H2ServerType {
