@@ -57,7 +57,9 @@ public class AutoExecutor implements SQLExecutor {
                     throw e;  //Syntax error?
                 }
             } finally {
-                connection.close();
+                if(connection != null) {
+                    connection.close();
+                }
             }
         }
     }
