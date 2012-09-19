@@ -36,8 +36,8 @@ public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
         return "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1";
     }
     
-    public String formatJDBCUrlForFile(File file) {
-        return "jdbc:h2:file:" + file.getAbsolutePath();
+    public String formatJDBCUrlForFile(String databaseFilePrefix) {
+        return "jdbc:h2:file:" + databaseFilePrefix;
     }
     
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {

@@ -22,9 +22,9 @@ package com.googlecode.jdbw.server.h2;
 import com.googlecode.jdbw.DataSourceFactory;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseServerType;
+import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.server.AbstractDatabaseServer;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
-import java.io.File;
 
 /**
  *
@@ -32,20 +32,20 @@ import java.io.File;
  */
 public class H2FileBasedServer extends AbstractDatabaseServer implements H2Server {
     
-    private final File file;
+    private final String databaseFilePrefix;
 
-    public H2FileBasedServer(File file) {
+    public H2FileBasedServer(String databaseFilePrefix) {
         super(new H2JDBCDriverDescriptor());
-        this.file = file;
+        this.databaseFilePrefix = databaseFilePrefix;
     }
 
     @Override
     protected String getJDBCUrl() {
-        return ((H2JDBCDriverDescriptor)getDriverDescriptor()).formatJDBCUrlForFile(file);
+        return ((H2JDBCDriverDescriptor)getDriverDescriptor()).formatJDBCUrlForFile(databaseFilePrefix);
     }
     
     public DatabaseServerType getServerType() {
-        return new H2ServerTypes.FileBased();
+        return DatabaseServerTypes.H2_FILE;
     }
 
     public DatabaseConnection connect() {

@@ -27,17 +27,21 @@ import com.googlecode.jdbw.server.AbstractDatabaseType;
 public class H2ServerTypes {
     private H2ServerTypes() {}
     
-    public static class InMemory extends AbstractDatabaseType {
+    public static abstract class H2ServerType extends AbstractDatabaseType {
+        protected H2ServerType() {}
+    }
+    
+    public static class InMemory extends H2ServerType {
         public String getName() {
             return "H2 in-memory";
         }        
     }
-    public static class FileBased extends AbstractDatabaseType {
+    public static class FileBased extends H2ServerType {
         public String getName() {
             return "H2 file based";
         }        
     }
-    public static class Network extends AbstractDatabaseType {
+    public static class Network extends H2ServerType {
         public String getName() {
             return "H2 TCP/IP";
         }        
