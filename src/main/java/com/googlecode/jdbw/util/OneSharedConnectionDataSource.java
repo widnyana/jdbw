@@ -57,7 +57,7 @@ public class OneSharedConnectionDataSource implements DataSource {
         }        
     }
     
-    private final Queue<Connection> connectionQueue;
+    private final ArrayBlockingQueue<Connection> connectionQueue;
 
     public OneSharedConnectionDataSource(Connection connection) {
         this.connectionQueue = new ArrayBlockingQueue<Connection>(1);
@@ -73,11 +73,17 @@ public class OneSharedConnectionDataSource implements DataSource {
     }
 
     public Connection getConnection() throws SQLException {
-        return new DelegatingConnection(connectionQueue.poll()) {
-            public void close() throws SQLException {
-                connectionQueue.add(_conn);
-            }
-        };
+        try {
+            return new DelegatingConnection(connectionQueue.take()) {
+                public void close() throws SQLException {
+                    //We don't need to call .offer(...) here since the capacity is only 1
+                    connectionQueue.add(_conn);
+                }
+            };
+        }
+        catch(InterruptedException e) {
+            return null;
+        }
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
