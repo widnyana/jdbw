@@ -43,7 +43,7 @@ public class H2InMemoryServer extends AbstractDatabaseServer implements H2Server
     }
     
     public DatabaseServerType getServerType() {
-        return new H2ServerTypes.InMemory();
+        return H2ServerTypes.InMemory.INSTANCE;
     }
 
     @Override

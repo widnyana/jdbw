@@ -37,7 +37,7 @@ public class H2NetworkServer extends StandardDatabaseServer implements NetworkDa
     }
 
     public DatabaseServerType getServerType() {
-        return new H2ServerTypes.Network();
+        return H2ServerTypes.Network.INSTANCE;
     }
     
     @Override

@@ -36,12 +36,12 @@ public class DatabaseServerTypes {
     
     public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new CopyOnWriteArraySet<DatabaseServerType>();
     
-    public static final DatabaseServerType MYSQL = new MySQLServerType();
-    public static final DatabaseServerType SYBASE_ASE = new SybaseASEServerType();
-    public static final DatabaseServerType POSTGRESQL = new PostgresqlServerType();
-    public static final DatabaseServerType H2_IN_MEMORY = new H2ServerTypes.InMemory();
-    public static final DatabaseServerType H2_FILE = new H2ServerTypes.FileBased();
-    public static final DatabaseServerType H2_NETWORK = new H2ServerTypes.Network();
+    public static final DatabaseServerType MYSQL = MySQLServerType.INSTANCE;
+    public static final DatabaseServerType SYBASE_ASE = SybaseASEServerType.INSTANCE;
+    public static final DatabaseServerType POSTGRESQL = PostgresqlServerType.INSTANCE;
+    public static final DatabaseServerType H2_IN_MEMORY = H2ServerTypes.InMemory.INSTANCE;
+    public static final DatabaseServerType H2_FILE = H2ServerTypes.FileBased.INSTANCE;
+    public static final DatabaseServerType H2_NETWORK = H2ServerTypes.Network.INSTANCE;
     
     static {
         ALL_KNOWN_SERVER_TYPES.add(MYSQL);

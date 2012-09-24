@@ -31,6 +31,13 @@ import javax.sql.DataSource;
  * @author Martin Berglund
  */
 public class MySQLServerType extends AbstractDatabaseType {
+    
+    public static final MySQLServerType INSTANCE = new MySQLServerType();
+    
+    private MySQLServerType() {
+        
+    }
+    
     public String getName() {
         return "MySQL";
     }

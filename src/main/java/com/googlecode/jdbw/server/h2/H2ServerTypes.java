@@ -38,16 +38,28 @@ public class H2ServerTypes {
     }
     
     public static class InMemory extends H2ServerType {
+        
+        public static final InMemory INSTANCE = new InMemory();
+        private InMemory() { }
+        
         public String getName() {
             return "H2 in-memory";
         }        
     }
     public static class FileBased extends H2ServerType {
+        
+        public static final FileBased INSTANCE = new FileBased();        
+        private FileBased() { }
+        
         public String getName() {
             return "H2 file based";
         }        
     }
     public static class Network extends H2ServerType {
+        
+        public static final Network INSTANCE = new Network();        
+        private Network() { }
+        
         public String getName() {
             return "H2 TCP/IP";
         }        

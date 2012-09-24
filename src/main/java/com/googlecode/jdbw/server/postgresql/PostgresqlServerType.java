@@ -25,6 +25,13 @@ import com.googlecode.jdbw.server.AbstractDatabaseType;
  * @author Martin Berglund
  */
 public class PostgresqlServerType extends AbstractDatabaseType {
+    
+    public static final PostgresqlServerType INSTANCE = new PostgresqlServerType();
+    
+    private PostgresqlServerType() {
+        
+    }
+    
     @Override
     public String getName() {
         return "PostgreSQL";

@@ -30,6 +30,12 @@ import javax.sql.DataSource;
  */
 public class SybaseASEServerType extends AbstractDatabaseType {
     
+    public static final SybaseASEServerType INSTANCE = new SybaseASEServerType();
+    
+    private SybaseASEServerType() {
+        
+    }
+    
     @Override
     public String getName() {
         return "Sybase ASE";
