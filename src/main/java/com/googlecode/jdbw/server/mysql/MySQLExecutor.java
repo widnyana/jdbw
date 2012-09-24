@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.server.mysql;
@@ -30,7 +30,7 @@ import java.sql.Statement;
  * (instead of pre-caching the whole result) and also disables generated keys
  * retrieval for batch queries (this causes errors otherwise).
  * 
- * @author mabe02
+ * @author Martin Berglund
  */
 class MySQLExecutor extends SQLExecutorImpl {
 

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.util;
@@ -33,7 +33,7 @@ import java.util.List;
  * 
  * You normally create an SQLWorker on top of an auto-executor, but you can
  * also use a normal transaction.
- * @author mabe02
+ * @author Martin Berglund
  */
 public class SQLWorker
 {

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 package com.googlecode.jdbw.metadata;
 
@@ -24,7 +24,7 @@ package com.googlecode.jdbw.metadata;
  * services to give out specialized subclasses of the common meta data objects
  * instead of the default implementation, if they need to override some 
  * particular behavior. 
- * @author mabe02
+ * @author Martin Berglund
  */
 public interface MetaDataFactory {
 

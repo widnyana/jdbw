@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 package com.googlecode.jdbw.server.postgresql;
 
@@ -28,7 +28,7 @@ import java.util.Properties;
  * This class represents a PostgreSQL server connected to over a TCP/IP network.
  * 
  * @see StandardDatabaseServer
- * @author mabe02
+ * @author Martin Berglund
  */
 public class PostgresqlServer extends StandardDatabaseServer {
     public PostgresqlServer(

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.util;
@@ -36,7 +36,7 @@ import javax.sql.DataSource;
  * the same connection to one user at a time. Calling getConnection() on this
  * object while another process is using that connection will block until the
  * connection is returned to the pool.
- * @author mabe02
+ * @author Martin Berglund
  */
 public class OneSharedConnectionDataSource implements DataSource {
     

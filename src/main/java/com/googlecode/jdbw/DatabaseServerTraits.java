@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw;
@@ -24,7 +24,7 @@ import com.googlecode.jdbw.metadata.Column;
 /**
  * This interface holds some methods dealing with various database type specific
  * behaviors that are not strictly related to the SQL dialect
- * @author mabe02
+ * @author Martin Berglund
  */
 public interface DatabaseServerTraits {
     /**

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 package com.googlecode.jdbw.server;
 
@@ -25,7 +25,7 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
  * network and using a username/password for authentication. This class
  * provides some helper methods and some default implementations for the
  * interface methods. 
- * @author mabe02
+ * @author Martin Berglund
  */
 public abstract class StandardDatabaseServer extends AbstractDatabaseServer implements NetworkDatabaseServer, MultiCatalogDatabaseServer, UserAuthenticatedDatabaseServer {
 

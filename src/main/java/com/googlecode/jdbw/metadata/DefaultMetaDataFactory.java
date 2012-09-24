@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.metadata;
@@ -24,7 +24,7 @@ package com.googlecode.jdbw.metadata;
  * A default meta data factory implementation that will create default 
  * implementations of each meta data object ({@code Catalog}, {@code Table}, 
  * {@code Column}, etc...)
- * @author mabe02
+ * @author Martin Berglund
  */
 public class DefaultMetaDataFactory implements MetaDataFactory
 {

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.server;
@@ -23,7 +23,7 @@ import com.googlecode.jdbw.DatabaseServer;
 
 /**
  * A database server which is connected to over TCP/IP network
- * @author mabe02
+ * @author Martin Berglund
  */
 public interface NetworkDatabaseServer extends DatabaseServer {
     String getHostname();

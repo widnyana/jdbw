@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.impl;
@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Package private class used by {@code DatabaseConnectionImpl} as the 
  * transaction implementation.
- * @author mabe02
+ * @author Martin Berglund
  */
 class DatabaseTransactionImpl implements DatabaseTransaction
 {

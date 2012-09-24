@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.util;
@@ -34,7 +34,7 @@ package com.googlecode.jdbw.util;
  * instance of one of the subclasses of this class. There isn't a subclass for 
  * every conceivable datatype, but there should be one that is compatible with
  * what you need.
- * @author mabe02
+ * @author Martin Berglund
  */
 public class NullValue
 {

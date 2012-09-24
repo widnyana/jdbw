@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 package com.googlecode.jdbw.server;
 
@@ -36,7 +36,7 @@ import java.util.Date;
  * methods from there available and by extending this you can cover dialect and 
  * traits in one class.
  * 
- * @author mabe02
+ * @author Martin Berglund
  */
 public class DefaultDatabaseServerTraits extends DefaultSQLDialect implements DatabaseServerTraits {
 

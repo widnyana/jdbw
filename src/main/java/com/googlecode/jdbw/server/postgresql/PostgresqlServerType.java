@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 package com.googlecode.jdbw.server.postgresql;
 
@@ -22,7 +22,7 @@ import com.googlecode.jdbw.server.AbstractDatabaseType;
 
 /**
  *
- * @author mabe02
+ * @author Martin Berglund
  */
 public class PostgresqlServerType extends AbstractDatabaseType {
     @Override

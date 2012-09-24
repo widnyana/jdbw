@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw.server.sybase;
@@ -39,7 +39,7 @@ import javax.sql.DataSource;
 
 /**
  * A meta data resolver tuned to Sybase ASE
- * @author mabe02
+ * @author Martin Berglund
  */
 class SybaseASEMetaDataResolver extends MetaDataResolver {
 

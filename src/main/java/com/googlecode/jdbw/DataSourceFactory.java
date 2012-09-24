@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 
 package com.googlecode.jdbw;
@@ -29,7 +29,7 @@ import javax.sql.DataSource;
  * combination with a third-party database connection pool library to 
  * instantiate a {@code DataSource} object. The implementation must also 
  * provide a way to close this data source.
- * @author mabe02
+ * @author Martin Berglund
  */
 public interface DataSourceFactory {
     /**

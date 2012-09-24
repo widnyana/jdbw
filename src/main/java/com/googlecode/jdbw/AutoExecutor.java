@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- * Copyright (C) 2007-2012 mabe02
+ * Copyright (C) 2007-2012 Martin Berglund
  */
 package com.googlecode.jdbw;
 
@@ -28,7 +28,7 @@ import javax.sql.DataSource;
  * its SQL methods are called and return the connection and all resources once
  * done. If a query fails, it will investigate the error and retry if the
  * error is judged to be retryable. 
- * @author mabe02
+ * @author Martin Berglund
  */
 public class AutoExecutor implements SQLExecutor {
 
