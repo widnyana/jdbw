@@ -19,7 +19,6 @@
 
 package com.googlecode.jdbw.server.sybase;
 
-import com.googlecode.jdbw.DatabaseServerTraits;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
@@ -34,11 +33,6 @@ public class SybaseASEServerType extends AbstractDatabaseType {
     @Override
     public String getName() {
         return "Sybase ASE";
-    }
-
-    @Override
-    public DatabaseServerTraits getTraits() {
-        return new SybaseASESQLDialect();
     }
 
     @Override

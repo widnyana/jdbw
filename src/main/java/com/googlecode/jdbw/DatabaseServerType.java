@@ -37,11 +37,6 @@ public interface DatabaseServerType {
     String getName();
     
     /**
-     * @return Traits of the database server type
-     */
-    DatabaseServerTraits getTraits();
-    
-    /**
      * @return SQLDialect for the server type
      */
     SQLDialect getSQLDialect();

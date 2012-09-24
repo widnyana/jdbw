@@ -96,4 +96,19 @@ public interface SQLDialect {
      */
     String getSingleLineCommentPrefix();
     
+    /**
+     * @return True if this database can convert data of type fromSqlType to type toSqlType
+     */
+    boolean isCompatible(int fromSqlType, int toSqlType);
+        
+    /**
+     * Attempts to convert a particular value to an acceptable format. Given
+     * a column on the server and the value we want to put into this column,
+     * the method will try to convert the value into a format that is compatible
+     * with the column.
+     * @param targetColumn Column we want to insert into
+     * @param object Object to insert
+     * @return A compatible value for the target column
+     */
+    Object safeType(Column targetColumn, Object object);
 }

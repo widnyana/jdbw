@@ -22,7 +22,7 @@ package com.googlecode.jdbw.server.sybase;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.Nullability;
-import com.googlecode.jdbw.server.DefaultDatabaseServerTraits;
+import com.googlecode.jdbw.server.DefaultSQLDialect;
 import com.googlecode.jdbw.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,8 @@ import java.util.List;
  * Sybase SQL dialect specific traits
  * @author Martin Berglund
  */
-public class SybaseASESQLDialect extends DefaultDatabaseServerTraits {
+public class SybaseASESQLDialect extends DefaultSQLDialect {
+    
     @Override
     public String escapeString(String string)
     {

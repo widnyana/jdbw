@@ -21,7 +21,7 @@ package com.googlecode.jdbw.server.h2;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.Nullability;
-import com.googlecode.jdbw.server.DefaultDatabaseServerTraits;
+import com.googlecode.jdbw.server.DefaultSQLDialect;
 import com.googlecode.jdbw.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Martin Berglund
  */
-public class H2Traits extends DefaultDatabaseServerTraits {
+public class H2Traits extends DefaultSQLDialect {
     
     @Override
     public String escapeIdentifier(String identifier) {

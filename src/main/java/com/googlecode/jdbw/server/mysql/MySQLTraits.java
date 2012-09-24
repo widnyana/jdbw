@@ -21,7 +21,7 @@ package com.googlecode.jdbw.server.mysql;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.Nullability;
-import com.googlecode.jdbw.server.DefaultDatabaseServerTraits;
+import com.googlecode.jdbw.server.DefaultSQLDialect;
 import com.googlecode.jdbw.util.StringUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,7 +33,7 @@ import java.util.List;
  * MySQL-brand SQL.
  * @author Martin Berglund
  */
-class MySQLTraits extends DefaultDatabaseServerTraits {
+class MySQLTraits extends DefaultSQLDialect {
 
     //Package private
     MySQLTraits() {

@@ -32,12 +32,8 @@ import javax.sql.DataSource;
  */
 public abstract class AbstractDatabaseType implements DatabaseServerType {
 
-    public DatabaseServerTraits getTraits() {
-        return new DefaultDatabaseServerTraits();
-    }
-
     public SQLDialect getSQLDialect() {
-        return new DefaultDatabaseServerTraits();
+        return new DefaultSQLDialect();
     }
     
     @Override

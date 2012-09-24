@@ -21,6 +21,7 @@ package com.googlecode.jdbw.server;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.Index;
+import com.googlecode.jdbw.util.NullValue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Types;
@@ -127,6 +128,75 @@ public class DefaultSQLDialect implements SQLDialect {
     @Override
     public String getSingleLineCommentPrefix() {
         return "#";
+    }
+
+    @Override
+    public boolean isCompatible(int fromSqlType, int toSqlType) {
+        if(fromSqlType == toSqlType) {
+            return true;
+        }
+
+        Object exampleObject = createExampleObject(fromSqlType);
+        return isCompatible(exampleObject, toSqlType);
+    }
+
+    private boolean isCompatible(Object value, int toSqlType) {
+        try {
+            formatValue(value, toSqlType);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public Object safeType(Column targetColumn, Object object) {
+        if(object == null) {
+            return NullValue.fromSqlType(targetColumn.getSqlType());
+        }
+
+        if(object instanceof BigDecimal && isDatetime(targetColumn.getSqlType())) {
+            try {
+                synchronized(decimalTimestampFormat) {
+                    return decimalTimestampFormat.parse(((BigDecimal) object).toPlainString());
+                }
+            } catch(ParseException e) {
+                return object;
+            }
+        }
+        if(object instanceof Date && isBigDecimal(targetColumn.getSqlType())
+                && targetColumn.getColumnSize() == 17 && targetColumn.getDecimalDigits() == 3) {
+            synchronized(decimalTimestampFormat) {
+                return new BigDecimal(decimalTimestampFormat.format((Date) object));
+            }
+        }
+
+        return object;
+    }
+    
+    protected Object createExampleObject(int sqlType) {
+        if(isBigDecimal(sqlType)) {
+            return new BigDecimal("20100101000000.000");
+        } else if(isBinary(sqlType)) {
+            return new byte[1];
+        } else if(isBoolean(sqlType)) {
+            return true;
+        } else if(isDate(sqlType)) {
+            return new Date();
+        } else if(isDatetime(sqlType)) {
+            return new Date();
+        } else if(isFloatingPoint(sqlType)) {
+            return 17.3;
+        } else if(isInteger(sqlType)) {
+            return 17;
+        } else if(isString(sqlType)) {
+            return "sjutton";
+        } else if(isTime(sqlType)) {
+            return new Date();
+        } else {
+            throw new IllegalArgumentException("Called DefaultDatabaseServerTraits.createExampleObject with an "
+                    + "unimplemented java.sql.Types constant (" + sqlType + ")");
+        }
     }
     
     public static boolean isBigDecimal(int sqlType) {
