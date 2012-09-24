@@ -33,10 +33,10 @@ import java.util.List;
  * MySQL-brand SQL.
  * @author Martin Berglund
  */
-class MySQLTraits extends DefaultSQLDialect {
+class MySQLDialect extends DefaultSQLDialect {
 
     //Package private
-    MySQLTraits() {
+    MySQLDialect() {
     }
     
     private static final DateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

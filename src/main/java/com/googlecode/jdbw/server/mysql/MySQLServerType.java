@@ -37,7 +37,7 @@ public class MySQLServerType extends AbstractDatabaseType {
 
     @Override
     public SQLDialect getSQLDialect() {
-        return new MySQLTraits();
+        return new MySQLDialect();
     }
 
     @Override

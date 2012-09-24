@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Martin Berglund
  */
-public class H2Traits extends DefaultSQLDialect {
+public class H2SQLDialect extends DefaultSQLDialect {
     
     @Override
     public String escapeIdentifier(String identifier) {

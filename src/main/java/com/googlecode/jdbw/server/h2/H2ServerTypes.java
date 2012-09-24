@@ -33,7 +33,7 @@ public class H2ServerTypes {
 
         @Override
         public SQLDialect getSQLDialect() {
-            return new H2Traits();
+            return new H2SQLDialect();
         }
     }
     
