@@ -19,7 +19,7 @@
 
 package com.googlecode.jdbw;
 
-import java.util.Properties;
+import java.sql.SQLException;
 
 /**
  * This interface represents a database server and exposes methods for 
@@ -33,7 +33,16 @@ public interface DatabaseServer {
      * @return Type of the server
      */
     DatabaseServerType getServerType();
-
+    
+    /**
+     * Sets a property to be passed in when creating a database connection. These user-set 
+     * properties are added to the connection properties list at the end, overriding any properties
+     * that may already have been created by the DatabaseServer implementation.
+     * @param key Name of the JDBC connection property
+     * @param value Value for the JDBC connection property
+     */
+    void setConnectionProperty(String key, String value);
+    
     /**
      * Created a new DataSource to this server and returns it wrapped in a 
      * DatabaseConnection
@@ -43,7 +52,11 @@ public interface DatabaseServer {
     DatabaseConnection connect(DataSourceFactory dataSourceFactory);
     
     /**
-     * @return Extra properties to use when connecting to this server
+     * Tries to create a new database connection and immediately close it. If there is any 
+     * connection errors when trying to create the connection, the method will throw the 
+     * corresponding SQLException that was thrown by the JDBC driver.
+     * 
+     * @throws SQLException In case there was an error connecting to the database server
      */
-    Properties getConnectionProperties();
+    void testConnection() throws SQLException;
 }

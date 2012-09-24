@@ -20,6 +20,8 @@ package com.googlecode.jdbw.server;
 
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -39,25 +41,42 @@ import javax.sql.DataSource;
 public abstract class AbstractDatabaseServer implements DatabaseServer {
     
     private final JDBCDriverDescriptor driverDescriptor;
+    private final Properties additionalConnectionProperties;
 
     public AbstractDatabaseServer(JDBCDriverDescriptor driverDescriptor) {
         this.driverDescriptor = driverDescriptor;
+        this.additionalConnectionProperties = new Properties();
     }
     
-    public Properties getConnectionProperties() {
+    protected Properties getConnectionProperties() {
         return new Properties();
+    }
+    
+    private Properties assembleConnectionProperties() {
+        Properties properties = getConnectionProperties();
+        properties.putAll(additionalConnectionProperties);
+        return properties;
+    }
+
+    public void setConnectionProperty(String key, String value) {
+        additionalConnectionProperties.setProperty(key, value);
     }
     
     public DatabaseConnection connect(final DataSourceFactory dataSourceFactory) {
         registerJDBCDriver(driverDescriptor.getDriverClassName());
         return new DatabaseConnectionImpl(
-                dataSourceFactory.newDataSource(getJDBCUrl(), getConnectionProperties()),
+                dataSourceFactory.newDataSource(getJDBCUrl(), assembleConnectionProperties()),
                 new DataSourceCloser() {
                     public void closeDataSource(DataSource dataSource) {
                         dataSourceFactory.close(dataSource);
                     }
                 },
                 getServerType());
+    }
+
+    @Override
+    public void testConnection() throws SQLException {
+        DriverManager.getConnection(getJDBCUrl(), assembleConnectionProperties()).close();
     }
     
     protected abstract String getJDBCUrl();

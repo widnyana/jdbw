@@ -45,7 +45,7 @@ public class MySQLServer extends StandardDatabaseServer {
     }
 
     @Override
-    public Properties getConnectionProperties() {
+    protected Properties getConnectionProperties() {
         Properties properties = new Properties();
         properties.setProperty("user", getUsername());
         properties.setProperty("password", getPassword());

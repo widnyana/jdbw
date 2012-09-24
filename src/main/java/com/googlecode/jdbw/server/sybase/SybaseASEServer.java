@@ -66,7 +66,7 @@ public class SybaseASEServer extends StandardDatabaseServer {
     }
 
     @Override
-    public Properties getConnectionProperties() {
+    protected Properties getConnectionProperties() {
         Properties properties = new Properties();
         properties.setProperty("APPLICATIONNAME", processName);
         properties.setProperty("USER", getUsername());

@@ -41,7 +41,7 @@ public class H2NetworkServer extends StandardDatabaseServer implements NetworkDa
     }
     
     @Override
-    public Properties getConnectionProperties() {
+    protected Properties getConnectionProperties() {
         Properties properties = new Properties();
         properties.setProperty("USER", getUsername());
         properties.setProperty("PASSWORD", getPassword());
