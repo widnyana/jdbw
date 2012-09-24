@@ -76,6 +76,7 @@ public abstract class AbstractDatabaseServer implements DatabaseServer {
 
     @Override
     public void testConnection() throws SQLException {
+        registerJDBCDriver(driverDescriptor.getDriverClassName());
         DriverManager.getConnection(getJDBCUrl(), assembleConnectionProperties()).close();
     }
     
