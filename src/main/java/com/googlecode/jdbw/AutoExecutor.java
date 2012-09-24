@@ -24,10 +24,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 /**
- * An auto executor will automatically allocate a connection from the pool when
- * its SQL methods are called and return the connection and all resources once
- * done. If a query fails, it will investigate the error and retry if the
- * error is judged to be retryable. 
+ * An auto executor will automatically allocate a connection from the pool when its SQL methods are
+ * called and return the connection and all resources once done. If a query fails, it will
+ * investigate the error and retry if the error is judged to be retryable.
+ *
  * @author Martin Berglund
  */
 public class AutoExecutor implements SQLExecutor {
@@ -49,14 +49,17 @@ public class AutoExecutor implements SQLExecutor {
                 SQLExecutor executor = createSQLExecutor(connection);
                 executor.execute(handler, SQL, parameters);
                 return;
-            } catch(SQLException e) {
+            }
+            catch(SQLException e) {
                 if(serverType.isConnectionError(e)) {
                     sleep(500);
                     continue;
-                } else {
+                }
+                else {
                     throw e;  //Syntax error?
                 }
-            } finally {
+            }
+            finally {
                 if(connection != null) {
                     connection.close();
                 }
@@ -73,14 +76,17 @@ public class AutoExecutor implements SQLExecutor {
                 SQLExecutor executor = createSQLExecutor(connection);
                 executor.batchWrite(handler, SQL, parameters);
                 return;
-            } catch(SQLException e) {
+            }
+            catch(SQLException e) {
                 if(serverType.isConnectionError(e)) {
                     sleep(500);
                     continue;
-                } else {
+                }
+                else {
                     throw e;  //Syntax error?
                 }
-            } finally {
+            }
+            finally {
                 connection.close();
             }
         }
@@ -95,19 +101,22 @@ public class AutoExecutor implements SQLExecutor {
                 SQLExecutor executor = createSQLExecutor(connection);
                 executor.batchWrite(handler, batchedSQL);
                 return;
-            } catch(SQLException e) {
+            }
+            catch(SQLException e) {
                 if(serverType.isConnectionError(e)) {
                     sleep(500);
                     continue;
-                } else {
+                }
+                else {
                     throw e;
                 }
-            } finally {
+            }
+            finally {
                 connection.close();
             }
         }
     }
-    
+
     private SQLExecutor createSQLExecutor(Connection connection) {
         return serverType.createExecutor(connection);
     }
@@ -122,7 +131,8 @@ public class AutoExecutor implements SQLExecutor {
     private void sleep(int milliseconds) {
         try {
             Thread.sleep(milliseconds);
-        } catch(InterruptedException e) {
+        }
+        catch(InterruptedException e) {
         }
     }
 }
