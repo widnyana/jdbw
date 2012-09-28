@@ -24,6 +24,7 @@ import com.googlecode.jdbw.util.SQLWorker;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,6 +102,7 @@ public class JORMDatabase {
         sb.append(") VALUES(?)");
         U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), id);
         if(newId != null) {
+            newId = (U)normalizeGeneratedId(getIdType(type), newId);
             if(!getIdType(type).isAssignableFrom(newId.getClass())) {
                 throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                         "; expected id type " + getIdType(type).getName() + " but the auto generated object was a " + newId.getClass().getName());
@@ -314,6 +316,29 @@ public class JORMDatabase {
             sb.append(databaseConnection.getServerType().getSQLDialect().escapeIdentifier(columnName));
         }
         return sb.toString();
+    }
+    
+    private <U extends Comparable> U normalizeGeneratedId(Class<U> type, U generatedId) {
+        if(type.isAssignableFrom(generatedId.getClass())) {
+            return generatedId;
+        }
+        else if(type == Integer.class) {
+            if(generatedId.getClass() == Long.class) {
+                return (U)new Integer((int)((Long)generatedId).longValue());
+            }
+            else if(generatedId.getClass() == BigInteger.class) {
+                return (U)new Integer(((BigInteger)generatedId).intValue());
+            }
+        }
+        else if(type == Long.class) {
+            if(generatedId.getClass() == Integer.class) {
+                return (U)new Long(((Integer)generatedId).longValue());
+            }
+            else if(generatedId.getClass() == BigInteger.class) {
+                return (U)new Long(((BigInteger)generatedId).longValue());
+            }
+        }
+        return generatedId;
     }
     
     private <U extends Comparable<U>, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
