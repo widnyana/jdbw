@@ -144,10 +144,14 @@ public class JORMDatabase {
             sb.append(sqlDialect.escapeIdentifier(columnName[i]));
             sb.append(" = ?");
         }
+        sb.append(" WHERE ");
+        sb.append(sqlDialect.escapeIdentifier("id"));
+        sb.append(" = ?");
         
-        Object []values = new Object[columnName.length];
+        Object []values = new Object[columnName.length + 1];
         for(int i = 0; i < columnName.length; i++)
             values[i] = proxy.getValue(columnName[i]);
+        values[columnName.length] = entity.getId();
         new SQLWorker(databaseConnection.createAutoExecutor()).write(sb.toString(), values);
         return entity;
     }
