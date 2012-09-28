@@ -29,6 +29,7 @@ import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,13 +87,35 @@ public class JORMDatabase {
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException {
-        return newEntity(type, null);
+        return newEntity(type, (U)null);
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException {
-        if(id != null && !getIdType(type).isAssignableFrom(id.getClass())) {
+        return newEntities(type, Arrays.asList(id)).get(0);
+    }
+    
+    public <U extends Comparable<U>, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
+        if(numberOfEntities < 0) {
+            throw new IllegalArgumentException("Cannot call JORMDatabase.newEntities with < 0 entities to create");
+        }
+        if(numberOfEntities == 0) {
+            return Collections.emptyList();
+        }
+        List<U> nulls = new ArrayList<U>();
+        for(int i = 0; i < numberOfEntities; i++) {
+            nulls.add(null);
+        }
+        return newEntities(type, nulls);
+    }
+    
+    public <U extends Comparable<U>, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
+        return newEntities(type, Arrays.asList(ids));
+    }
+    
+    private <U extends Comparable<U>, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, List<U> ids) throws SQLException {
+        if(ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
-                    "; expected id type " + getIdType(type) + " but got a " + id.getClass());
+                    "; id parameter was empty");
         }
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         StringBuilder sb = new StringBuilder();
@@ -101,27 +124,57 @@ public class JORMDatabase {
         sb.append(" (");
         sb.append(sqlDialect.escapeIdentifier("id"));
         sb.append(") VALUES(?)");
-        U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), id);
-        if(newId != null) {
-            newId = (U)normalizeGeneratedId(getIdType(type), newId);
-            if(!getIdType(type).isAssignableFrom(newId.getClass())) {
-                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
-                        "; expected id type " + getIdType(type).getName() + " but the auto generated object was a " + newId.getClass().getName());
+        
+        List<Object[]> keysToBatchInsert = new ArrayList<Object[]>();
+        for(U id: ids) {
+            if(id == null) {
+               continue; 
             }
-            id = newId;
+            if(id != null && !getIdType(type).isAssignableFrom(id.getClass())) {
+                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
+                        "; expected id type " + getIdType(type) + " but got a " + id.getClass());
+            }
+            keysToBatchInsert.add(new Object[] { id });
         }
-        else if(id == null) {
+        if(keysToBatchInsert.size() > 0) {
+            databaseConnection.createAutoExecutor().batchWrite(sb.toString(), keysToBatchInsert);
+        }
+         
+        final List<U> keyToCreateEntitiesFrom = new ArrayList<U>();
+        for(U id: ids) {
+            if(id != null) {
+                keyToCreateEntitiesFrom.add(id);
+            }
+            else {
+                U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), (Object)null);
+                newId = (U)normalizeGeneratedId(getIdType(type), newId);
+                if(newId != null) {
+                    keyToCreateEntitiesFrom.add(newId);
+                }
+            }
+        }
+        if(keyToCreateEntitiesFrom.size() < ids.size()) {
             throw new IllegalStateException("After inserting row into " + getTableName(type) + ", couldn't "
                     + "figure out what primary key was assigned, your JDBC driver or database server "
                     + "probably don't support the feature to return auto-generated keys or the column "
                     + "isn't set up to auto generate keys");
         }
         
-        
-        Map<U, T> entityDataMap = getEntityDataMap(type);
-        T entity = newEntityProxy(type, id);
-        entityDataMap.put(id, entity);
-        return entity;
+        List<T> newEntities = new ArrayList<T>();
+        for(U id: keyToCreateEntitiesFrom) {
+            if(id == null)
+                continue;
+            
+            if(!getIdType(type).isAssignableFrom(id.getClass())) {
+                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
+                        "; expected id type " + getIdType(type).getName() + " but supplied (or auto-generated) id type was a " + id.getClass().getName());
+            }
+            Map<U, T> entityDataMap = getEntityDataMap(type);
+            T entity = newEntityProxy(type, id);
+            entityDataMap.put(id, entity);
+            newEntities.add(entity);
+        }
+        return newEntities;
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> T persist(T entity) throws SQLException {
@@ -130,12 +183,16 @@ public class JORMDatabase {
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> void persist(T... entities) throws SQLException {
-        if(entities == null || entities.length == 0) {
+        persist(Arrays.asList(entities));
+    }
+    
+    public <U extends Comparable<U>, T extends JORMEntity<U>> void persist(Collection<T> entities) throws SQLException {
+        if(entities == null || entities.isEmpty()) {
             return;
         }
         
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
-        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entities[0];
+        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entities.iterator().next();
         EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
         Class<T> entityType = proxy.getEntityType();
         
