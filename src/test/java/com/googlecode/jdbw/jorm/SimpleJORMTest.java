@@ -142,6 +142,27 @@ public class SimpleJORMTest {
     }
     
     @Test
+    public void canBatchInsertMultipleRows() throws ParseException, SQLException {
+        JORMDatabase jorm = new JORMDatabase(h2);
+        jorm.register(Person.class);
+        Person reinhard = jorm.newEntity(Person.class)
+                                .setName("Reinhard Mey")
+                                .setAge(69)
+                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"));
+        Person evert = jorm.newEntity(Person.class)
+                                .setName("Evert Taube")
+                                .setAge(85)
+                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1890-03-12"));
+        jorm.persist(reinhard, evert);
+        jorm.refresh();
+        assertNotNull(jorm.get(Person.class, 4));
+        assertEquals(reinhard, jorm.get(Person.class, 4));
+        assertNotNull(jorm.get(Person.class, 5));
+        assertEquals(evert, jorm.get(Person.class, 5));
+        assertEquals("Elvis Presley", jorm.get(Person.class, 1).getName());
+    }
+    
+    @Test
     public void testingEquality() {
         JORMDatabase jorm = new JORMDatabase(h2);
         jorm.register(Person.class);

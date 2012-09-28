@@ -20,6 +20,7 @@ package com.googlecode.jdbw.jorm;
 
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
+import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -124,14 +125,23 @@ public class JORMDatabase {
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> T persist(T entity) throws SQLException {
+        persist(entity, null);
+        return entity;
+    }
+    
+    public <U extends Comparable<U>, T extends JORMEntity<U>> void persist(T... entities) throws SQLException {
+        if(entities == null || entities.length == 0) {
+            return;
+        }
+        
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
-        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entity;
+        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entities[0];
         EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
         Class<T> entityType = proxy.getEntityType();
         
         String[] columnName = getClassTableMapping(entityType).getNonIdColumns();
         if(columnName.length == 0)
-            return entity;
+            return;
         
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
@@ -148,12 +158,21 @@ public class JORMDatabase {
         sb.append(sqlDialect.escapeIdentifier("id"));
         sb.append(" = ?");
         
-        Object []values = new Object[columnName.length + 1];
-        for(int i = 0; i < columnName.length; i++)
-            values[i] = proxy.getValue(columnName[i]);
-        values[columnName.length] = entity.getId();
-        new SQLWorker(databaseConnection.createAutoExecutor()).write(sb.toString(), values);
-        return entity;
+        List<Object[]> batches = new ArrayList<Object[]>();
+        for(T entity: entities) {
+            if(entity == null)
+                continue;
+            
+            Object []values = new Object[columnName.length + 1];
+            for(int i = 0; i < columnName.length; i++)
+                values[i] = proxy.getValue(columnName[i]);
+            values[columnName.length] = entity.getId();
+            batches.add(values);
+        }
+        if(batches.isEmpty()) {
+            return;
+        }
+        databaseConnection.createAutoExecutor().batchWrite(new BatchUpdateHandlerAdapter(), sb.toString(), batches);
     }
         
     public void refresh() {
