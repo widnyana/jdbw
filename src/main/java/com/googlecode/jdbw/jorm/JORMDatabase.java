@@ -162,7 +162,7 @@ public class JORMDatabase {
     }
     
     public void refresh(Executor executor) {
-        for(final Class entityType: getAllKnownEntityTypes()) {
+        for(final Class entityType: (List<Class>)getAllKnownEntityTypes()) {
             executor.execute(new Runnable() {
                 public void run() {
                     refresh(entityType);
@@ -336,7 +336,7 @@ public class JORMDatabase {
         }
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> List<Class<T>> getAllKnownEntityTypes() {
+    private List<Class> getAllKnownEntityTypes() {
         synchronized(datastore) {
             return Collections.unmodifiableList(new ArrayList(datastore.keySet()));
         }
