@@ -53,7 +53,7 @@ class MySQLExecutor extends SQLExecutorImpl {
     }
 
     @Override
-    protected PreparedStatement prepareUpdateStatement(String SQL) throws SQLException {
+    protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
         return ps;
     }
