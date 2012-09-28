@@ -65,6 +65,14 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
             statement.setMaxRows(handler.getMaxRowsToFetch());
             statement.execute();
+            
+            if(isInsertSQL(SQL)) {
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+                while(generatedKeys.next()) {
+                    handler.onGeneratedKey(generatedKeys.getObject(1));
+                }
+                generatedKeys.close();
+            }
 
             while(true) {
                 resultSet = statement.getResultSet();
@@ -100,7 +108,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                     else
                         handler.onUpdateCount(updateCount);
                 }
-
+                
                 if(statement.getMoreResults())
                     if(!handler.nextResultSet())
                         break;
@@ -173,7 +181,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         return connection.prepareStatement(SQL);
     }
 
-    protected PreparedStatement prepareUpdateStatement(String SQL) throws SQLException
+    protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException
     {
         return connection.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
     }
@@ -185,7 +193,10 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
     protected PreparedStatement prepareExecuteStatement(String SQL) throws SQLException
     {
-        return connection.prepareStatement(SQL);
+        if(isInsertSQL(SQL))
+            return prepareInsertStatement(SQL);
+        else
+            return connection.prepareStatement(SQL);
     }
 
     protected void executeUpdate(Statement statement, String SQL) throws SQLException
@@ -240,5 +251,9 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             statement.setTimestamp(i, new Timestamp(((java.util.Date)object).getTime()));
         else
             statement.setObject(i, object);
+    }
+
+    private boolean isInsertSQL(String SQL) {
+        return SQL.trim().substring(0, "insert".length()).toLowerCase().equals("insert");
     }
 }
