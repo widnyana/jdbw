@@ -22,7 +22,6 @@ import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

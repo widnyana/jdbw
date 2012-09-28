@@ -21,7 +21,6 @@ package com.googlecode.jdbw.jorm;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.util.SQLWorker;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -47,14 +46,20 @@ public class JORMDatabase {
         REFRESH_FIRST
     }
     
+    private static class EntityMapping {
+        Class<? extends JORMEntity> entityType;
+        ClassTableMapping tableMapping;
+        Class idType;
+    }
+    
     private final DatabaseConnection databaseConnection;
     private final Map<Class<? extends JORMEntity>, Map> datastore;
-    private final Map<Class<? extends JORMEntity>, ClassTableMapping> tableMapping;
+    private final Map<Class<? extends JORMEntity>, EntityMapping> tableMapping;
 
     public JORMDatabase(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
         this.datastore = new HashMap<Class<? extends JORMEntity>, Map>();
-        this.tableMapping = new HashMap<Class<? extends JORMEntity>, ClassTableMapping>();
+        this.tableMapping = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
@@ -83,6 +88,10 @@ public class JORMDatabase {
     }
     
     public <U extends Comparable<U>, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException {
+        if(id != null && !getIdType(type).isAssignableFrom(id.getClass())) {
+            throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
+                    "; expected id type " + getIdType(type) + " but got a " + id.getClass());
+        }
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
@@ -91,14 +100,21 @@ public class JORMDatabase {
         sb.append(sqlDialect.escapeIdentifier("id"));
         sb.append(") VALUES(?)");
         U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), id);
-        if(newId != null)
+        if(newId != null) {
+            if(!getIdType(type).isAssignableFrom(newId.getClass())) {
+                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
+                        "; expected id type " + getIdType(type).getName() + " but the auto generated object was a " + newId.getClass().getName());
+            }
             id = newId;
+        }
         else if(id == null) {
             throw new IllegalStateException("After inserting row into " + getTableName(type) + ", couldn't "
                     + "figure out what primary key was assigned, your JDBC driver or database server "
                     + "probably don't support the feature to return auto-generated keys or the column "
                     + "isn't set up to auto generate keys");
-        }        
+        }
+        
+        
         Map<U, T> entityDataMap = getEntityDataMap(type);
         T entity = newEntityProxy(type, id);
         entityDataMap.put(id, entity);
@@ -199,7 +215,31 @@ public class JORMDatabase {
                 throw new IllegalArgumentException("Can't register " + entityType.getName() + 
                         " because it's already registered");
             }
-            tableMapping.put(entityType, classTableMapping);
+            
+            //Try to determine the type of the id
+            Type idType = null;
+            for(Type type: entityType.getGenericInterfaces()) {
+                if(type instanceof ParameterizedType) {
+                    ParameterizedType ptype = (ParameterizedType)type;
+                    if(ptype.getRawType() == JORMEntity.class) {
+                        idType = (Class)ptype.getActualTypeArguments()[0];
+                        break;
+                    }
+                }
+            }
+            if(idType == null) {
+                throw new IllegalArgumentException("Could not determine the id type for " + entityType.getSimpleName());
+            }
+            else if(idType instanceof Class == false) {
+                throw new IllegalArgumentException("Illegal id type for " + entityType.getSimpleName() + " (" + idType.toString() + " isn't a class)");
+            }
+            
+            EntityMapping entityMapping = new EntityMapping();
+            entityMapping.entityType = entityType;
+            entityMapping.tableMapping = classTableMapping;
+            entityMapping.idType = (Class)idType;
+            
+            tableMapping.put(entityType, entityMapping);
             synchronized(datastore) {
                 datastore.put(entityType, new ConcurrentHashMap());
             }
@@ -281,6 +321,14 @@ public class JORMDatabase {
     }
     
     private <U extends Comparable<U>, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityType) {
+        return getMapping(entityType).tableMapping;
+    }
+    
+    private <U extends Comparable<U>, T extends JORMEntity<U>> Class getIdType(Class<T> entityType) {
+        return getMapping(entityType).idType;
+    }
+    
+    private <U extends Comparable<U>, T extends JORMEntity<U>> EntityMapping getMapping(Class<T> entityType) {
         synchronized(tableMapping) {
             if(!tableMapping.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access the table name of an unregistered entity type " + entityType.getName());
