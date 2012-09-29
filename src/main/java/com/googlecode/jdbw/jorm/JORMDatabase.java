@@ -65,16 +65,16 @@ public class JORMDatabase {
         this.tableMapping = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
+    public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
         Map<U, T> entityMap = getEntityDataMap(type);
         return new ArrayList<T>(entityMap.values());
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> T get(Class<T> type, U key) {
+    public <U, T extends JORMEntity<U>> T get(Class<T> type, U key) {
         return get(type, key, SearchPolicy.CHECK_DATABASE_IF_MISSING);
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
+    public <U, T extends JORMEntity<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
         if(searchPolicy == SearchPolicy.REFRESH_FIRST) {
             refresh(type, key);
         }
@@ -86,15 +86,15 @@ public class JORMDatabase {
         return entity;
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException {
+    public <U, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException {
         return newEntity(type, (U)null);
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException {
+    public <U, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException {
         return newEntities(type, Arrays.asList(id)).get(0);
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
+    public <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
         if(numberOfEntities < 0) {
             throw new IllegalArgumentException("Cannot call JORMDatabase.newEntities with < 0 entities to create");
         }
@@ -108,11 +108,11 @@ public class JORMDatabase {
         return newEntities(type, nulls);
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
+    public <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
         return newEntities(type, Arrays.asList(ids));
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, List<U> ids) throws SQLException {
+    private <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, List<U> ids) throws SQLException {
         if(ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                     "; id parameter was empty");
@@ -177,16 +177,16 @@ public class JORMDatabase {
         return newEntities;
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> T persist(T entity) throws SQLException {
+    public <U, T extends JORMEntity<U>> T persist(T entity) throws SQLException {
         persist(entity, null);
         return entity;
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> void persist(T... entities) throws SQLException {
+    public <U, T extends JORMEntity<U>> void persist(T... entities) throws SQLException {
         persist(Arrays.asList(entities));
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> void persist(Collection<T> entities) throws SQLException {
+    public <U, T extends JORMEntity<U>> void persist(Collection<T> entities) throws SQLException {
         if(entities == null || entities.isEmpty()) {
             return;
         }
@@ -253,7 +253,7 @@ public class JORMDatabase {
         }
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> void refresh(Class<T> entityType) {
+    public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType) {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         String sql = "SELECT " +
                         sqlDialect.escapeIdentifier("id") + 
@@ -263,7 +263,7 @@ public class JORMDatabase {
         queryAndProcess(entityType, sql, (U[])null);
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> void refresh(Class<T> entityType, U... keys) {
+    public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, U... keys) {
         if(keys.length == 0)
             return;
         
@@ -287,11 +287,11 @@ public class JORMDatabase {
         queryAndProcess(entityType, sql, keys);
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> void register(Class<T> entityType) {
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) {
         register(entityType, new DefaultClassTableMapping(entityType));
     }
     
-    public <U extends Comparable<U>, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
         synchronized(tableMapping) {
             if(tableMapping.containsKey(entityType)) {
                 throw new IllegalArgumentException("Can't register " + entityType.getName() + 
@@ -328,7 +328,7 @@ public class JORMDatabase {
         }
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> void queryAndProcess(Class<T> entityType, String sql, U... keys) {
+    private <U, T extends JORMEntity<U>> void queryAndProcess(Class<T> entityType, String sql, U... keys) {
         try {
             List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
             Set<U> idsReturned = new HashSet<U>();
@@ -380,7 +380,7 @@ public class JORMDatabase {
         }
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id) {
+    private <U, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id) {
         EntityProxy<U, T> proxy = new EntityProxy<U, T>(entityType, this, getClassTableMapping(entityType), id);
         return (T)Proxy.newProxyInstance(
                     ClassLoader.getSystemClassLoader(), 
@@ -388,7 +388,7 @@ public class JORMDatabase {
                     proxy);
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
+    private <U, T extends JORMEntity<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
         String[] columns = getClassTableMapping(entityType).getNonIdColumns();
         StringBuilder sb = new StringBuilder();
         for(String columnName: columns) {
@@ -398,7 +398,7 @@ public class JORMDatabase {
         return sb.toString();
     }
     
-    private <U extends Comparable> U normalizeGeneratedId(Class<U> type, U generatedId) {
+    private <U> U normalizeGeneratedId(Class<U> type, U generatedId) {
         if(type.isAssignableFrom(generatedId.getClass())) {
             return generatedId;
         }
@@ -421,19 +421,19 @@ public class JORMDatabase {
         return generatedId;
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
+    private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
         return getClassTableMapping(entityType).getTableName();
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityType) {
+    private <U, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityType) {
         return getMapping(entityType).tableMapping;
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> Class getIdType(Class<T> entityType) {
+    private <U, T extends JORMEntity<U>> Class getIdType(Class<T> entityType) {
         return getMapping(entityType).idType;
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> EntityMapping getMapping(Class<T> entityType) {
+    private <U, T extends JORMEntity<U>> EntityMapping getMapping(Class<T> entityType) {
         synchronized(tableMapping) {
             if(!tableMapping.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access the table name of an unregistered entity type " + entityType.getName());
@@ -447,7 +447,7 @@ public class JORMDatabase {
         }
     }
     
-    private <U extends Comparable<U>, T extends JORMEntity<U>> Map<U, T> getEntityDataMap(Class<T> entityType) {
+    private <U, T extends JORMEntity<U>> Map<U, T> getEntityDataMap(Class<T> entityType) {
         synchronized(datastore) {
             if(!datastore.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access unregistered entity type " + entityType.getName());

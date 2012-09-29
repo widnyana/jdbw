@@ -26,6 +26,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import static junit.framework.Assert.*;
@@ -81,7 +82,7 @@ public class SimpleJORMTest {
         jorm.register(Person.class);
         jorm.refresh();
         List<Person> persons = jorm.getAll(Person.class);
-        Collections.sort(persons);
+        Collections.sort(persons, new PersonIdComparator());
         assertEquals(3, persons.size());
         assertEquals((Integer)1, persons.get(0).getId());
         assertEquals("Elvis Presley", persons.get(0).getName());
@@ -199,5 +200,12 @@ public class SimpleJORMTest {
         assertEquals(brel2, brel1);
         assertTrue(brel1.equals(brel2));
         assertTrue(brel2.equals(brel1));
+    }
+    
+    private static class PersonIdComparator implements Comparator<Person> {
+        @Override
+        public int compare(Person o1, Person o2) {
+            return o1.getId().compareTo(o2.getId());
+        }        
     }
 }

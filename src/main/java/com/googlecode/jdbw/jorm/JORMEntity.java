@@ -18,6 +18,6 @@
  */
 package com.googlecode.jdbw.jorm;
 
-public interface JORMEntity<T extends Comparable<T>> extends Comparable<JORMEntity<T>> {
+public interface JORMEntity<T> {
     T getId();
 }

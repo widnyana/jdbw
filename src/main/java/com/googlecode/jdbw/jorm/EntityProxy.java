@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-class EntityProxy<U extends Comparable<U>, T extends JORMEntity<U>> implements InvocationHandler {
+class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
 
     private final Class<T> entityClass;
     private final JORMDatabase jorm;
@@ -60,13 +60,6 @@ class EntityProxy<U extends Comparable<U>, T extends JORMEntity<U>> implements I
                 method.getParameterTypes()[0] == Object.class) {
             
             return equals(args[0]);
-        }
-        else if(method.getName().equals("compareTo") && 
-                    args != null && 
-                    args.length > 0 && 
-                    entityClass.isAssignableFrom(args[0].getClass())) {
-            
-            return id.compareTo(((JORMEntity<U>)args[0]).getId());
         }
         else if(method.getName().startsWith("get") && method.getName().length() > 3 && method.getParameterTypes().length == 0) {
             String asColumnName = Character.toLowerCase(method.getName().charAt(3)) +
@@ -120,7 +113,7 @@ class EntityProxy<U extends Comparable<U>, T extends JORMEntity<U>> implements I
         return entityClass;
     }
     
-    static interface Resolver<U extends Comparable<U>, T extends JORMEntity<U>> {
+    static interface Resolver<U, T extends JORMEntity<U>> {
         EntityProxy<U, T> __underlying_proxy();
     }
 
