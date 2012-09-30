@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,18 +55,17 @@ public class JORMDatabase {
     }
     
     private final DatabaseConnection databaseConnection;
-    private final Map<Class<? extends JORMEntity>, Map> datastore;
+    private final EntityCacheManager cacheManager;
     private final Map<Class<? extends JORMEntity>, EntityMapping> tableMapping;
 
     public JORMDatabase(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
-        this.datastore = new HashMap<Class<? extends JORMEntity>, Map>();
+        this.cacheManager = new EntityCacheManager();
         this.tableMapping = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
     }
     
     public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
-        Map<U, T> entityMap = getEntityDataMap(type);
-        return new ArrayList<T>(entityMap.values());
+        return new ArrayList<T>(cacheManager.getCache(type).allValues());
     }
     
     public <U, T extends JORMEntity<U>> T get(Class<T> type, U key) {
@@ -78,8 +76,7 @@ public class JORMDatabase {
         if(searchPolicy == SearchPolicy.REFRESH_FIRST) {
             refresh(type, key);
         }
-        Map<U, T> entityMap = getEntityDataMap(type);
-        T entity = entityMap.get(key);
+        T entity = cacheManager.getCache(type).get(key);
         if(entity == null && searchPolicy == SearchPolicy.CHECK_DATABASE_IF_MISSING) {
             return get(type, key, SearchPolicy.REFRESH_FIRST);
         }
@@ -169,9 +166,8 @@ public class JORMDatabase {
                 throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                         "; expected id type " + getIdType(type).getName() + " but supplied (or auto-generated) id type was a " + id.getClass().getName());
             }
-            Map<U, T> entityDataMap = getEntityDataMap(type);
             T entity = newEntityProxy(type, id);
-            entityDataMap.put(id, entity);
+            cacheManager.getCache(type).put(entity);
             newEntities.add(entity);
         }
         return newEntities;
@@ -244,7 +240,7 @@ public class JORMDatabase {
     }
     
     public void refresh(Executor executor) {
-        for(final Class entityType: (List<Class>)getAllKnownEntityTypes()) {
+        for(final Class entityType: (List<Class>)cacheManager.getAllKnownEntityTypes()) {
             executor.execute(new Runnable() {
                 public void run() {
                     refresh(entityType);
@@ -322,9 +318,7 @@ public class JORMDatabase {
             entityMapping.idType = (Class)idType;
             
             tableMapping.put(entityType, entityMapping);
-            synchronized(datastore) {
-                datastore.put(entityType, new ConcurrentHashMap());
-            }
+            cacheManager.createDataCache(entityType);
         }
     }
     
@@ -332,14 +326,14 @@ public class JORMDatabase {
         try {
             List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
             Set<U> idsReturned = new HashSet<U>();
-            Map<U, T> entityDataMap = getEntityDataMap(entityType);
+            DataCache<U,T> entityDataMap = cacheManager.getCache(entityType);
             for(Object[] row: rows) {
                 U id = (U)row[0];
                 idsReturned.add(id);
                 T entity = null;
-                if(!entityDataMap.containsKey(id)) {
+                if(!entityDataMap.contains(id)) {
                     entity = newEntityProxy(entityType, id);
-                    entityDataMap.put(id, entity);
+                    entityDataMap.put(entity);
                 }
                 else {
                     entity = entityDataMap.get(id);
@@ -357,7 +351,7 @@ public class JORMDatabase {
             //Remove missing rows
             Set<U> missingKeys = new HashSet<U>();
             if(keys == null)
-                missingKeys.addAll(entityDataMap.keySet());
+                missingKeys.addAll(entityDataMap.allIds());
             else
                 missingKeys.addAll(Arrays.asList(keys));
             missingKeys.removeAll(idsReturned);
@@ -438,20 +432,6 @@ public class JORMDatabase {
             if(!tableMapping.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access the table name of an unregistered entity type " + entityType.getName());
             return tableMapping.get(entityType);
-        }
-    }
-    
-    private List<Class> getAllKnownEntityTypes() {
-        synchronized(datastore) {
-            return Collections.unmodifiableList(new ArrayList(datastore.keySet()));
-        }
-    }
-    
-    private <U, T extends JORMEntity<U>> Map<U, T> getEntityDataMap(Class<T> entityType) {
-        synchronized(datastore) {
-            if(!datastore.containsKey(entityType))
-                throw new IllegalArgumentException("Trying to access unregistered entity type " + entityType.getName());
-            return datastore.get(entityType);
         }
     }
 }
