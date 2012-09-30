@@ -26,15 +26,13 @@ import java.util.Map;
 class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
 
     private final Class<T> entityClass;
-    private final JORMDatabase jorm;
     private final ClassTableMapping mapping;
     
     private final U id;
     private final Map<String, Object> values;
     
-    EntityProxy(Class<T> entityClass, JORMDatabase jorm, ClassTableMapping mapping, U id) {
+    EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id) {
         this.entityClass = entityClass;
-        this.jorm = jorm;
         this.mapping = mapping;
         this.id = id;
         this.values = new HashMap<String, Object>();

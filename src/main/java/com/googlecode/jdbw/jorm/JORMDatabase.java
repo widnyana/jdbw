@@ -375,7 +375,7 @@ public class JORMDatabase {
     }
     
     private <U, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id) {
-        EntityProxy<U, T> proxy = new EntityProxy<U, T>(entityType, this, getClassTableMapping(entityType), id);
+        EntityProxy<U, T> proxy = new EntityProxy<U, T>(entityType, getClassTableMapping(entityType), id);
         return (T)Proxy.newProxyInstance(
                     ClassLoader.getSystemClassLoader(), 
                     new Class[] { entityType, EntityProxy.Resolver.class }, 
