@@ -31,10 +31,12 @@ public class DefaultClassTableMapping<U extends Comparable<U>, T extends JORMEnt
         this.entityType = entityType;
     }
 
+    @Override
     public String getTableName() {
         return entityType.getSimpleName();
     }
 
+    @Override
     public String[] getNonIdColumns() {
         List<String> columns = new ArrayList<String>();
         for(Method method: entityType.getMethods()) {
