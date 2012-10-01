@@ -26,14 +26,22 @@ import java.util.List;
 public class DefaultClassTableMapping<U extends Comparable<U>, T extends JORMEntity<U>> implements ClassTableMapping {
     
     private final Class<T> entityType;
+    private final String prefix;
+    private final String postfix;
 
     public DefaultClassTableMapping(Class<T> entityType) {
+        this(entityType, "", "");
+    }
+
+    public DefaultClassTableMapping(Class<T> entityType, String prefix, String postfix) {
         this.entityType = entityType;
+        this.prefix = prefix;
+        this.postfix = postfix;
     }
 
     @Override
     public String getTableName() {
-        return entityType.getSimpleName();
+        return prefix + entityType.getSimpleName() + postfix; 
     }
 
     @Override
