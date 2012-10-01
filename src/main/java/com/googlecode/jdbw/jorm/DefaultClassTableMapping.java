@@ -23,7 +23,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultClassTableMapping<U extends Comparable<U>, T extends JORMEntity<U>> implements ClassTableMapping {
+public class DefaultClassTableMapping<T extends JORMEntity> implements ClassTableMapping {
     
     private final Class<T> entityType;
     private final String prefix;
