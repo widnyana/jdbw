@@ -249,6 +249,17 @@ public class JORMDatabase {
         }
     }
     
+    public <U, T extends JORMEntity<U>> void refresh(T... entities) {
+        if(entities.length == 0)
+            return;
+        
+        List<U> keys = new ArrayList<U>();
+        for(T entity: entities) {
+            keys.add(entity.getId());
+        }
+        refresh(entities[0].getClass(), keys);
+    }
+    
     public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType) {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         String sql = "SELECT " +
@@ -256,11 +267,15 @@ public class JORMDatabase {
                         getNonIdColumnsForSelect(entityType) +
                         " FROM " + 
                         sqlDialect.escapeIdentifier(getTableName(entityType));
-        queryAndProcess(entityType, sql, (U[])null);
+        queryAndProcess(entityType, sql, null);
     }
     
     public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, U... keys) {
-        if(keys.length == 0)
+        refresh(entityType, Arrays.asList(keys));
+    }
+    
+    private <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, List<U> keys) {
+        if(keys.isEmpty())
             return;
         
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
@@ -272,12 +287,12 @@ public class JORMDatabase {
                         " WHERE " +
                         sqlDialect.escapeIdentifier("id") +
                         " IN (";
-        for(int i = 0; i < keys.length; i++) {
+        for(int i = 0; i < keys.size(); i++) {
             if(i > 0)
                 sql += ", ";
-            if(keys[i] == null)
+            if(keys.get(i) == null)
                 throw new IllegalArgumentException("Trying to refresh a " + entityType.getName() + " with key null");
-            sql += formatKey(keys[i]);
+            sql += formatKey(keys.get(i));
         }        
         sql += ")";
         queryAndProcess(entityType, sql, keys);
@@ -322,7 +337,7 @@ public class JORMDatabase {
         }
     }
     
-    private <U, T extends JORMEntity<U>> void queryAndProcess(Class<T> entityType, String sql, U... keys) {
+    private <U, T extends JORMEntity<U>> void queryAndProcess(Class<T> entityType, String sql, List<U> expectedKeys) {
         try {
             List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
             Set<U> idsReturned = new HashSet<U>();
@@ -350,10 +365,10 @@ public class JORMDatabase {
             
             //Remove missing rows
             Set<U> missingKeys = new HashSet<U>();
-            if(keys == null)
+            if(expectedKeys == null)
                 missingKeys.addAll(entityDataMap.allIds());
             else
-                missingKeys.addAll(Arrays.asList(keys));
+                missingKeys.addAll(expectedKeys);
             missingKeys.removeAll(idsReturned);
             for(U key: missingKeys) {
                 entityDataMap.remove(key);
