@@ -192,7 +192,7 @@ public class JORMDatabase {
         EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
         Class<T> entityType = proxy.getEntityType();
         
-        String[] columnName = getClassTableMapping(entityType).getNonIdColumns();
+        String[] columnName = getClassTableMapping(entityType).getNonIdColumns(entityType);
         if(columnName.length == 0)
             return;
         
@@ -284,7 +284,7 @@ public class JORMDatabase {
     }
     
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType) {
-        register(entityType, new DefaultClassTableMapping(entityType));
+        register(entityType, new DefaultClassTableMapping());
     }
     
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
@@ -383,7 +383,7 @@ public class JORMDatabase {
     }
     
     private <U, T extends JORMEntity<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
-        String[] columns = getClassTableMapping(entityType).getNonIdColumns();
+        String[] columns = getClassTableMapping(entityType).getNonIdColumns(entityType);
         StringBuilder sb = new StringBuilder();
         for(String columnName: columns) {
             sb.append(", ");
@@ -416,7 +416,7 @@ public class JORMDatabase {
     }
     
     private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
-        return getClassTableMapping(entityType).getTableName();
+        return getClassTableMapping(entityType).getTableName(entityType);
     }
     
     private <U, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityType) {

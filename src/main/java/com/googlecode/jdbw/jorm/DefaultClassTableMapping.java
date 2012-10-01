@@ -23,29 +23,31 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultClassTableMapping<T extends JORMEntity> implements ClassTableMapping {
+public class DefaultClassTableMapping implements ClassTableMapping {
     
-    private final Class<T> entityType;
     private final String prefix;
     private final String postfix;
 
-    public DefaultClassTableMapping(Class<T> entityType) {
-        this(entityType, "", "");
+    public DefaultClassTableMapping() {
+        this("");
+    }
+    
+    public DefaultClassTableMapping(String prefix) {
+        this("", "");
     }
 
-    public DefaultClassTableMapping(Class<T> entityType, String prefix, String postfix) {
-        this.entityType = entityType;
+    public DefaultClassTableMapping(String prefix, String postfix) {
         this.prefix = prefix;
         this.postfix = postfix;
     }
 
     @Override
-    public String getTableName() {
+    public <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
         return prefix + entityType.getSimpleName() + postfix; 
     }
 
     @Override
-    public String[] getNonIdColumns() {
+    public <U, T extends JORMEntity<U>> String[] getNonIdColumns(Class<T> entityType) {
         List<String> columns = new ArrayList<String>();
         for(Method method: entityType.getMethods()) {
             if((method.getModifiers() & Modifier.STATIC) != 0)

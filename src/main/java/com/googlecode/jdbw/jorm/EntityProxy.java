@@ -36,7 +36,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         this.mapping = mapping;
         this.id = id;
         this.values = new HashMap<String, Object>();
-        for(String columnName: mapping.getNonIdColumns())
+        for(String columnName: mapping.getNonIdColumns(entityClass))
             this.values.put(columnName, null);
     }
 
@@ -90,7 +90,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     }
 
     synchronized void populate(Object[] row) {
-        String[] columnNames = mapping.getNonIdColumns();
+        String[] columnNames = mapping.getNonIdColumns(entityClass);
         for(int i = 1; i < row.length; i++) {
             synchronized(values) {
                 String columnName = columnNames[i - 1];
