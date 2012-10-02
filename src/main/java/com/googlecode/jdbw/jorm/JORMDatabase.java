@@ -140,19 +140,20 @@ public class JORMDatabase {
         
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         ClassTableMapping tableMapping = getClassTableMapping(type);
-        Map<String, Object> entityInitData = getEntityInitializationData(type);
+        List<String> fieldNames = tableMapping.getFieldNames(type);
+        Object[] entityInitData = getEntityInitializationData(type);
         
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
         sb.append(sqlDialect.escapeIdentifier(getTableName(type)));
         sb.append(" (");
         sb.append(sqlDialect.escapeIdentifier("id"));
-        for(String fieldName: entityInitData.keySet()) {
+        for(String fieldName: fieldNames) {
             sb.append(", ");
             sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(type, fieldName)));
         }            
         sb.append(") VALUES(?");
-        for(int i = 0; i < entityInitData.size(); i++) {
+        for(int i = 0; i < entityInitData.length; i++) {
             sb.append(", ?");
         }
         sb.append(")");
@@ -166,12 +167,9 @@ public class JORMDatabase {
                 throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                         "; expected id type " + getIdType(type) + " but got a " + id.getClass());
             }
-            Object[] values = new Object[1 + entityInitData.size()];
+            Object[] values = new Object[1 + entityInitData.length];
             values[0] = id;
-            int counter = 1;
-            for(String field: entityInitData.keySet()) {
-                values[counter++] = entityInitData.get(field);
-            }
+            System.arraycopy(entityInitData, 0, values, 1, entityInitData.length);
             parameterValuesToInsert.add(values);
         }
         if(parameterValuesToInsert.size() > 0) {
@@ -184,12 +182,9 @@ public class JORMDatabase {
                 keyToCreateEntitiesFrom.add(id);
             }
             else {
-                Object[] parameters = new Object[1 + entityInitData.size()];
+                Object[] parameters = new Object[1 + entityInitData.length];
                 parameters[0] = null;
-                int counter = 1;
-                for(String field: entityInitData.keySet()) {
-                    parameters[counter++] = entityInitData.get(field);
-                }
+                System.arraycopy(entityInitData, 0, parameters, 1, entityInitData.length);
                 U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), parameters);
                 newId = (U)normalizeGeneratedId(getIdType(type), newId);
                 if(newId != null) {
@@ -438,7 +433,7 @@ public class JORMDatabase {
                 idsReturned.add(id);
                 T entity = null;
                 if(!entityDataMap.contains(id)) {
-                    entity = newEntityProxy(entityType, id, new TreeMap<String, Object>());
+                    entity = newEntityProxy(entityType, id, new Object[0]);
                     entityDataMap.put(entity);
                 }
                 else {
@@ -480,7 +475,7 @@ public class JORMDatabase {
         }
     }
     
-    private <U, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id, Map<String, Object> initializationData) {
+    private <U, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id, Object[] initializationData) {
         EntityProxy<U, T> proxy = new EntityProxy<U, T>(entityType, getClassTableMapping(entityType), id, initializationData);
         return (T)Proxy.newProxyInstance(
                     ClassLoader.getSystemClassLoader(), 
@@ -554,13 +549,13 @@ public class JORMDatabase {
         return null;
     }
     
-    private <U, T extends JORMEntity<U>> Map<String, Object> getEntityInitializationData(Class<T> entityClass) {
+    private <U, T extends JORMEntity<U>> Object[] getEntityInitializationData(Class<T> entityClass) {
+        List<String> entityFields = getEntityFields(entityClass);
         EntityInitializer initializer = getEntityInitializer(entityClass);
-        Map<String, Object> result = new TreeMap<String, Object>();
-        for(String fieldName: getEntityFields(entityClass)) {
-            Object initialValue = initializer.getInitialValue(entityClass, fieldName);
-            if(initialValue != null)
-                result.put(fieldName, initialValue);
+        Object[] result = new Object[entityFields.size()];
+        int counter = 0;
+        for(String fieldName: entityFields) {
+            result[counter++] = initializer.getInitialValue(entityClass, fieldName);            
         }
         return result;
     }

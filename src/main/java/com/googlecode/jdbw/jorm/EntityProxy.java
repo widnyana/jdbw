@@ -20,28 +20,56 @@ package com.googlecode.jdbw.jorm;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
 
+    private static final Map<Class, Map<String, Integer>> INDEX_REFERENCE = new HashMap<Class, Map<String, Integer>>();
+    
+    private static <U, T extends JORMEntity<U>> void indexClass(Class<T> entityClass, ClassTableMapping classTableMapping) {
+        synchronized(INDEX_REFERENCE) {
+            if(INDEX_REFERENCE.containsKey(entityClass))
+                return;
+            
+            Map<String, Integer> classFieldMap = new HashMap<String, Integer>();
+            int counter = 0;
+            for(String fieldName: classTableMapping.getFieldNames(entityClass)) {
+                classFieldMap.put(fieldName, counter++);
+            }
+            INDEX_REFERENCE.put(entityClass, classFieldMap);
+        }
+    }
+    
+    private static <U, T extends JORMEntity<U>> int getNumberOfFields(Class<T> entityClass) {
+        synchronized(INDEX_REFERENCE) {
+            return INDEX_REFERENCE.get(entityClass).size();
+        }
+    }
+    
+    private static <U, T extends JORMEntity<U>> int getFieldIndex(Class<T> entityClass, String field) {
+        synchronized(INDEX_REFERENCE) {
+            return INDEX_REFERENCE.get(entityClass).containsKey(field) ? 
+                        INDEX_REFERENCE.get(entityClass).get(field) : -1;
+        }
+    }
+    
     private final Class<T> entityClass;
-    private final ClassTableMapping mapping;
-    
+    private final ClassTableMapping mapping;    
     private final U id;
-    private final Map<String, Object> values;
+    private final Object[] values;
     
-    EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id, Map<String, Object> initData) {
+    EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id, Object[] initData) {
+        indexClass(entityClass, mapping);
         this.entityClass = entityClass;
         this.mapping = mapping;
         this.id = id;
-        this.values = new HashMap<String, Object>();
-        for(String fieldName: mapping.getFieldNames(entityClass))
-            this.values.put(fieldName, null);
-        values.putAll(initData);
+        this.values = Arrays.copyOf(initData, getNumberOfFields(entityClass));
     }
 
+    @Override
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if(method.getName().equals("getId") && args == null) {
             return id;
@@ -62,24 +90,23 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
             return equals(args[0]);
         }
         else if(method.getName().startsWith("get") && method.getName().length() > 3 && method.getParameterTypes().length == 0) {
-            String asColumnName = Character.toLowerCase(method.getName().charAt(3)) +
-                                    method.getName().substring(4);
-            if(!values.containsKey(asColumnName)) {
+            String asFieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
+            if(getFieldIndex(entityClass, asFieldName) == -1) {
                 throw new IllegalStateException("In method call to " + entityClass.getSimpleName() + 
-                        "." + method.getName() + ", couldn't find field " + asColumnName + " in " +
+                        "." + method.getName() + ", couldn't find field " + asFieldName + " in " +
                         "EntityProxy");
             }
-            return getValue(asColumnName);
+            return getValue(asFieldName);
         }
         else if(method.getName().startsWith("set") && method.getName().length() > 3 && method.getParameterTypes().length == 1) {
-            String asColumnName = Character.toLowerCase(method.getName().charAt(3)) +
+            String asFieldName = Character.toLowerCase(method.getName().charAt(3)) +
                                     method.getName().substring(4);
-            if(!values.containsKey(asColumnName)) {
+            if(getFieldIndex(entityClass, asFieldName) == -1) {
                 throw new IllegalStateException("In method call to " + entityClass.getSimpleName() + 
-                        "." + method.getName() + ", couldn't find field " + asColumnName + " in " +
+                        "." + method.getName() + ", couldn't find field " + asFieldName + " in " +
                         "EntityProxy");
             }
-            setValue(asColumnName, args[0]);
+            setValue(asFieldName, args[0]);
             if(method.getReturnType() != Void.class)
                 return proxy;
             else
@@ -92,21 +119,15 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     }
 
     synchronized void populate(Object[] row) {
-        List<String> fieldNames = mapping.getFieldNames(entityClass);
-        for(int i = 1; i < row.length; i++) {
-            synchronized(values) {
-                String columnName = fieldNames.get(i - 1);
-                values.put(columnName, row[i]);
-            }
-        }
+        System.arraycopy(row, 1, values, 0, values.length); //Remember, the id is at index 0, we don't want to copy that!
     }
     
     synchronized Object getValue(String columnName) {
-        return values.get(columnName);
+        return values[getFieldIndex(entityClass, columnName)];
     }
 
     private void setValue(String columnName, Object value) {
-        values.put(columnName, value);
+        values[getFieldIndex(entityClass, columnName)] = value;
     }
     
     Class<T> getEntityType() {
