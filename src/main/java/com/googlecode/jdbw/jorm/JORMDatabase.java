@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -361,17 +360,7 @@ public class JORMDatabase {
                         " because it's already registered");
             }
             
-            //Try to determine the type of the id
-            Type idType = null;
-            for(Type type: entityType.getGenericInterfaces()) {
-                if(type instanceof ParameterizedType) {
-                    ParameterizedType ptype = (ParameterizedType)type;
-                    if(ptype.getRawType() == JORMEntity.class) {
-                        idType = (Class)ptype.getActualTypeArguments()[0];
-                        break;
-                    }
-                }
-            }
+            Type idType = getEntityIdType(entityType);
             if(idType == null) {
                 throw new IllegalArgumentException("Could not determine the id type for " + entityType.getSimpleName());
             }
@@ -493,6 +482,24 @@ public class JORMDatabase {
             }
         }
         return list;
+    }
+
+    private Type getEntityIdType(Class entityType) {
+        //Try to determine the type of the id
+        for(Type type: entityType.getGenericInterfaces()) {
+            if(type instanceof ParameterizedType) {
+                ParameterizedType ptype = (ParameterizedType)type;
+                if(ptype.getRawType() == JORMEntity.class) {
+                    return (Class)ptype.getActualTypeArguments()[0];
+                }
+            }
+            else if(type instanceof Class) {
+                Type idType = getEntityIdType((Class)type);
+                if(idType != null)
+                    return idType;
+            }
+        }
+        return null;
     }
     
     private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
