@@ -266,6 +266,29 @@ public class SimpleJORMTest {
         assertEquals(1, jorm.getAll(Person.class).size());
     }
     
+    @Test
+    public void usingEntityInitializerWorks() throws SQLException, ParseException { 
+        JORMDatabase jorm = new JORMDatabase(h2);
+        jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultEntityInitializer() {
+            @Override
+            public <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
+                if(entityType == Person.class && fieldName.equals("age")) {
+                    return 17;
+                }
+                return super.getInitialValue(entityType, fieldName);
+            }
+        });
+        Person reinhard = jorm.persist(
+                            jorm.newEntity(Person.class)
+                                .setName("Reinhard Mey")
+                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21")));
+        assertEquals(17, reinhard.getAge());
+        assertEquals(17, jorm.get(Person.class, 4).getAge());
+        jorm.refresh();
+        assertEquals(17, reinhard.getAge());
+        assertEquals(17, jorm.get(Person.class, 4).getAge());
+    }
+    
     private static class PersonIdComparator implements Comparator<Person> {
         @Override
         public int compare(Person o1, Person o2) {

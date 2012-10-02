@@ -31,13 +31,14 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     private final U id;
     private final Map<String, Object> values;
     
-    EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id) {
+    EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id, Map<String, Object> initData) {
         this.entityClass = entityClass;
         this.mapping = mapping;
         this.id = id;
         this.values = new HashMap<String, Object>();
         for(String columnName: mapping.getNonIdColumns(entityClass))
             this.values.put(columnName, null);
+        values.putAll(initData);
     }
 
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
