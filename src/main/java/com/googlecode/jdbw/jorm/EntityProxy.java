@@ -21,6 +21,7 @@ package com.googlecode.jdbw.jorm;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
@@ -36,8 +37,8 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         this.mapping = mapping;
         this.id = id;
         this.values = new HashMap<String, Object>();
-        for(String columnName: mapping.getNonIdColumns(entityClass))
-            this.values.put(columnName, null);
+        for(String fieldName: mapping.getFieldNames(entityClass))
+            this.values.put(fieldName, null);
         values.putAll(initData);
     }
 
@@ -91,10 +92,10 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     }
 
     synchronized void populate(Object[] row) {
-        String[] columnNames = mapping.getNonIdColumns(entityClass);
+        List<String> fieldNames = mapping.getFieldNames(entityClass);
         for(int i = 1; i < row.length; i++) {
             synchronized(values) {
-                String columnName = columnNames[i - 1];
+                String columnName = fieldNames.get(i - 1);
                 values.put(columnName, row[i]);
             }
         }

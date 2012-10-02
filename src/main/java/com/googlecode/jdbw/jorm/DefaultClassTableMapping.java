@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class DefaultClassTableMapping implements ClassTableMapping {
     
@@ -47,8 +49,8 @@ public class DefaultClassTableMapping implements ClassTableMapping {
     }
 
     @Override
-    public <U, T extends JORMEntity<U>> String[] getNonIdColumns(Class<T> entityType) {
-        List<String> columns = new ArrayList<String>();
+    public <U, T extends JORMEntity<U>> List<String> getFieldNames(Class<T> entityType) {
+        Set<String> fields = new TreeSet<String>();
         for(Method method: entityType.getMethods()) {
             if((method.getModifiers() & Modifier.STATIC) != 0)
                 continue;
@@ -58,9 +60,14 @@ public class DefaultClassTableMapping implements ClassTableMapping {
                 continue;
             
             String methodName = method.getName();
-            String columnName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
-            columns.add(columnName);
+            String fieldName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+            fields.add(fieldName);
         }
-        return columns.toArray(new String[0]);
-    }    
+        return new ArrayList<String>(fields);
+    }
+
+    @Override
+    public <U, T extends JORMEntity<U>> String toColumnName(Class<T> entityType, String fieldName) {
+        return fieldName;
+    }
 }

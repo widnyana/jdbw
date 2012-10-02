@@ -22,6 +22,7 @@ import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
+import com.googlecode.jdbw.util.SelfExecutor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -59,12 +60,31 @@ public class JORMDatabase {
     
     private final DatabaseConnection databaseConnection;
     private final EntityCacheManager cacheManager;
-    private final Map<Class<? extends JORMEntity>, EntityMapping> tableMapping;
+    private final ClassTableMapping defaultClassTableMapping;
+    private final EntityInitializer defaultEntityInitializer;
+    private final Map<Class<? extends JORMEntity>, EntityMapping> entityMappings;
 
     public JORMDatabase(DatabaseConnection databaseConnection) {
+        this(databaseConnection, new DefaultClassTableMapping(), new DefaultEntityInitializer());
+    }
+    
+    public JORMDatabase(
+            DatabaseConnection databaseConnection, 
+            ClassTableMapping defaultClassTableMapping,
+            EntityInitializer defaultEntityInitializer) {
+        
+        if(databaseConnection == null)
+            throw new IllegalArgumentException("Cannot create JORMDatabase with null databaseConnection");
+        if(defaultClassTableMapping == null)
+            throw new IllegalArgumentException("Cannot create JORMDatabase with null defaultClassTableMapping");
+        if(defaultEntityInitializer == null)
+            throw new IllegalArgumentException("Cannot create JORMDatabase with null defaultEntityInitializer");
+        
         this.databaseConnection = databaseConnection;
         this.cacheManager = new EntityCacheManager();
-        this.tableMapping = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
+        this.entityMappings = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
+        this.defaultClassTableMapping = defaultClassTableMapping;
+        this.defaultEntityInitializer = defaultEntityInitializer;
     }
     
     public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
@@ -117,7 +137,9 @@ public class JORMDatabase {
             throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                     "; id parameter was empty");
         }
+        
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
+        ClassTableMapping tableMapping = getClassTableMapping(type);
         Map<String, Object> entityInitData = getEntityInitializationData(type);
         
         StringBuilder sb = new StringBuilder();
@@ -127,7 +149,7 @@ public class JORMDatabase {
         sb.append(sqlDialect.escapeIdentifier("id"));
         for(String fieldName: entityInitData.keySet()) {
             sb.append(", ");
-            sb.append(sqlDialect.escapeIdentifier(fieldName));
+            sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(type, fieldName)));
         }            
         sb.append(") VALUES(?");
         for(int i = 0; i < entityInitData.size(); i++) {
@@ -216,20 +238,21 @@ public class JORMDatabase {
         EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entities.iterator().next();
         EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
         Class<T> entityType = proxy.getEntityType();
+        ClassTableMapping tableMapping = getClassTableMapping(entityType);
         
-        String[] columnName = getClassTableMapping(entityType).getNonIdColumns(entityType);
-        if(columnName.length == 0)
+        List<String> fieldNames = tableMapping.getFieldNames(entityType);
+        if(fieldNames.isEmpty())
             return;
         
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
         sb.append(sqlDialect.escapeIdentifier(getTableName(entityType)));
         sb.append(" SET ");
-        for(int i = 0; i < columnName.length; i++) {
+        for(int i = 0; i < fieldNames.size(); i++) {
             if(i > 0) {
                 sb.append(", ");
             }
-            sb.append(sqlDialect.escapeIdentifier(columnName[i]));
+            sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(entityType, fieldNames.get(i))));
             sb.append(" = ?");
         }
         sb.append(" WHERE ");
@@ -241,10 +264,10 @@ public class JORMDatabase {
             if(entity == null)
                 continue;
             
-            Object []values = new Object[columnName.length + 1];
-            for(int i = 0; i < columnName.length; i++)
-                values[i] = proxy.getValue(columnName[i]);
-            values[columnName.length] = entity.getId();
+            Object []values = new Object[fieldNames.size() + 1];
+            for(int i = 0; i < fieldNames.size(); i++)
+                values[i] = proxy.getValue(fieldNames.get(i));
+            values[fieldNames.size()] = entity.getId();
             batches.add(values);
         }
         if(batches.isEmpty()) {
@@ -305,19 +328,13 @@ public class JORMDatabase {
     }
         
     public void refresh() {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        refresh(executorService);
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(17, TimeUnit.DAYS);
-        }
-        catch(InterruptedException e) {
-        }
+        refresh(new SelfExecutor());
     }
     
     public void refresh(Executor executor) {
         for(final Class entityType: (List<Class>)cacheManager.getAllKnownEntityTypes()) {
             executor.execute(new Runnable() {
+                @Override
                 public void run() {
                     refresh(entityType);
                 }
@@ -375,23 +392,19 @@ public class JORMDatabase {
     }
     
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType) {
-        register(entityType, new DefaultClassTableMapping());
+        register(entityType, null);
     }
     
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
-        register(entityType, classTableMapping, new DefaultEntityInitializer());
+        register(entityType, classTableMapping, null);
     }
     
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) {
         if(entityType == null)
             throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
-        if(classTableMapping == null)
-            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null ClassTableMapping");
-        if(initializer == null)
-            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null EntityInitializer");
         
-        synchronized(tableMapping) {
-            if(tableMapping.containsKey(entityType)) {
+        synchronized(entityMappings) {
+            if(entityMappings.containsKey(entityType)) {
                 throw new IllegalArgumentException("Can't register " + entityType.getName() + 
                         " because it's already registered");
             }
@@ -410,7 +423,7 @@ public class JORMDatabase {
             entityMapping.entityInitializer = initializer;
             entityMapping.idType = (Class)idType;
             
-            tableMapping.put(entityType, entityMapping);
+            entityMappings.put(entityType, entityMapping);
             cacheManager.createDataCache(entityType);
         }
     }
@@ -476,11 +489,13 @@ public class JORMDatabase {
     }
     
     private <U, T extends JORMEntity<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
-        String[] columns = getClassTableMapping(entityType).getNonIdColumns(entityType);
+        final ClassTableMapping tableMapping = getClassTableMapping(entityType);
+        List<String> fieldNames = tableMapping.getFieldNames(entityType);
         StringBuilder sb = new StringBuilder();
-        for(String columnName: columns) {
+        for(String fieldName: fieldNames) {
             sb.append(", ");
-            sb.append(databaseConnection.getServerType().getSQLDialect().escapeIdentifier(columnName));
+            sb.append(databaseConnection.getServerType().getSQLDialect().escapeIdentifier(
+                    tableMapping.toColumnName(entityType, fieldName)));
         }
         return sb.toString();
     }
@@ -540,25 +555,38 @@ public class JORMDatabase {
     }
     
     private <U, T extends JORMEntity<U>> Map<String, Object> getEntityInitializationData(Class<T> entityClass) {
-        EntityMapping mapping = getMapping(entityClass);
+        EntityInitializer initializer = getEntityInitializer(entityClass);
         Map<String, Object> result = new TreeMap<String, Object>();
-        for(Method method: entityClass.getMethods()) {
-            if(method.getName().startsWith("get") && method.getName().length() > 3) {
-                String fieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
-                Object initialValue = mapping.entityInitializer.getInitialValue(entityClass, fieldName);
-                if(initialValue != null)
-                    result.put(fieldName, initialValue);
-            }
+        for(String fieldName: getEntityFields(entityClass)) {
+            Object initialValue = initializer.getInitialValue(entityClass, fieldName);
+            if(initialValue != null)
+                result.put(fieldName, initialValue);
         }
         return result;
     }
-    
+        
     private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
         return getClassTableMapping(entityType).getTableName(entityType);
     }
     
-    private <U, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityType) {
-        return getMapping(entityType).tableMapping;
+    private <U, T extends JORMEntity<U>> List<String> getEntityFields(Class<T> entityClass) {
+        return getClassTableMapping(entityClass).getFieldNames(entityClass);
+    }
+    
+    private <U, T extends JORMEntity<U>> EntityInitializer getEntityInitializer(Class<T> entityClass) {
+        EntityMapping mapping = getMapping(entityClass);
+        if(mapping.entityInitializer == null)
+            return defaultEntityInitializer;
+        else
+            return mapping.entityInitializer;
+    }
+    
+    private <U, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityClass) {
+        EntityMapping mapping = getMapping(entityClass);
+        if(mapping.tableMapping == null)
+            return defaultClassTableMapping;
+        else
+            return mapping.tableMapping;
     }
     
     private <U, T extends JORMEntity<U>> Class getIdType(Class<T> entityType) {
@@ -566,10 +594,10 @@ public class JORMDatabase {
     }
     
     private <U, T extends JORMEntity<U>> EntityMapping getMapping(Class<T> entityType) {
-        synchronized(tableMapping) {
-            if(!tableMapping.containsKey(entityType))
+        synchronized(entityMappings) {
+            if(!entityMappings.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access the table name of an unregistered entity type " + entityType.getName());
-            return tableMapping.get(entityType);
+            return entityMappings.get(entityType);
         }
     }
 }

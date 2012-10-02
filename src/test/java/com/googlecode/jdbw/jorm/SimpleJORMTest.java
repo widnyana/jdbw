@@ -272,7 +272,7 @@ public class SimpleJORMTest {
         jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultEntityInitializer() {
             @Override
             public <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
-                if(entityType == Person.class && fieldName.equals("age")) {
+                if(entityType.equals(Person.class) && fieldName.equals("age")) {
                     return 17;
                 }
                 return super.getInitialValue(entityType, fieldName);

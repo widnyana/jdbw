@@ -18,7 +18,10 @@
  */
 package com.googlecode.jdbw.jorm;
 
+import java.util.List;
+
 public interface ClassTableMapping {
     <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType);
-    <U, T extends JORMEntity<U>> String[] getNonIdColumns(Class<T> entityType);
+    <U, T extends JORMEntity<U>> List<String> getFieldNames(Class<T> entityType);
+    <U, T extends JORMEntity<U>> String toColumnName(Class<T> entityType, String fieldName);
 }
