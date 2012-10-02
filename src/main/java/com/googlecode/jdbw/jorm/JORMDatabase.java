@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -174,7 +175,7 @@ public class JORMDatabase {
     }
     
     public <U, T extends JORMEntity<U>> T persist(T entity) throws SQLException {
-        persist(entity, null);
+        persist(Arrays.asList(entity));
         return entity;
     }
     
@@ -226,6 +227,43 @@ public class JORMDatabase {
             return;
         }
         databaseConnection.createAutoExecutor().batchWrite(new BatchUpdateHandlerAdapter(), sb.toString(), batches);
+    }
+    
+    public <U, T extends JORMEntity<U>> void remove(T... entities) throws SQLException {
+        remove(Arrays.asList(entities));
+    }
+    
+    public <U, T extends JORMEntity<U>> void remove(List<T> entities) throws SQLException {
+        if(entities == null || entities.isEmpty()) {
+            return;
+        }
+        Iterator<T> iterator = entities.iterator();
+        while(iterator.hasNext()) {
+            if(iterator.next() == null)
+                iterator.remove();
+        }
+        if(entities.isEmpty()) {
+            return;
+        }
+        
+        List<U> keysToRemove = new ArrayList<U>();
+        Class<? extends JORMEntity> entityType = entities.get(0).getClass();
+        SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE FROM ");        
+        sb.append(sqlDialect.escapeIdentifier(getTableName(entityType)));
+        sb.append(" WHERE ");
+        sb.append(sqlDialect.escapeIdentifier("id"));
+        sb.append(" IN (");
+        for(int i = 0; i < entities.size(); i++) {
+            if(i > 0)
+                sb.append(", ");
+            sb.append(formatKey(entities.get(i).getId()));
+            keysToRemove.add(entities.get(i).getId());
+        }        
+        sb.append(")");
+        new SQLWorker(databaseConnection.createAutoExecutor()).write(sb.toString());
+        cacheManager.getCache(entityType).removeAll(keysToRemove);
     }
         
     public void refresh() {

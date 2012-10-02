@@ -52,6 +52,11 @@ class ConcurrentDataCache<U, T extends JORMEntity<U>> implements DataCache<U,T> 
     }
 
     @Override
+    public boolean removeAll(Collection<U> ids) {
+        return entityCache.keySet().removeAll(ids);
+    }
+
+    @Override
     public Set<U> allIds() {
         return Collections.unmodifiableSet(entityCache.keySet());
     }

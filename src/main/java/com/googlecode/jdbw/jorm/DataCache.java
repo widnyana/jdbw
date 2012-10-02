@@ -26,6 +26,7 @@ interface DataCache<U, T extends JORMEntity<U>> {
     boolean contains(U id);
     void put(T entity);
     boolean remove(U id);
+    boolean removeAll(Collection<U> ids);
     Set<U> allIds();
     Collection<T> allValues();
 }
