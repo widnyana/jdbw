@@ -22,6 +22,7 @@ import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -51,6 +52,7 @@ public class JORMDatabase {
     private static class EntityMapping {
         Class<? extends JORMEntity> entityType;
         ClassTableMapping tableMapping;
+        EntityInitializer entityInitializer;
         Class idType;
     }
     
@@ -115,14 +117,25 @@ public class JORMDatabase {
                     "; id parameter was empty");
         }
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
+        List<String> entityInitializableFields = getEntityInitializableFields(type);
+        EntityMapping entityMapping = getMapping(type);
+        
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
         sb.append(sqlDialect.escapeIdentifier(getTableName(type)));
         sb.append(" (");
         sb.append(sqlDialect.escapeIdentifier("id"));
-        sb.append(") VALUES(?)");
-        
-        List<Object[]> keysToBatchInsert = new ArrayList<Object[]>();
+        for(String fieldName: entityInitializableFields) {
+            sb.append(", ");
+            sb.append(sqlDialect.escapeIdentifier(fieldName));
+        }            
+        sb.append(") VALUES(?");
+        for(String fieldName: entityInitializableFields) {
+            sb.append(", ?");
+        }
+        sb.append(")");
+                
+        List<Object[]> parameterValuesToInsert = new ArrayList<Object[]>();
         for(U id: ids) {
             if(id == null) {
                continue; 
@@ -131,10 +144,15 @@ public class JORMDatabase {
                 throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                         "; expected id type " + getIdType(type) + " but got a " + id.getClass());
             }
-            keysToBatchInsert.add(new Object[] { id });
+            Object[] values = new Object[1 + entityInitializableFields.size()];
+            values[0] = id;
+            for(int i = 0; i < entityInitializableFields.size(); i++) {
+                values[i + 1] = entityMapping.entityInitializer.getInitialValue(type, entityInitializableFields.get(i));
+            }
+            parameterValuesToInsert.add(values);
         }
-        if(keysToBatchInsert.size() > 0) {
-            databaseConnection.createAutoExecutor().batchWrite(sb.toString(), keysToBatchInsert);
+        if(parameterValuesToInsert.size() > 0) {
+            databaseConnection.createAutoExecutor().batchWrite(sb.toString(), parameterValuesToInsert);
         }
          
         final List<U> keyToCreateEntitiesFrom = new ArrayList<U>();
@@ -354,6 +372,17 @@ public class JORMDatabase {
     }
     
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
+        register(entityType, classTableMapping, new DefaultEntityInitializer());
+    }
+    
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) {
+        if(entityType == null)
+            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
+        if(classTableMapping == null)
+            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null ClassTableMapping");
+        if(initializer == null)
+            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null EntityInitializer");
+        
         synchronized(tableMapping) {
             if(tableMapping.containsKey(entityType)) {
                 throw new IllegalArgumentException("Can't register " + entityType.getName() + 
@@ -371,6 +400,7 @@ public class JORMDatabase {
             EntityMapping entityMapping = new EntityMapping();
             entityMapping.entityType = entityType;
             entityMapping.tableMapping = classTableMapping;
+            entityMapping.entityInitializer = initializer;
             entityMapping.idType = (Class)idType;
             
             tableMapping.put(entityType, entityMapping);
@@ -500,6 +530,20 @@ public class JORMDatabase {
             }
         }
         return null;
+    }
+    
+    private <U, T extends JORMEntity<U>> List<String> getEntityInitializableFields(Class<T> entityClass) {
+        EntityMapping mapping = getMapping(entityClass);
+        List<String> result = new ArrayList<String>();
+        for(Method method: entityClass.getMethods()) {
+            if(method.getName().startsWith("get") && method.getName().length() > 3) {
+                String fieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
+                Object initialValue = mapping.entityInitializer.getInitialValue(entityClass, fieldName);
+                if(initialValue != null)
+                    result.add(fieldName);
+            }
+        }
+        return result;
     }
     
     private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
