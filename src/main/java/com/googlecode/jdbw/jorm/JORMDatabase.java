@@ -233,21 +233,35 @@ public class JORMDatabase {
         remove(Arrays.asList(entities));
     }
     
-    public <U, T extends JORMEntity<U>> void remove(List<T> entities) throws SQLException {
+    public <U, T extends JORMEntity<U>> void remove(Collection<T> entities) throws SQLException {
+        entities = removeNullElementsFromCollection(entities);
         if(entities == null || entities.isEmpty()) {
             return;
         }
-        Iterator<T> iterator = entities.iterator();
-        while(iterator.hasNext()) {
-            if(iterator.next() == null)
-                iterator.remove();
+        
+        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entities.iterator().next();
+        EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
+        Class<T> entityType = proxy.getEntityType();
+        List<U> keysToRemove = new ArrayList<U>(entities.size());
+        for(T entity: entities) {
+            keysToRemove.add(entity.getId());
         }
-        if(entities.isEmpty()) {
+        remove(entityType, keysToRemove);
+    }
+    
+    public <U, T extends JORMEntity<U>> void remove(Class<T> entityType, U... ids) throws SQLException {
+        remove(entityType, Arrays.asList(ids));
+    }
+    
+    public <U, T extends JORMEntity<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException {
+        if(entityType == null) {
+            throw new IllegalArgumentException("Cannot call remove(...) with null entityType");
+        }
+        ids = removeNullElementsFromCollection(ids);    //Transforms the collection to a list, but we'll keep the name
+        if(ids == null || ids.isEmpty()) {
             return;
         }
         
-        List<U> keysToRemove = new ArrayList<U>();
-        Class<? extends JORMEntity> entityType = entities.get(0).getClass();
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");        
@@ -255,15 +269,15 @@ public class JORMDatabase {
         sb.append(" WHERE ");
         sb.append(sqlDialect.escapeIdentifier("id"));
         sb.append(" IN (");
-        for(int i = 0; i < entities.size(); i++) {
+        for(int i = 0; i < ids.size(); i++) {
             if(i > 0)
                 sb.append(", ");
-            sb.append(formatKey(entities.get(i).getId()));
-            keysToRemove.add(entities.get(i).getId());
+            U id = ((List<U>)ids).get(i);
+            sb.append(formatKey(id));
         }        
         sb.append(")");
         new SQLWorker(databaseConnection.createAutoExecutor()).write(sb.toString());
-        cacheManager.getCache(entityType).removeAll(keysToRemove);
+        cacheManager.getCache(entityType).removeAll(ids);
     }
         
     public void refresh() {
@@ -466,6 +480,19 @@ public class JORMDatabase {
             }
         }
         return generatedId;
+    }
+    
+    private <T> List<T> removeNullElementsFromCollection(Collection<T> collection) {
+        if(collection == null)
+            return null;
+        
+        List<T> list = new ArrayList<T>(collection.size());
+        for(T element: collection) {
+            if(element != null) {
+                list.add(element);
+            }
+        }
+        return list;
     }
     
     private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {

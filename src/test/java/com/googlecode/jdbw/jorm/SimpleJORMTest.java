@@ -202,6 +202,70 @@ public class SimpleJORMTest {
         assertTrue(brel2.equals(brel1));
     }
     
+    @Test
+    public void removingOneEntityByInstanceWorks() throws SQLException {
+        JORMDatabase jorm = new JORMDatabase(h2);
+        jorm.register(Person.class);
+        jorm.refresh();
+        Person elvis = jorm.get(Person.class, 1);
+        assertNotNull(elvis);
+        jorm.remove(elvis);
+        assertNull(jorm.get(Person.class, 1));
+        jorm.refresh();
+        assertNull(jorm.get(Person.class, 1));
+        assertEquals(2, jorm.getAll(Person.class).size());
+    }
+    
+    @Test
+    public void removingOneEntityByKeyWorks() throws SQLException {
+        JORMDatabase jorm = new JORMDatabase(h2);
+        jorm.register(Person.class);
+        jorm.refresh();
+        Person elvis = jorm.get(Person.class, 1);
+        assertNotNull(elvis);
+        jorm.remove(Person.class, 1);
+        assertNull(jorm.get(Person.class, 1));
+        jorm.refresh();
+        assertNull(jorm.get(Person.class, 1));
+        assertEquals(2, jorm.getAll(Person.class).size());
+    }
+    
+    @Test
+    public void removingMultipleEntitiesByInstanceWorks() throws SQLException {
+        JORMDatabase jorm = new JORMDatabase(h2);
+        jorm.register(Person.class);
+        jorm.refresh();
+        Person elvis = jorm.get(Person.class, 1);
+        Person jaques = jorm.get(Person.class, 2);
+        assertNotNull(elvis);
+        assertNotNull(jaques);
+        jorm.remove(elvis, jaques);
+        assertNull(jorm.get(Person.class, 1));
+        assertNull(jorm.get(Person.class, 2));
+        jorm.refresh();
+        assertNull(jorm.get(Person.class, 1));
+        assertNull(jorm.get(Person.class, 2));
+        assertEquals(1, jorm.getAll(Person.class).size());
+    }
+    
+    @Test
+    public void removingMultipleEntitiesByKeyWorks() throws SQLException {
+        JORMDatabase jorm = new JORMDatabase(h2);
+        jorm.register(Person.class);
+        jorm.refresh();
+        Person elvis = jorm.get(Person.class, 1);
+        Person jaques = jorm.get(Person.class, 2);
+        assertNotNull(elvis);
+        assertNotNull(jaques);
+        jorm.remove(Person.class, 1, 2);
+        assertNull(jorm.get(Person.class, 1));
+        assertNull(jorm.get(Person.class, 2));
+        jorm.refresh();
+        assertNull(jorm.get(Person.class, 1));
+        assertNull(jorm.get(Person.class, 2));
+        assertEquals(1, jorm.getAll(Person.class).size());
+    }
+    
     private static class PersonIdComparator implements Comparator<Person> {
         @Override
         public int compare(Person o1, Person o2) {
