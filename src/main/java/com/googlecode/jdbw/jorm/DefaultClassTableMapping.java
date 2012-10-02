@@ -33,7 +33,7 @@ public class DefaultClassTableMapping implements ClassTableMapping {
     }
     
     public DefaultClassTableMapping(String prefix) {
-        this("", "");
+        this(prefix, "");
     }
 
     public DefaultClassTableMapping(String prefix, String postfix) {
