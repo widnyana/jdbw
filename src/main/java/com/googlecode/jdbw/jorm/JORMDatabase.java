@@ -87,6 +87,43 @@ public class JORMDatabase {
         this.defaultEntityInitializer = defaultEntityInitializer;
     }
     
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) {
+        register(entityType, null);
+    }
+    
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
+        register(entityType, classTableMapping, null);
+    }
+    
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) {
+        if(entityType == null)
+            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
+        
+        synchronized(entityMappings) {
+            if(entityMappings.containsKey(entityType)) {
+                throw new IllegalArgumentException("Can't register " + entityType.getName() + 
+                        " because it's already registered");
+            }
+            
+            Type idType = getEntityIdType(entityType);
+            if(idType == null) {
+                throw new IllegalArgumentException("Could not determine the id type for " + entityType.getSimpleName());
+            }
+            else if(idType instanceof Class == false) {
+                throw new IllegalArgumentException("Illegal id type for " + entityType.getSimpleName() + " (" + idType.toString() + " isn't a class)");
+            }
+            
+            EntityMapping entityMapping = new EntityMapping();
+            entityMapping.entityType = entityType;
+            entityMapping.tableMapping = classTableMapping;
+            entityMapping.entityInitializer = initializer;
+            entityMapping.idType = (Class)idType;
+            
+            entityMappings.put(entityType, entityMapping);
+            cacheManager.createDataCache(entityType);
+        }
+    }
+    
     public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
         return new ArrayList<T>(cacheManager.getCache(type).allValues());
     }
@@ -384,43 +421,6 @@ public class JORMDatabase {
         }        
         sql += ")";
         queryAndProcess(entityType, sql, keys);
-    }
-    
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) {
-        register(entityType, null);
-    }
-    
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
-        register(entityType, classTableMapping, null);
-    }
-    
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) {
-        if(entityType == null)
-            throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
-        
-        synchronized(entityMappings) {
-            if(entityMappings.containsKey(entityType)) {
-                throw new IllegalArgumentException("Can't register " + entityType.getName() + 
-                        " because it's already registered");
-            }
-            
-            Type idType = getEntityIdType(entityType);
-            if(idType == null) {
-                throw new IllegalArgumentException("Could not determine the id type for " + entityType.getSimpleName());
-            }
-            else if(idType instanceof Class == false) {
-                throw new IllegalArgumentException("Illegal id type for " + entityType.getSimpleName() + " (" + idType.toString() + " isn't a class)");
-            }
-            
-            EntityMapping entityMapping = new EntityMapping();
-            entityMapping.entityType = entityType;
-            entityMapping.tableMapping = classTableMapping;
-            entityMapping.entityInitializer = initializer;
-            entityMapping.idType = (Class)idType;
-            
-            entityMappings.put(entityType, entityMapping);
-            cacheManager.createDataCache(entityType);
-        }
     }
     
     private <U, T extends JORMEntity<U>> void queryAndProcess(Class<T> entityType, String sql, List<U> expectedKeys) {
