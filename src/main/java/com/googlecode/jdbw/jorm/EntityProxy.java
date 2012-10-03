@@ -22,7 +22,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -73,7 +72,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     @Override
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if(method.getName().equals("getId") && args == null) {
-            return id;
+            return convertToReturnType(method.getReturnType(), id);
         }
         else if(method.getName().equals("__underlying_proxy") && args == null) {
             return this;
