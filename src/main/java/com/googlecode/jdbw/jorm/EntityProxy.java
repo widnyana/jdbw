@@ -56,6 +56,23 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         }
     }
     
+    public static <T> T convertToReturnType(Class<T> returnType, Object object) {
+        if(object == null)
+            return null;
+        
+        if(returnType.isAssignableFrom(object.getClass()))
+            return (T)object;
+        
+        if(returnType.equals(UUID.class) && object instanceof String)
+            return (T)UUID.fromString((String)object);
+        
+        if(returnType.isPrimitive()) {            
+            return (T)object; //Let java autoboxing do its thing
+        }
+        throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
+    }
+    
+    
     private final Class<T> entityClass;
     private final ClassTableMapping mapping;    
     private final U id;
@@ -124,22 +141,6 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     
     synchronized Object getValue(String columnName) {
         return values[getFieldIndex(entityClass, columnName)];
-    }
-    
-    private <T> T convertToReturnType(Class<T> returnType, Object object) {
-        if(object == null)
-            return null;
-        
-        if(returnType.isAssignableFrom(object.getClass()))
-            return (T)object;
-        
-        if(returnType.equals(UUID.class) && object instanceof String)
-            return (T)UUID.fromString((String)object);
-        
-        if(returnType.isPrimitive()) {            
-            return (T)object; //Let java autoboxing do its thing
-        }
-        throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
     }
 
     private void setValue(String columnName, Object value) {
