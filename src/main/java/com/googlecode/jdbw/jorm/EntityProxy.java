@@ -72,7 +72,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     @Override
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if(method.getName().equals("getId") && args == null) {
-            return convertToReturnType(method.getReturnType(), id);
+            return id;
         }
         else if(method.getName().equals("__underlying_proxy") && args == null) {
             return this;
