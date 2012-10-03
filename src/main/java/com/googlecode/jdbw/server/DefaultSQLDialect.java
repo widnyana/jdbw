@@ -30,6 +30,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -175,7 +176,9 @@ public class DefaultSQLDialect implements SQLDialect {
                 return new BigDecimal(decimalTimestampFormat.format((Date) object));
             }
         }
-
+        if(object instanceof UUID && isString(targetColumn.getSqlType())) {
+            return object.toString();
+        }
         return object;
     }
     
