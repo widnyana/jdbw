@@ -137,7 +137,12 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         if(returnType.equals(UUID.class) && object instanceof String)
             return (T)UUID.fromString((String)object);
         
-        throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
+        try {
+            return returnType.cast(object);
+        }
+        catch(ClassCastException e) {
+            throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
+        }
     }
 
     private void setValue(String columnName, Object value) {
