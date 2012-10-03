@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
 
@@ -96,7 +97,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
                         "." + method.getName() + ", couldn't find field " + asFieldName + " in " +
                         "EntityProxy");
             }
-            return getValue(asFieldName);
+            return convertToReturnType(method.getReturnType(), getValue(asFieldName));
         }
         else if(method.getName().startsWith("set") && method.getName().length() > 3 && method.getParameterTypes().length == 1) {
             String asFieldName = Character.toLowerCase(method.getName().charAt(3)) +
@@ -124,6 +125,19 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
     
     synchronized Object getValue(String columnName) {
         return values[getFieldIndex(entityClass, columnName)];
+    }
+    
+    private <T> T convertToReturnType(Class<T> returnType, Object object) {
+        if(object == null)
+            return null;
+        
+        if(returnType.isAssignableFrom(object.getClass()))
+            return (T)object;
+        
+        if(returnType.equals(UUID.class) && object instanceof String)
+            return (T)UUID.fromString((String)object);
+        
+        throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
     }
 
     private void setValue(String columnName, Object value) {
