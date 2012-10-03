@@ -54,14 +54,26 @@ public class DefaultClassTableMapping implements ClassTableMapping {
         for(Method method: entityType.getMethods()) {
             if((method.getModifiers() & Modifier.STATIC) != 0)
                 continue;
-            if(!method.getName().startsWith("get") || method.getName().length() <= 3)
-                continue;
-            if(method.getName().equals("getId"))
-                continue;
             
-            String methodName = method.getName();
-            String fieldName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
-            fields.add(fieldName);
+            String fieldName = null;
+            if(method.getName().startsWith("get")) {
+                if(method.getName().equals("getId") || method.getName().length() <= 3) {
+                    continue;
+                }
+                //Found a field!
+                fieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
+            }
+            else if(method.getName().startsWith("is")) {
+                if(method.getName().length() <= 2) {
+                    continue;
+                }
+                //Found a field!
+                fieldName = Character.toLowerCase(method.getName().charAt(2)) + method.getName().substring(3);
+            }
+            
+            if(fieldName != null) {
+                fields.add(fieldName);
+            }
         }
         return new ArrayList<String>(fields);
     }
