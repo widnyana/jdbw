@@ -57,7 +57,7 @@ public abstract class AbstractDatabaseType implements DatabaseServerType {
         if(e instanceof SQLTransientException)
             return true;
         if(e instanceof SQLNonTransientException)
-            return true;    //Try again...
+            return false;    //Try again...
         if(e instanceof SQLRecoverableException)
             return true;
         
