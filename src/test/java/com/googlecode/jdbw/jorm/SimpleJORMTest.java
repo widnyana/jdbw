@@ -43,6 +43,9 @@ public class SimpleJORMTest {
         Person setAge(int age);
         Date getBirthday();
         Person setBirthday(Date birthday);
+        
+        @Override
+        Persistable<Person> finish();
     }
     
     private final DatabaseConnection h2;
@@ -135,7 +138,8 @@ public class SimpleJORMTest {
                             jorm.newEntity(Person.class)
                                 .setName("Reinhard Mey")
                                 .setAge(69)
-                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21")));
+                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
+                                .finish());
         jorm.refresh();
         assertNotNull(jorm.get(Person.class, 4));
         assertEquals(reinhard, jorm.get(Person.class, 4));
@@ -146,14 +150,17 @@ public class SimpleJORMTest {
     public void canBatchInsertMultipleRows() throws ParseException, SQLException {
         JORMDatabase jorm = new JORMDatabase(h2);
         jorm.register(Person.class);
-        List<Person> newPersons = jorm.newEntities(Person.class, null, null);
-        newPersons.get(0).setName("Reinhard Mey")
-                                .setAge(69)
-                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"));
-        newPersons.get(1).setName("Evert Taube")
-                                .setAge(85)
-                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1890-03-12"));
-        jorm.persist(newPersons);
+        List<Person> newPersons = jorm.persist(
+                    jorm.newEntity(Person.class)
+                            .setName("Reinhard Mey")
+                            .setAge(69)
+                            .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
+                            .finish(),
+                    jorm.newEntity(Person.class)
+                            .setName("Evert Taube")
+                            .setAge(85)
+                            .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1890-03-12"))
+                            .finish());
         jorm.refresh();
         assertNotNull(jorm.get(Person.class, 4));
         assertEquals(newPersons.get(0), jorm.get(Person.class, 4));
@@ -170,21 +177,20 @@ public class SimpleJORMTest {
         assertEquals(brel, brel);
         assertTrue(brel.equals(brel));
         assertTrue(brel.equals(new Person() {
-            public Integer getId() {
+            @Override public Integer getId() {
                 return 2;
             }
             
-            public String getName() {
+            @Override public String getName() {
                 return "Jacques Brel";
             }
             
-            public int getAge() { throw new UnsupportedOperationException("Not supported yet."); }
-            public Date getBirthday() { throw new UnsupportedOperationException("Not supported yet."); }
-            public Person setName(String name) { throw new UnsupportedOperationException("Not supported yet."); }
-            public Person setAge(int age) { throw new UnsupportedOperationException("Not supported yet."); }
-            public Person setBirthday(Date birthday) { throw new UnsupportedOperationException("Not supported yet."); }
-            public int compareTo(JORMEntity<Integer> o) { throw new UnsupportedOperationException("Not supported yet."); }
-            public <U extends JORMEntity<Integer>> U persist() { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public int getAge() { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Date getBirthday() { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Person setName(String name) { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Person setAge(int age) { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Person setBirthday(Date birthday) { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Persistable<Person> finish() { throw new UnsupportedOperationException("Not supported yet."); }
         }));
     }
     
@@ -281,7 +287,8 @@ public class SimpleJORMTest {
         Person reinhard = jorm.persist(
                             jorm.newEntity(Person.class)
                                 .setName("Reinhard Mey")
-                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21")));
+                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
+                                .finish());
         assertEquals(17, reinhard.getAge());
         assertEquals(17, jorm.get(Person.class, 4).getAge());
         jorm.refresh();

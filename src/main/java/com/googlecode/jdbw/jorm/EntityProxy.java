@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
+class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Persistable<T> {
 
     private static final Map<Class, Map<String, Integer>> INDEX_REFERENCE = new HashMap<Class, Map<String, Integer>>();
     
@@ -55,31 +55,17 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
                         INDEX_REFERENCE.get(entityClass).get(field) : -1;
         }
     }
-    
-    public static <T> T convertToReturnType(Class<T> returnType, Object object) {
-        if(object == null)
-            return null;
-        
-        if(returnType.isAssignableFrom(object.getClass()))
-            return (T)object;
-        
-        if(returnType.equals(UUID.class) && object instanceof String)
-            return (T)UUID.fromString((String)object);
-        
-        if(returnType.isPrimitive()) {            
-            return (T)object; //Let java autoboxing do its thing
-        }
-        throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
-    }
         
     private final Class<T> entityClass;  
-    private final U id;
+    private U id;
+    private T object;
     private final Object[] values;
     
     EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id, Object[] initData) {
         indexClass(entityClass, mapping);
         this.entityClass = entityClass;
         this.id = id;
+        this.object = null;  //This should be setup as quickly as possible by JORMDatabase.newEntityProxy
         this.values = Arrays.copyOf(initData, getNumberOfFields(entityClass));
     }
 
@@ -97,6 +83,9 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         else if(method.getName().equals("hashCode") && args == null) {
             return hashCode();
         }
+        else if(method.getName().equals("finish") && args == null) {
+            return this;
+        }
         else if(method.getName().equals("equals") && 
                 method.getParameterTypes().length == 1 && 
                 method.getParameterTypes()[0] == Object.class) {
@@ -110,7 +99,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
                         "." + method.getName() + ", couldn't find field " + asFieldName + " in " +
                         "EntityProxy");
             }
-            return convertToReturnType(method.getReturnType(), getValue(asFieldName));
+            return JORMDatabase.convertToReturnType(method.getReturnType(), getValue(asFieldName));
         }
         else if(method.getName().startsWith("set") && method.getName().length() > 3 && method.getParameterTypes().length == 1) {
             String asFieldName = Character.toLowerCase(method.getName().charAt(3)) +
@@ -134,6 +123,22 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
 
     synchronized void populate(Object[] row) {
         System.arraycopy(row, 1, values, 0, values.length); //Remember, the id is at index 0, we don't want to copy that!
+    }
+
+    void setId(U id) {
+        this.id = id;
+    }
+    
+    U getId() {
+        return id;
+    }
+
+    void setObject(T object) {
+        this.object = object;
+    }
+
+    T getObject() {
+        return object;
     }
     
     synchronized Object getValue(String columnName) {
@@ -165,6 +170,9 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         if(this == obj) {
             return true;
         }
+        if(id == null) {
+            return super.equals(obj);
+        }
         if(!entityClass.isAssignableFrom(obj.getClass()) &&
                 obj.getClass() != getClass()) {
             return false;
@@ -189,6 +197,11 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
 
     @Override
     public int hashCode() {
-        return entityClass.getSimpleName().hashCode() + id.hashCode();
+        if(id != null) {
+            return entityClass.getSimpleName().hashCode() + id.hashCode();
+        }
+        else {
+            return super.hashCode();
+        }
     }
 }

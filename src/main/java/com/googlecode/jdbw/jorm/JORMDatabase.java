@@ -38,9 +38,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
-public class JORMDatabase {
+public class JORMDatabase {    
     public static enum SearchPolicy {
         LOCAL_ONLY,
         CHECK_DATABASE_IF_MISSING,
@@ -60,6 +62,7 @@ public class JORMDatabase {
     private final ClassTableMapping defaultClassTableMapping;
     private final EntityInitializer defaultEntityInitializer;
     private final Map<Class<? extends JORMEntity>, EntityMapping> entityMappings;
+    private final WeakHashMap<EntityProxy, Object> entitiesToBeInserted;
 
     public JORMDatabase(DatabaseConnection databaseConnection) {
         this(databaseConnection, new DefaultClassTableMapping(), new DefaultEntityInitializer());
@@ -80,6 +83,7 @@ public class JORMDatabase {
         this.databaseConnection = databaseConnection;
         this.cacheManager = new EntityCacheManager();
         this.entityMappings = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
+        this.entitiesToBeInserted = new WeakHashMap<EntityProxy, Object>();
         this.defaultClassTableMapping = defaultClassTableMapping;
         this.defaultEntityInitializer = defaultEntityInitializer;
     }
@@ -183,111 +187,139 @@ public class JORMDatabase {
                     "; id parameter was empty");
         }
         
+        Object[] entityInitData = getEntityInitializationData(type);        
+        List<T> newEntities = new ArrayList<T>();
+        for(U id: ids) {
+            if(id != null && !getIdType(type).isAssignableFrom(id.getClass())) {
+                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
+                        "; expected id type " + getIdType(type).getName() + " but supplied (or auto-generated) id type was a " + id.getClass().getName());
+            }
+            T entity = newEntityProxy(type, id, entityInitData);
+            newEntities.add(entity);
+            synchronized(entitiesToBeInserted) {
+                entitiesToBeInserted.put(((EntityProxy.Resolver<U, T>)entity).__underlying_proxy(), null);
+            }
+        }
+        return newEntities;
+    }
+    
+    public <U, T extends JORMEntity<U>> T persist(Persistable<T> persistable) throws SQLException {
+        return persist(Arrays.asList(persistable)).get(0);
+    }
+    
+    public <U, T extends JORMEntity<U>> List<T> persist(Persistable<T>... persistables) throws SQLException {
+        return persist(Arrays.asList(persistables));
+    }
+    
+    public <U, T extends JORMEntity<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException {
+        Map<Class<T>, List<Persistable<T>>> persistablesByClass = new HashMap<Class<T>, List<Persistable<T>>>();
+        for(Persistable persistable: persistables) {
+            if(persistable == null) {
+                continue;
+            }            
+            Class<T> entityClass = ((EntityProxy)persistable).getEntityType();
+            if(!persistablesByClass.containsKey(entityClass))
+                persistablesByClass.put(entityClass, new ArrayList<Persistable<T>>());
+            persistablesByClass.get(entityClass).add(persistable);
+        }
+        List<T> result = new ArrayList<T>();
+        for(Class<T> entityType: persistablesByClass.keySet()) {
+            result.addAll(persist(entityType, persistablesByClass.get(entityType)));
+        }
+        return result;
+    }
+    
+    private <U, T extends JORMEntity<U>> List<T> persist(Class<T> entityType, Collection<Persistable<T>> persistables) throws SQLException {
+        if(persistables == null || persistables.isEmpty() || entityType == null) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<Persistable> toBeInserted = new ArrayList<Persistable>();
+        List<Persistable> toBeUpdated = new ArrayList<Persistable>();
+        for(Persistable persistable: persistables) {
+            if(isScheduledForInsertion(persistable))
+                toBeInserted.add(persistable);
+            else
+                toBeUpdated.add(persistable);
+        }
+        insert(entityType, toBeInserted);
+        update(entityType, toBeUpdated);
+        
+        //Make the result
+        List<T> result = new ArrayList<T>();
+        for(Persistable<T> persistable: persistables) {
+            EntityProxy<U, T> proxy = (EntityProxy<U, T>)persistable;
+            result.add(proxy.getObject());
+        }
+        return result;
+    }
+    
+    private <U, T extends JORMEntity<U>> void insert(Class<T> entityType, Collection<Persistable> persistables) throws SQLException {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
-        ClassTableMapping tableMapping = getClassTableMapping(type);
-        List<String> fieldNames = tableMapping.getFieldNames(type);
-        Object[] entityInitData = getEntityInitializationData(type);
-        Object[] notNullEntityInitData = formatAsInputParameters(type, entityInitData, false /* don't include nulls */);
+        ClassTableMapping tableMapping = getClassTableMapping(entityType);
+        List<String> fieldNames = tableMapping.getFieldNames(entityType);
         
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
-        sb.append(sqlDialect.escapeIdentifier(getTableName(type)));
+        sb.append(sqlDialect.escapeIdentifier(getTableName(entityType)));
         sb.append(" (");
         sb.append(sqlDialect.escapeIdentifier("id"));
         for(int i = 0; i < fieldNames.size(); i++) {
             //Only add non-null parameters
-            if(entityInitData[i] != null) {
-                String fieldName = fieldNames.get(i);
-                sb.append(", ");
-                sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(type, fieldName)));
-            }
+            String fieldName = fieldNames.get(i);
+            sb.append(", ");
+            sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(entityType, fieldName)));
         }            
         sb.append(") VALUES(?");
-        for(int i = 0; i < notNullEntityInitData.length; i++) {
+        for(int i = 0; i < fieldNames.size(); i++) {
             sb.append(", ?");
         }
         sb.append(")");
                 
         List<Object[]> parameterValuesToInsert = new ArrayList<Object[]>();
-        for(U id: ids) {
+        for(Persistable persistable: persistables) {
+            EntityProxy<U, T> proxy = (EntityProxy<U, T>)persistable;
+            U id = proxy.getId();
+            if(id != null && !getIdType(entityType).isAssignableFrom(id.getClass())) {
+                throw new IllegalArgumentException("Error creating newEntity of type " + entityType.getSimpleName() + 
+                        "; expected id type " + getIdType(entityType) + " but got a " + id.getClass());
+            }
+            
+            Object[] values = new Object[1 + fieldNames.size()];
+            for(int i = 0; i < fieldNames.size(); i++)
+                values[i + 1] = proxy.getValue(fieldNames.get(i));
+            System.arraycopy(formatAsInputParameters(entityType, values, true), 0, values, 1, fieldNames.size());
+            
             if(id == null) {
-               continue; 
+                U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), values);
+                proxy.setId((U)convertToReturnType(getIdType(entityType), newId));
             }
-            if(id != null && !getIdType(type).isAssignableFrom(id.getClass())) {
-                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
-                        "; expected id type " + getIdType(type) + " but got a " + id.getClass());
+            else {
+                values[0] = sqlDialect.safeType(getEntityColumnMap(entityType).get("id"), id);
+                parameterValuesToInsert.add(values);
             }
-            Object[] values = new Object[1 + notNullEntityInitData.length];
-            values[0] = sqlDialect.safeType(getEntityColumnMap(type).get("id"), id);
-            System.arraycopy(notNullEntityInitData, 0, values, 1, notNullEntityInitData.length);
-            parameterValuesToInsert.add(values);
         }
         if(parameterValuesToInsert.size() > 0) {
             databaseConnection.createAutoExecutor().batchWrite(sb.toString(), parameterValuesToInsert);
         }
-         
-        final List<U> keyToCreateEntitiesFrom = new ArrayList<U>();
-        for(U id: ids) {
-            if(id != null) {
-                keyToCreateEntitiesFrom.add((U)EntityProxy.convertToReturnType(getIdType(type), id));
-            }
-            else {
-                Object[] parameters = new Object[1 + notNullEntityInitData.length];
-                parameters[0] = null;
-                System.arraycopy(notNullEntityInitData, 0, parameters, 1, notNullEntityInitData.length);
-                U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), parameters);
-                newId = (U)normalizeGeneratedId(getIdType(type), newId);
-                if(newId != null) {
-                    keyToCreateEntitiesFrom.add(newId);
-                }
-            }
-        }
-        if(keyToCreateEntitiesFrom.size() < ids.size()) {
-            throw new IllegalStateException("After inserting row into " + getTableName(type) + ", couldn't "
-                    + "figure out what primary key was assigned, your JDBC driver or database server "
-                    + "probably don't support the feature to return auto-generated keys or the column "
-                    + "isn't set up to auto generate keys");
-        }
         
-        List<T> newEntities = new ArrayList<T>();
-        for(U id: keyToCreateEntitiesFrom) {
-            if(id == null)
-                continue;
-            
-            if(!getIdType(type).isAssignableFrom(id.getClass())) {
-                throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
-                        "; expected id type " + getIdType(type).getName() + " but supplied (or auto-generated) id type was a " + id.getClass().getName());
-            }
-            T entity = newEntityProxy(type, id, entityInitData);
-            cacheManager.getCache(type).put(entity);
-            newEntities.add(entity);
+        //Finally, put it all into the cache
+        for(Persistable<T> persistable: persistables) {
+            cacheManager.getCache(entityType).put(((EntityProxy<U, T>)persistable).getObject());
         }
-        return newEntities;
     }
     
-    public <U, T extends JORMEntity<U>> T persist(T entity) throws SQLException {
-        persist(Arrays.asList(entity));
-        return entity;
-    }
-    
-    public <U, T extends JORMEntity<U>> void persist(T... entities) throws SQLException {
-        persist(Arrays.asList(entities));
-    }
-    
-    public <U, T extends JORMEntity<U>> void persist(Collection<T> entities) throws SQLException {
-        if(entities == null || entities.isEmpty()) {
+    private <U, T extends JORMEntity<U>> void update(Class<T> entityType, Collection<Persistable> persistables) throws SQLException {
+        if(persistables == null || persistables.isEmpty() || entityType == null) {
             return;
         }
         
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
-        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)entities.iterator().next();
-        EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
-        Class<T> entityType = proxy.getEntityType();
-        ClassTableMapping tableMapping = getClassTableMapping(entityType);
-        
+        ClassTableMapping tableMapping = getClassTableMapping(entityType);        
         List<String> fieldNames = tableMapping.getFieldNames(entityType);
-        if(fieldNames.isEmpty())
+        if(fieldNames.isEmpty()) {
             return;
+        }
         
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
@@ -305,19 +337,14 @@ public class JORMDatabase {
         sb.append(" = ?");
         
         List<Object[]> batches = new ArrayList<Object[]>();
-        for(T entity: entities) {
-            if(entity == null)
-                continue;
-            
+        for(Persistable persistable: persistables) {
+            EntityProxy<U, T> proxy = (EntityProxy<U, T>)persistable;
             Object []values = new Object[fieldNames.size() + 1];
             for(int i = 0; i < fieldNames.size(); i++)
                 values[i] = proxy.getValue(fieldNames.get(i));
-            System.arraycopy(formatAsInputParameters(entityType, values, true), 0, values, 0, fieldNames.size());            
-            values[fieldNames.size()] = sqlDialect.safeType(getEntityColumnMap(entityType).get("id"), entity.getId());
+            System.arraycopy(formatAsInputParameters(entityType, values, false), 0, values, 0, fieldNames.size());            
+            values[fieldNames.size()] = sqlDialect.safeType(getEntityColumnMap(entityType).get("id"), proxy.getId());
             batches.add(values);
-        }
-        if(batches.isEmpty()) {
-            return;
         }
         databaseConnection.createAutoExecutor().batchWrite(new BatchUpdateHandlerAdapter(), sb.toString(), batches);
     }
@@ -443,7 +470,7 @@ public class JORMDatabase {
             Set<U> idsReturned = new HashSet<U>();
             DataCache<U,T> entityDataMap = cacheManager.getCache(entityType);
             for(Object[] row: rows) {
-                U id = (U)EntityProxy.convertToReturnType(getIdType(entityType), row[0]);
+                U id = (U)convertToReturnType(getIdType(entityType), row[0]);
                 idsReturned.add(id);
                 T entity = null;
                 if(!entityDataMap.contains(id)) {
@@ -480,12 +507,40 @@ public class JORMDatabase {
         }
     }
     
+    static <T> T convertToReturnType(Class<T> returnType, Object object) {
+        if(object == null)
+            return null;
+        
+        if(returnType.isAssignableFrom(object.getClass()))
+            return (T)object;        
+        else if(returnType.equals(UUID.class) && object instanceof String)
+            return (T)UUID.fromString((String)object);        
+        else if(returnType.isPrimitive())
+            return (T)object; //Let java autoboxing do its thing
+        else if(returnType == Integer.class) {
+            if(object.getClass() == Long.class)
+                return (T)new Integer((int)((Long)object).longValue());
+            else if(object.getClass() == BigInteger.class)
+                return (T)new Integer(((BigInteger)object).intValue());
+        }
+        else if(returnType == Long.class) {
+            if(object.getClass() == Integer.class)
+                return (T)new Long(((Integer)object).longValue());
+            else if(object.getClass() == BigInteger.class)
+                return (T)new Long(((BigInteger)object).longValue());
+        }
+        
+        throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
+    }
+    
     private <U, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id, Object[] initializationData) {
         EntityProxy<U, T> proxy = new EntityProxy<U, T>(entityType, getClassTableMapping(entityType), id, initializationData);
-        return (T)Proxy.newProxyInstance(
-                    ClassLoader.getSystemClassLoader(), 
-                    new Class[] { entityType, EntityProxy.Resolver.class }, 
-                    proxy);
+        T proxyInterface = (T)Proxy.newProxyInstance(
+                                        ClassLoader.getSystemClassLoader(), 
+                                        new Class[] { entityType, EntityProxy.Resolver.class }, 
+                                        proxy);
+        proxy.setObject(proxyInterface);
+        return proxyInterface;
     }
     
     private <U, T extends JORMEntity<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
@@ -498,29 +553,6 @@ public class JORMDatabase {
                     tableMapping.toColumnName(entityType, fieldName)));
         }
         return sb.toString();
-    }
-    
-    private <U> U normalizeGeneratedId(Class<U> type, U generatedId) {
-        if(type.isAssignableFrom(generatedId.getClass())) {
-            return generatedId;
-        }
-        else if(type == Integer.class) {
-            if(generatedId.getClass() == Long.class) {
-                return (U)new Integer((int)((Long)generatedId).longValue());
-            }
-            else if(generatedId.getClass() == BigInteger.class) {
-                return (U)new Integer(((BigInteger)generatedId).intValue());
-            }
-        }
-        else if(type == Long.class) {
-            if(generatedId.getClass() == Integer.class) {
-                return (U)new Long(((Integer)generatedId).longValue());
-            }
-            else if(generatedId.getClass() == BigInteger.class) {
-                return (U)new Long(((BigInteger)generatedId).longValue());
-            }
-        }
-        return generatedId;
     }
     
     private <T> List<T> removeNullElementsFromCollection(Collection<T> collection) {
@@ -609,20 +641,26 @@ public class JORMDatabase {
         }
     }
     
-    private <U, T extends JORMEntity<U>> Object[] formatAsInputParameters(Class<T> entityType, Object[]data, boolean includeNull) {
+    private <U, T extends JORMEntity<U>> Object[] formatAsInputParameters(Class<T> entityType, Object[]data, boolean skipFirstElement) {
         List list = new ArrayList();
         ClassTableMapping classTableMapping = getClassTableMapping(entityType);
         List<String> fieldNames = classTableMapping.getFieldNames(entityType);
         Map<String, Column> columnMap = getEntityColumnMap(entityType);
         for(int i = 0; i < fieldNames.size(); i++) {
-            Object fieldData = data[i];
-            if(fieldData == null && !includeNull) {
-                continue;
-            }
-            
+            Object fieldData = data[skipFirstElement ? i + 1 : i];
             Column column = columnMap.get(classTableMapping.toColumnName(entityType, fieldNames.get(i)));
             list.add(databaseConnection.getServerType().getSQLDialect().safeType(column, fieldData));
         }
         return list.toArray();
+    }
+
+    private <U, T extends JORMEntity<U>> boolean isScheduledForInsertion(Persistable<T> persistable) {
+        synchronized(entitiesToBeInserted) {
+            if(entitiesToBeInserted.containsKey((EntityProxy<U, T>)persistable)) {
+                entitiesToBeInserted.remove((EntityProxy<U, T>)persistable);
+                return true;
+            }
+            return false;
+        }
     }
 }
