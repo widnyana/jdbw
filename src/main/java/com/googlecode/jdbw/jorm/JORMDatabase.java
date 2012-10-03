@@ -20,10 +20,10 @@ package com.googlecode.jdbw.jorm;
 
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
+import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
 import com.googlecode.jdbw.util.SelfExecutor;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -38,11 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class JORMDatabase {
     public static enum SearchPolicy {
@@ -56,6 +52,7 @@ public class JORMDatabase {
         ClassTableMapping tableMapping;
         EntityInitializer entityInitializer;
         Class idType;
+        Map<String, Column> columnMap;
     }
     
     private final DatabaseConnection databaseConnection;
@@ -87,17 +84,22 @@ public class JORMDatabase {
         this.defaultEntityInitializer = defaultEntityInitializer;
     }
     
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) {
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) throws SQLException {
         register(entityType, null);
     }
     
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) {
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException {
         register(entityType, classTableMapping, null);
     }
     
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) {
+    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException {
         if(entityType == null)
             throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
+        
+        if(classTableMapping == null)
+            classTableMapping = defaultClassTableMapping;
+        if(initializer == null)
+            initializer = defaultEntityInitializer;
         
         synchronized(entityMappings) {
             if(entityMappings.containsKey(entityType)) {
@@ -118,6 +120,12 @@ public class JORMDatabase {
             entityMapping.tableMapping = classTableMapping;
             entityMapping.entityInitializer = initializer;
             entityMapping.idType = (Class)idType;
+            entityMapping.columnMap = 
+                databaseConnection
+                    .getCatalog(databaseConnection.getDefaultCatalogName())
+                    .getSchema(databaseConnection.getServerType().getSQLDialect().getDefaultSchemaName())
+                    .getTable(classTableMapping.getTableName(entityType))
+                    .getColumnMap();
             
             entityMappings.put(entityType, entityMapping);
             cacheManager.createDataCache(entityType);
@@ -179,18 +187,23 @@ public class JORMDatabase {
         ClassTableMapping tableMapping = getClassTableMapping(type);
         List<String> fieldNames = tableMapping.getFieldNames(type);
         Object[] entityInitData = getEntityInitializationData(type);
+        Object[] notNullEntityInitData = formatAsInputParameters(type, entityInitData, false /* don't include nulls */);
         
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
         sb.append(sqlDialect.escapeIdentifier(getTableName(type)));
         sb.append(" (");
         sb.append(sqlDialect.escapeIdentifier("id"));
-        for(String fieldName: fieldNames) {
-            sb.append(", ");
-            sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(type, fieldName)));
+        for(int i = 0; i < fieldNames.size(); i++) {
+            //Only add non-null parameters
+            if(entityInitData[i] != null) {
+                String fieldName = fieldNames.get(i);
+                sb.append(", ");
+                sb.append(sqlDialect.escapeIdentifier(tableMapping.toColumnName(type, fieldName)));
+            }
         }            
         sb.append(") VALUES(?");
-        for(int i = 0; i < entityInitData.length; i++) {
+        for(int i = 0; i < notNullEntityInitData.length; i++) {
             sb.append(", ?");
         }
         sb.append(")");
@@ -204,9 +217,9 @@ public class JORMDatabase {
                 throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                         "; expected id type " + getIdType(type) + " but got a " + id.getClass());
             }
-            Object[] values = new Object[1 + entityInitData.length];
-            values[0] = id;
-            System.arraycopy(entityInitData, 0, values, 1, entityInitData.length);
+            Object[] values = new Object[1 + notNullEntityInitData.length];
+            values[0] = sqlDialect.safeType(getEntityColumnMap(type).get("id"), id);
+            System.arraycopy(notNullEntityInitData, 0, values, 1, notNullEntityInitData.length);
             parameterValuesToInsert.add(values);
         }
         if(parameterValuesToInsert.size() > 0) {
@@ -216,12 +229,12 @@ public class JORMDatabase {
         final List<U> keyToCreateEntitiesFrom = new ArrayList<U>();
         for(U id: ids) {
             if(id != null) {
-                keyToCreateEntitiesFrom.add(id);
+                keyToCreateEntitiesFrom.add((U)EntityProxy.convertToReturnType(getIdType(type), id));
             }
             else {
-                Object[] parameters = new Object[1 + entityInitData.length];
+                Object[] parameters = new Object[1 + notNullEntityInitData.length];
                 parameters[0] = null;
-                System.arraycopy(entityInitData, 0, parameters, 1, entityInitData.length);
+                System.arraycopy(notNullEntityInitData, 0, parameters, 1, notNullEntityInitData.length);
                 U newId = (U)new SQLWorker(databaseConnection.createAutoExecutor()).insert(sb.toString(), parameters);
                 newId = (U)normalizeGeneratedId(getIdType(type), newId);
                 if(newId != null) {
@@ -299,7 +312,8 @@ public class JORMDatabase {
             Object []values = new Object[fieldNames.size() + 1];
             for(int i = 0; i < fieldNames.size(); i++)
                 values[i] = proxy.getValue(fieldNames.get(i));
-            values[fieldNames.size()] = entity.getId();
+            System.arraycopy(formatAsInputParameters(entityType, values, true), 0, values, 0, fieldNames.size());            
+            values[fieldNames.size()] = sqlDialect.safeType(getEntityColumnMap(entityType).get("id"), entity.getId());
             batches.add(values);
         }
         if(batches.isEmpty()) {
@@ -352,7 +366,7 @@ public class JORMDatabase {
             if(i > 0)
                 sb.append(", ");
             U id = ((List<U>)ids).get(i);
-            sb.append(formatKey(id));
+            sb.append(sqlDialect.formatValue(id, getEntityIdColumn(entityType).getSqlType()));
         }        
         sb.append(")");
         new SQLWorker(databaseConnection.createAutoExecutor()).write(sb.toString());
@@ -417,7 +431,7 @@ public class JORMDatabase {
                 sql += ", ";
             if(keys.get(i) == null)
                 throw new IllegalArgumentException("Trying to refresh a " + entityType.getName() + " with key null");
-            sql += formatKey(keys.get(i));
+            sql += sqlDialect.formatValue(keys.get(i), getEntityIdColumn(entityType).getSqlType());
         }        
         sql += ")";
         queryAndProcess(entityType, sql, keys);
@@ -429,7 +443,7 @@ public class JORMDatabase {
             Set<U> idsReturned = new HashSet<U>();
             DataCache<U,T> entityDataMap = cacheManager.getCache(entityType);
             for(Object[] row: rows) {
-                U id = (U)row[0];
+                U id = (U)EntityProxy.convertToReturnType(getIdType(entityType), row[0]);
                 idsReturned.add(id);
                 T entity = null;
                 if(!entityDataMap.contains(id)) {
@@ -463,15 +477,6 @@ public class JORMDatabase {
         catch(SQLException e) {
             //TODO: CHANGE ME!!!
             e.printStackTrace();
-        }
-    }
-    
-    private String formatKey(Object key) {
-        if(key instanceof String) {
-            return "'" + databaseConnection.getServerType().getSQLDialect().escapeString((String)key) + "'";
-        }
-        else {
-            return key.toString();
         }
     }
     
@@ -584,6 +589,14 @@ public class JORMDatabase {
             return mapping.tableMapping;
     }
     
+    private <U, T extends JORMEntity<U>> Map<String, Column> getEntityColumnMap(Class<T> entityClass) {
+        return getMapping(entityClass).columnMap;
+    }
+    
+    private <U, T extends JORMEntity<U>> Column getEntityIdColumn(Class<T> entityClass) {
+        return getEntityColumnMap(entityClass).get("id");
+    }
+    
     private <U, T extends JORMEntity<U>> Class getIdType(Class<T> entityType) {
         return getMapping(entityType).idType;
     }
@@ -594,5 +607,22 @@ public class JORMDatabase {
                 throw new IllegalArgumentException("Trying to access the table name of an unregistered entity type " + entityType.getName());
             return entityMappings.get(entityType);
         }
+    }
+    
+    private <U, T extends JORMEntity<U>> Object[] formatAsInputParameters(Class<T> entityType, Object[]data, boolean includeNull) {
+        List list = new ArrayList();
+        ClassTableMapping classTableMapping = getClassTableMapping(entityType);
+        List<String> fieldNames = classTableMapping.getFieldNames(entityType);
+        Map<String, Column> columnMap = getEntityColumnMap(entityType);
+        for(int i = 0; i < fieldNames.size(); i++) {
+            Object fieldData = data[i];
+            if(fieldData == null && !includeNull) {
+                continue;
+            }
+            
+            Column column = columnMap.get(classTableMapping.toColumnName(entityType, fieldNames.get(i)));
+            list.add(databaseConnection.getServerType().getSQLDialect().safeType(column, fieldData));
+        }
+        return list.toArray();
     }
 }

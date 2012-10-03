@@ -77,7 +77,7 @@ public class SimpleJORMTest {
     }
     
     @Test
-    public void settingUpAndRegisteringJORMInterfaceWorks() {
+    public void settingUpAndRegisteringJORMInterfaceWorks() throws SQLException {
         JORMDatabase jorm = new JORMDatabase(h2);
         jorm.register(Person.class);
         jorm.refresh();
@@ -93,7 +93,7 @@ public class SimpleJORMTest {
     }
     
     @Test
-    public void testingLocalAndRemoteSearch() {
+    public void testingLocalAndRemoteSearch() throws SQLException {
         JORMDatabase jorm = new JORMDatabase(h2);
         jorm.register(Person.class);
         assertNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.LOCAL_ONLY));
@@ -103,7 +103,7 @@ public class SimpleJORMTest {
     }
     
     @Test
-    public void testingRefreshSearch() {
+    public void testingRefreshSearch() throws SQLException {
         JORMDatabase jorm = new JORMDatabase(h2);
         jorm.register(Person.class);
         assertNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.LOCAL_ONLY));
@@ -163,7 +163,7 @@ public class SimpleJORMTest {
     }
     
     @Test
-    public void testingEquality() {
+    public void testingEquality() throws SQLException {
         JORMDatabase jorm = new JORMDatabase(h2);
         jorm.register(Person.class);
         Person brel = jorm.get(Person.class, 2);
@@ -189,7 +189,7 @@ public class SimpleJORMTest {
     }
     
     @Test
-    public void testingEqualityAcrossJORMs() {
+    public void testingEqualityAcrossJORMs() throws SQLException {
         JORMDatabase jorm1 = new JORMDatabase(h2);
         JORMDatabase jorm2 = new JORMDatabase(h2);
         jorm1.register(Person.class);
