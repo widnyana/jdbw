@@ -71,17 +71,14 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler {
         }
         throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
     }
-    
-    
-    private final Class<T> entityClass;
-    private final ClassTableMapping mapping;    
+        
+    private final Class<T> entityClass;  
     private final U id;
     private final Object[] values;
     
     EntityProxy(Class<T> entityClass, ClassTableMapping mapping, U id, Object[] initData) {
         indexClass(entityClass, mapping);
         this.entityClass = entityClass;
-        this.mapping = mapping;
         this.id = id;
         this.values = Arrays.copyOf(initData, getNumberOfFields(entityClass));
     }
