@@ -131,6 +131,11 @@ public class DefaultSQLDialect implements SQLDialect {
     }
 
     @Override
+    public String getDefaultSchemaName() {
+        return "PUBLIC";
+    }
+
+    @Override
     public boolean isCompatible(int fromSqlType, int toSqlType) {
         if(fromSqlType == toSqlType) {
             return true;

@@ -160,6 +160,15 @@ class MySQLDialect extends DefaultSQLDialect {
         }
     }
 
+    /**
+     * @return MySQL doesn't have 'schemas' in the normal sense of the word, but we'll return
+     * "schema" here since that's what we use in JDBW to emulate a schema.
+     */
+    @Override
+    public String getDefaultSchemaName() {
+        return "schema";
+    }
+    
     //This may be a column from any other database so don't make any assumptions!
     private String getMySQLDatatype(Column column, boolean decimalDates) {
         if(isBigDecimal(column.getSqlType())) {

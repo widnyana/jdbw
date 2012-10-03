@@ -44,6 +44,11 @@ public class SybaseASESQLDialect extends DefaultSQLDialect {
         return "--";
     }
 
+    @Override
+    public String getDefaultSchemaName() {
+        return "dbo";
+    }
+
     private static final String HEXES = "0123456789abcdef";
 
     private String getHex(byte[] raw)

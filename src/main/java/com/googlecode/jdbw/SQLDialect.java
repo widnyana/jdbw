@@ -97,6 +97,11 @@ public interface SQLDialect {
     String getSingleLineCommentPrefix();
     
     /**
+     * @return The name of the 'default' schema (PUBLIC in H2, Postgres; dbo in Sybase, etc)
+     */
+    String getDefaultSchemaName();
+    
+    /**
      * @return True if this database can convert data of type fromSqlType to type toSqlType
      */
     boolean isCompatible(int fromSqlType, int toSqlType);
