@@ -92,8 +92,15 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Pers
             
             return equals(args[0]);
         }
-        else if(method.getName().startsWith("get") && method.getName().length() > 3 && method.getParameterTypes().length == 0) {
-            String asFieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
+        else if((method.getName().startsWith("get") && method.getName().length() > 3 && method.getParameterTypes().length == 0) ||
+                    (method.getName().startsWith("is") && method.getName().length() > 2 && method.getParameterTypes().length == 0)) {
+            
+            String asFieldName;
+            if(method.getName().startsWith("get"))
+                asFieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
+            else
+                asFieldName = Character.toLowerCase(method.getName().charAt(2)) + method.getName().substring(3);
+            
             if(getFieldIndex(entityClass, asFieldName) == -1) {
                 throw new IllegalStateException("In method call to " + entityClass.getSimpleName() + 
                         "." + method.getName() + ", couldn't find field " + asFieldName + " in " +
