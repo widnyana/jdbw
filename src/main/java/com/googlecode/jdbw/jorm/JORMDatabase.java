@@ -137,11 +137,12 @@ public class JORMDatabase {
     }
     
     public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
+        refresh(type);
         return new ArrayList<T>(cacheManager.getCache(type).allValues());
     }
     
     public <U, T extends JORMEntity<U>> T get(Class<T> type, U key) {
-        return get(type, key, SearchPolicy.CHECK_DATABASE_IF_MISSING);
+        return get(type, key, SearchPolicy.REFRESH_FIRST);
     }
     
     public <U, T extends JORMEntity<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
