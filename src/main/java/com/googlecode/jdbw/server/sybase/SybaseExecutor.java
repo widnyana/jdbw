@@ -16,45 +16,26 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw.server.sybase;
 
-import com.googlecode.jdbw.SQLDialect;
-import com.googlecode.jdbw.SQLExecutor;
-import com.googlecode.jdbw.metadata.MetaDataResolver;
-import com.googlecode.jdbw.server.AbstractDatabaseType;
+import com.googlecode.jdbw.impl.SQLExecutorImpl;
 import java.sql.Connection;
-import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  *
  * @author Martin Berglund
  */
-public class SybaseASEServerType extends AbstractDatabaseType {
+class SybaseExecutor extends SQLExecutorImpl {
     
-    public static final SybaseASEServerType INSTANCE = new SybaseASEServerType();
-    
-    private SybaseASEServerType() {
-        
+    SybaseExecutor(Connection connection) {
+        super(connection);
     }
     
     @Override
-    public String getName() {
-        return "Sybase ASE";
-    }
-
-    @Override
-    public SQLDialect getSQLDialect() {
-        return new SybaseASESQLDialect();
-    }
-    
-    @Override
-    public MetaDataResolver createMetaDataResolver(DataSource dataSource) {
-        return new SybaseASEMetaDataResolver(dataSource);
-    }
-    
-    @Override
-    public SQLExecutor createExecutor(Connection connection) {
-        return new SybaseExecutor(connection);
-    }
+    protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(SQL);
+        return ps;
+    }    
 }

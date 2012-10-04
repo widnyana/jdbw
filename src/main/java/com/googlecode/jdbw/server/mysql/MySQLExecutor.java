@@ -16,7 +16,6 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.impl.SQLExecutorImpl;
