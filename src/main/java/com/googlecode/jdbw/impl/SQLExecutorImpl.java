@@ -176,7 +176,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
     // servers which may or may not support all of JDBC. Please see 
     // MySQLExecutor for an example.
     
-    protected PreparedStatement prepareQueryStatement(String SQL) throws SQLException
+    protected PreparedStatement prepareGeneralStatement(String SQL) throws SQLException
     {
         return connection.prepareStatement(SQL);
     }
@@ -191,12 +191,12 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         return connection.prepareStatement(SQL, Statement.NO_GENERATED_KEYS);
     }
 
-    protected PreparedStatement prepareExecuteStatement(String SQL) throws SQLException
+    private PreparedStatement prepareExecuteStatement(String SQL) throws SQLException
     {
         if(isInsertSQL(SQL))
             return prepareInsertStatement(SQL);
         else
-            return connection.prepareStatement(SQL);
+            return prepareGeneralStatement(SQL);
     }
 
     protected void executeUpdate(Statement statement, String SQL) throws SQLException

@@ -39,14 +39,7 @@ class MySQLExecutor extends SQLExecutorImpl {
     }
 
     @Override
-    protected PreparedStatement prepareExecuteStatement(String SQL) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(SQL, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-        ps.setFetchSize(Integer.MIN_VALUE);
-        return ps;
-    }
-
-    @Override
-    protected PreparedStatement prepareQueryStatement(String SQL) throws SQLException {
+    protected PreparedStatement prepareGeneralStatement(String SQL) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(SQL, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
         ps.setFetchSize(Integer.MIN_VALUE);
         return ps;
