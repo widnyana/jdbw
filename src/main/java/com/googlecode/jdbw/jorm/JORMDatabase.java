@@ -416,14 +416,19 @@ public class JORMDatabase {
     }
     
     public <U, T extends JORMEntity<U>> void refresh(T... entities) {
-        if(entities.length == 0)
+        List<T> nonNullEntities = removeNullElementsFromCollection(Arrays.asList(entities));
+        if(nonNullEntities.isEmpty())
             return;
         
         List<U> keys = new ArrayList<U>();
-        for(T entity: entities) {
+        for(T entity: nonNullEntities) {
             keys.add(entity.getId());
         }
-        refresh(entities[0].getClass(), keys);
+        
+        EntityProxy.Resolver<U, T> asResolver = (EntityProxy.Resolver<U, T>)nonNullEntities.get(0);
+        EntityProxy<U, T> proxy = asResolver.__underlying_proxy();
+        Class<T> entityType = proxy.getEntityType();        
+        refresh(entityType, keys);
     }
     
     public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType) {
