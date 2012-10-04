@@ -35,7 +35,11 @@ class SybaseExecutor extends SQLExecutorImpl {
     
     @Override
     protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(SQL);
-        return ps;
+        return connection.prepareStatement(SQL);
     }    
+
+    @Override
+    protected PreparedStatement prepareBatchUpdateStatement(String SQL) throws SQLException {
+        return connection.prepareStatement(SQL);
+    }
 }
