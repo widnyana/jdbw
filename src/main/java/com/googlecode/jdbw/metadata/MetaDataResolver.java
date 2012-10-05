@@ -156,25 +156,41 @@ public class MetaDataResolver {
         }
     }
 
-    protected List<Column> getColumns(String catalogName, String schemaName, Table table) throws SQLException {
+    protected List<Map<String, Object>> getColumns(String catalogName, String schemaName, String tableName) throws SQLException {
         Connection pooledConnection = dataSource.getConnection();
-        List<Column> columns = new ArrayList<Column>();
+        List<Map<String, Object>> columns = new ArrayList<Map<String, Object>>();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
-            ResultSet resultSet = databaseMetaData.getColumns(catalogName, schemaName, table.getName(), null);
+            ResultSet resultSet = databaseMetaData.getColumns(catalogName, schemaName, tableName, null);
             while(resultSet.next()) {
-                Column column = extractColumnFromMetaResult(resultSet, table);
-                columns.add(column);
+                columns.add(extractColumnFromMetaResult(resultSet));
             }
         } finally {
             pooledConnection.close();
         }
-        Collections.sort(columns);
+        Collections.sort(columns, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                return new Integer(o1.get("ORDINAL_POSITION").toString()).compareTo(new Integer(o2.get("ORDINAL_POSITION").toString()));
+            }
+        });
         return columns;
     }
 
-    protected List<Index> getIndexes(String catalogName, String schemaName, Table table) throws SQLException {
+    protected List<Map<String, Object>> getIndexes(String catalogName, String schemaName, String tableName) throws SQLException {
         Connection pooledConnection = dataSource.getConnection();
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        try {
+            DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
+            ResultSet resultSet = databaseMetaData.getIndexInfo(catalogName, schemaName, tableName, false, false);
+            while(resultSet.next()) {
+                result.add(extractIndexDataFromMetaResult(resultSet));
+            }
+        } finally {
+            pooledConnection.close();
+        }
+        return result;
+        /*
         Map<String, Index> indexMap = new HashMap<String, Index>();
         try {
             DatabaseMetaData databaseMetaData = pooledConnection.getMetaData();
@@ -188,6 +204,7 @@ public class MetaDataResolver {
         List<Index> indexes = new ArrayList<Index>(indexMap.values());
         Collections.sort(indexes);
         return indexes;
+        */
     }
 
     protected List<String> getProcedureInputParameterNames(String catalogName, String schemaName, StoredProcedure procedure) throws SQLException {
@@ -200,20 +217,27 @@ public class MetaDataResolver {
         }
     }
 
-    protected Column extractColumnFromMetaResult(ResultSet resultSet, Table table) throws SQLException {
-        String columnName = resultSet.getString("COLUMN_NAME");
-        int sqlType = resultSet.getInt("DATA_TYPE");
-        String typeName = resultSet.getString("TYPE_NAME");
-        int columnSize = resultSet.getInt("COLUMN_SIZE");
-        int decimalDigits = resultSet.getInt("DECIMAL_DIGITS");
-        int nullable = resultSet.getInt("NULLABLE");
-        int ordinalPosition = resultSet.getInt("ORDINAL_POSITION");
-        String isAutoIncrement = resultSet.getString("IS_AUTOINCREMENT");
-        Column column = new Column(ordinalPosition, columnName, sqlType, typeName, columnSize, decimalDigits, nullable, isAutoIncrement, table);
-        return column;
+    protected Map<String, Object> extractColumnFromMetaResult(ResultSet resultSet) throws SQLException {
+        Map<String, Object> columnProperties = new HashMap<String, Object>(8);
+        columnProperties.put("COLUMN_NAME", resultSet.getString("COLUMN_NAME"));
+        columnProperties.put("DATA_TYPE", resultSet.getInt("DATA_TYPE"));
+        columnProperties.put("TYPE_NAME", resultSet.getString("TYPE_NAME"));
+        columnProperties.put("COLUMN_SIZE", resultSet.getInt("COLUMN_SIZE"));
+        columnProperties.put("DECIMAL_DIGITS", resultSet.getInt("DECIMAL_DIGITS"));
+        columnProperties.put("NULLABLE", resultSet.getInt("NULLABLE"));
+        columnProperties.put("ORDINAL_POSITION", resultSet.getInt("ORDINAL_POSITION"));
+        columnProperties.put("IS_AUTOINCREMENT", resultSet.getString("IS_AUTOINCREMENT"));
+        return columnProperties;
     }
 
-    protected void extractIndexDataFromMetaResult(ResultSet resultSet, Map<String, Index> indexMap, Table table) throws SQLException {
+    protected Map<String, Object> extractIndexDataFromMetaResult(ResultSet resultSet) throws SQLException {
+        Map<String, Object> indexDefMap = new HashMap<String, Object>();
+        indexDefMap.put("INDEX_NAME", resultSet.getString("INDEX_NAME"));
+        indexDefMap.put("NON_UNIQUE", resultSet.getBoolean("NON_UNIQUE"));
+        indexDefMap.put("TYPE", resultSet.getShort("TYPE"));
+        indexDefMap.put("COLUMN_NAME", resultSet.getString("COLUMN_NAME"));
+        return indexDefMap;
+        /*
         String indexName = resultSet.getString("INDEX_NAME");
         boolean unique = !resultSet.getBoolean("NON_UNIQUE");
         boolean clustered = resultSet.getShort("TYPE") == DatabaseMetaData.tableIndexClustered;
@@ -232,6 +256,7 @@ public class MetaDataResolver {
         } else {
             indexMap.put(indexName, new Index(indexName, unique, clustered, primaryKey, table, column));
         }
+        */ 
     }
 
     protected List<String> readResultSetColumn(ResultSet resultSet, int index) throws SQLException {

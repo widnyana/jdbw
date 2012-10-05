@@ -129,7 +129,7 @@ public class Schema implements Comparable<Schema> {
                 continue;
             }
 
-            View view = new View(catalog, this, viewName);
+            View view = new View(metaDataResolver, this, viewName);
             views.add(view);
         }
         return views;

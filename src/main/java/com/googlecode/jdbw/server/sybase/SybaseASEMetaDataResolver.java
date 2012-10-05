@@ -24,16 +24,15 @@ import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.DatabaseTransaction;
 import com.googlecode.jdbw.TransactionIsolation;
 import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
-import com.googlecode.jdbw.metadata.Column;
-import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.MetaDataResolver;
-import com.googlecode.jdbw.metadata.Table;
 import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
 
@@ -48,17 +47,17 @@ class SybaseASEMetaDataResolver extends MetaDataResolver {
     }
 
     @Override
-    protected Column extractColumnFromMetaResult(ResultSet resultSet, Table table) throws SQLException {
-        String columnName = resultSet.getString("COLUMN_NAME");
-        int sqlType = resultSet.getInt("DATA_TYPE");
-        String typeName = resultSet.getString("TYPE_NAME");
-        int columnSize = resultSet.getInt("COLUMN_SIZE");
-        int decimalDigits = resultSet.getInt("DECIMAL_DIGITS");
-        int nullable = resultSet.getInt("NULLABLE");
-        int ordinalPosition = resultSet.getInt("ORDINAL_POSITION");
-        String isAutoIncrement = "";
-        Column column = new Column(ordinalPosition, columnName, sqlType, typeName, columnSize, decimalDigits, nullable, isAutoIncrement, table);
-        return column;
+    protected Map<String, Object> extractColumnFromMetaResult(ResultSet resultSet) throws SQLException {
+        Map<String, Object> columnProperties = new HashMap<String, Object>(8);
+        columnProperties.put("COLUMN_NAME", resultSet.getString("COLUMN_NAME"));
+        columnProperties.put("DATA_TYPE", resultSet.getInt("DATA_TYPE"));
+        columnProperties.put("TYPE_NAME", resultSet.getString("TYPE_NAME"));
+        columnProperties.put("COLUMN_SIZE", resultSet.getInt("COLUMN_SIZE"));
+        columnProperties.put("DECIMAL_DIGITS", resultSet.getInt("DECIMAL_DIGITS"));
+        columnProperties.put("NULLABLE", resultSet.getInt("NULLABLE"));
+        columnProperties.put("ORDINAL_POSITION", resultSet.getInt("ORDINAL_POSITION"));
+        columnProperties.put("IS_AUTOINCREMENT", "");
+        return columnProperties;
     }
 
     @Override
@@ -97,30 +96,28 @@ class SybaseASEMetaDataResolver extends MetaDataResolver {
     }
 
     @Override
-    protected List<Index> getIndexes(String catalogName, String schemaName, Table table) throws SQLException {
-        List<Index> indexes = super.getIndexes(catalogName, schemaName, table);
-        List<Index> newIndexList = new ArrayList<Index>(indexes.size());
+    protected List<Map<String, Object>> getIndexes(String catalogName, String schemaName, String tableName) throws SQLException {
+        List<Map<String, Object>> indexes = super.getIndexes(catalogName, schemaName, tableName);
         SQLWorker worker = new SQLWorker(new DatabaseConnectionImpl(dataSource, null, DatabaseServerTypes.SYBASE_ASE).createAutoExecutor());
-        List<Object[]> rows = worker.query("select i.name, i.status, i.status2 " + "FROM " + catalogName + "." + schemaName + ".sysobjects o, " + "     " + catalogName + "." + schemaName + ".sysindexes i " + "WHERE o.name = ? AND o.type = 'U' AND " + "         o.id = i.id", table.getName());
+        List<Object[]> rows = worker.query("select i.name, i.status, i.status2 " + 
+                "FROM " + catalogName + "." + schemaName + ".sysobjects o, " + 
+                "     " + catalogName + "." + schemaName + ".sysindexes i " + 
+                "WHERE o.name = ? AND o.type = 'U' AND " + 
+                "         o.id = i.id", tableName);
         //Use a safer way of detecting clustered indexes
         indexLoop:
-        for(Index index : indexes) {
+        for(Map<String, Object> indexDef : indexes) {
             for(Object[] row : rows) {
-                if(row[0].toString().trim().equals(index.getName())) {
+                if(row[0].toString().trim().equals(indexDef.get("INDEX_NAME"))) {
                     int status = (Integer) row[1];
                     int status2 = (Integer) row[2];
                     boolean clustered = (status & 16) > 0 || (status2 & 512) > 0;
-                    Index newIndex = new Index(index.getName(), index.isUnique(), clustered, index.isUnique() && clustered, table, index.getColumns().get(0));
-                    for(int i = 1; i < index.getColumnNames().size(); i++) {
-                        newIndex.addColumn(index.getColumns().get(i));
-                    }
-                    newIndexList.add(newIndex);
+                    indexDef.put("TYPE", DatabaseMetaData.tableIndexClustered);
                     continue indexLoop;
                 }
             }
-            newIndexList.add(index);
         }
-        return newIndexList;
+        return indexes;
     }
     
 }

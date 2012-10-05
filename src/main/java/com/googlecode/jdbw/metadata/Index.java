@@ -43,19 +43,19 @@ public class Index implements Comparable<Index> {
     private final boolean clustered;
     private final boolean primaryKey;
     private final Table table;
-    private final List<Column> columns;
+    private final List<TableColumn> columns;
 
-    public Index(String indexName, boolean unique, boolean clustered, boolean primaryKey, Table table, Column firstColumn) {
+    public Index(String indexName, boolean unique, boolean clustered, boolean primaryKey, Table table, TableColumn firstColumn) {
         this.name = indexName;
         this.unique = unique;
         this.clustered = clustered;
         this.primaryKey = primaryKey;
         this.table = table;
-        this.columns = new ArrayList<Column>();
+        this.columns = new ArrayList<TableColumn>();
         this.columns.add(firstColumn);
     }
 
-    public void addColumn(Column column) {
+    public void addColumn(TableColumn column) {
         if(column.getTable() != getTable()) {
             throw new IllegalArgumentException("Trying to add a column to an index from the wrong table!");
         }

@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.metadata;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -47,7 +48,7 @@ public class Table implements Comparable<Table> {
     private final Schema schema;
     private final String name;
     private List<Index> cachedIndexes;
-    private List<Column> cachedColumns;
+    private List<TableColumn> cachedColumns;
 
     public Table(MetaDataResolver metaDataResolver, Schema schema, String tableName) {
         this.metaDataResolver = metaDataResolver;
@@ -135,13 +136,35 @@ public class Table implements Comparable<Table> {
      * @throws SQLException In an error occurred while reading information from
      * the database
      */
-    public List<Column> getColumns() throws SQLException {
+    public List<TableColumn> getColumns() throws SQLException {
         if(cachedColumns != null) {
-            return new ArrayList<Column>(cachedColumns);
+            return new ArrayList<TableColumn>(cachedColumns);
         }
 
-        cachedColumns = metaDataResolver.getColumns(schema.getCatalog().getName(), schema.getName(), this);
-        return new ArrayList<Column>(cachedColumns);
+        List<Map<String, Object>> columnMaps = metaDataResolver.getColumns(schema.getCatalog().getName(), schema.getName(), getName());
+        List<TableColumn> columns = new ArrayList<TableColumn>();
+        for(Map<String, Object> columnMap: columnMaps) {
+            String columnName = (String)columnMap.get("COLUMN_NAME");
+            int sqlType = (Integer)columnMap.get("DATA_TYPE");
+            String typeName = (String)columnMap.get("TYPE_NAME");
+            int columnSize = (Integer)columnMap.get("COLUMN_SIZE");
+            int decimalDigits = (Integer)columnMap.get("DECIMAL_DIGITS");
+            int nullable = (Integer)columnMap.get("NULLABLE");
+            int ordinalPosition = (Integer)columnMap.get("ORDINAL_POSITION");
+            String isAutoIncrement = (String)columnMap.get("IS_AUTOINCREMENT");
+            columns.add(new TableColumn(
+                    this,
+                    ordinalPosition, 
+                    columnName, 
+                    sqlType, 
+                    typeName, 
+                    columnSize, 
+                    decimalDigits, 
+                    nullable, 
+                    isAutoIncrement));
+        }
+        cachedColumns = columns;
+        return new ArrayList<TableColumn>(cachedColumns);
     }
 
     /**
@@ -154,7 +177,27 @@ public class Table implements Comparable<Table> {
             return new ArrayList<Index>(cachedIndexes);
         }
 
-        cachedIndexes = metaDataResolver.getIndexes(schema.getCatalog().getName(), schema.getName(), this);
+        Map<String, Index> indexMap = new HashMap<String, Index>();
+        List<Map<String, Object>> indexDefMaps = 
+                metaDataResolver.getIndexes(schema.getCatalog().getName(), schema.getName(), getName());
+        for(Map<String, Object> indexDef: indexDefMaps) {
+            String indexName = (String)indexDef.get("INDEX_NAME");
+            boolean unique = !(Boolean)indexDef.get("NON_UNIQUE");
+            boolean clustered = ((Short)indexDef.get("TYPE") == DatabaseMetaData.tableIndexClustered);
+            String columnName = (String)indexDef.get("COLUMN_NAME");
+            boolean primaryKey = unique && clustered;
+
+            TableColumn column = getColumn(columnName);
+            if(indexName == null || column == null) //Only named indexes and existing columns
+                continue;
+
+            if(indexMap.containsKey(indexName)) {
+                indexMap.get(indexName).addColumn(column);
+            } 
+            else {
+                indexMap.put(indexName, new Index(indexName, unique, clustered, primaryKey, this, column));
+            }
+        }
         return new ArrayList<Index>(cachedIndexes);
     }
 
@@ -166,11 +209,11 @@ public class Table implements Comparable<Table> {
      * @throws SQLException In an error occurred while reading information from
      * the database
      */
-    public Column getColumn(String columnName) throws SQLException {
+    public TableColumn getColumn(String columnName) throws SQLException {
         if(cachedColumns == null) {
             getColumns();
         }
-        for(Column column : cachedColumns) {
+        for(TableColumn column : cachedColumns) {
             if(column.getName().equals(columnName)) {
                 return column;
             }

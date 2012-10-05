@@ -21,8 +21,8 @@ package com.googlecode.jdbw.metadata;
 import java.sql.DatabaseMetaData;
 
 /**
- * A column is a part of a database table, holding a specific value for every
- * row in the table. The column will have a determined type and depending on
+ * A column is a part of a database table or a view, holding a specific value for every
+ * row in the table/view. The column will have a determined type and depending on
  * the type could also have additional data associated with it, such as maximum
  * string length or decimal precision. A column is also either <i>nullable</i> (can 
  * have the {@code null} value, representing the absence of a value) or <i>not
@@ -32,10 +32,13 @@ import java.sql.DatabaseMetaData;
  * get them by using methods on other objects that holds columns.
  * 
  * @see Table
+ * @see View
+ * @see TableColumn
+ * @see ViewColumn
  * @see Index
  * @author Martin Berglund
  */
-public class Column implements Comparable<Column> {
+public abstract class Column implements Comparable<Column> {
 
     private final Integer ordinalPosition;
     private final String name;
@@ -45,10 +48,9 @@ public class Column implements Comparable<Column> {
     private final int decimalDigits;
     private final Nullability nullable;
     private final String autoIncrement;
-    private final Table table;
 
     public Column(int ordinalPosition, String columnName, int sqlType, String typeName,
-            int columnSize, int decimalDigits, int nullable, String autoIncrement, Table table) {
+            int columnSize, int decimalDigits, int nullable, String autoIncrement) {
         this.ordinalPosition = ordinalPosition;
         this.name = columnName;
         this.sqlType = sqlType;
@@ -63,7 +65,6 @@ public class Column implements Comparable<Column> {
             this.nullable = Nullability.UNKNOWN;
         }
         this.autoIncrement = autoIncrement;
-        this.table = table;
     }
 
     /**
@@ -131,13 +132,6 @@ public class Column implements Comparable<Column> {
         return typeName;
     }
 
-    /**
-     * @return Table owning this column
-     */
-    public Table getTable() {
-        return table;
-    }
-
     @Override
     public int compareTo(Column o) {
         return ordinalPosition.compareTo(o.ordinalPosition);
@@ -145,24 +139,6 @@ public class Column implements Comparable<Column> {
 
     @Override
     public String toString() {
-        return table.getName() + "." + getName() + " " + getNativeTypeName() + "(" + getColumnSize() + ")";
-    }
-
-    @Override
-    public int hashCode() {
-        return toString().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == null || obj instanceof Column == false) {
-            return false;
-        }
-
-        Column other = (Column) obj;
-        return getTable().getSchema().getCatalog().getName().equals(other.getTable().getSchema().getCatalog().getName())
-                && getTable().getSchema().getName().equals(other.getTable().getSchema().getName())
-                && getTable().getName().equals(other.getTable().getName())
-                && getName().equals(getName());
+        return getName() + " " + getNativeTypeName() + "(" + getColumnSize() + ")";
     }
 }

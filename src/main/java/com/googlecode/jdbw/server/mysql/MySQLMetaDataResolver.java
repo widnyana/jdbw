@@ -24,6 +24,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -54,21 +55,16 @@ class MySQLMetaDataResolver extends MetaDataResolver {
     }
 
     @Override
-    protected void extractIndexDataFromMetaResult(ResultSet resultSet, Map<String, Index> indexMap, Table table) throws SQLException {
-        String indexName = resultSet.getString("INDEX_NAME");
-        boolean unique = !resultSet.getBoolean("NON_UNIQUE");
-        boolean clustered = resultSet.getShort("TYPE") == DatabaseMetaData.tableIndexClustered;
-        String columnName = resultSet.getString("COLUMN_NAME");
-        boolean primaryKey = "PRIMARY".equals(indexName);
-        Column column = table.getColumn(columnName);
-        if(indexName == null) {
-            return;
+    protected Map<String, Object> extractIndexDataFromMetaResult(ResultSet resultSet) throws SQLException {
+        Map<String, Object> indexDefMap = new HashMap<String, Object>();
+        indexDefMap.put("INDEX_NAME", resultSet.getString("INDEX_NAME"));
+        indexDefMap.put("NON_UNIQUE", resultSet.getBoolean("NON_UNIQUE"));
+        indexDefMap.put("TYPE", resultSet.getShort("TYPE"));
+        indexDefMap.put("COLUMN_NAME", resultSet.getString("COLUMN_NAME"));
+        if(indexDefMap.get("INDEX_NAME").equals("PRIMARY")) {
+            indexDefMap.put("TYPE", DatabaseMetaData.tableIndexClustered);
         }
-        if(indexMap.containsKey(indexName)) {
-            indexMap.get(indexName).addColumn(column);
-        } else {
-            indexMap.put(indexName, new Index(indexName, unique, clustered, primaryKey, table, column));
-        }
+        return indexDefMap;
     }
 
     private static class MySQLMetaDataFactory extends DefaultMetaDataFactory {
