@@ -23,7 +23,6 @@ import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
-import com.googlecode.jdbw.util.SelfExecutor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -42,12 +41,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
-public class JORMDatabase {    
-    public static enum SearchPolicy {
-        LOCAL_ONLY,
-        CHECK_DATABASE_IF_MISSING,
-        REFRESH_FIRST
-    }
+public class JORMDatabase extends AbstractObjectStorage {    
     
     private static class EntityMapping {
         Class<? extends JORMEntity> entityType;
@@ -88,14 +82,7 @@ public class JORMDatabase {
         this.defaultEntityInitializer = defaultEntityInitializer;
     }
     
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) throws SQLException {
-        register(entityType, null);
-    }
-    
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException {
-        register(entityType, classTableMapping, null);
-    }
-    
+    @Override
     public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException {
         if(entityType == null)
             throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
@@ -136,15 +123,13 @@ public class JORMDatabase {
         }
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
         refresh(type);
         return new ArrayList<T>(cacheManager.getCache(type).allValues());
     }
     
-    public <U, T extends JORMEntity<U>> T get(Class<T> type, U key) {
-        return get(type, key, SearchPolicy.REFRESH_FIRST);
-    }
-    
+    @Override
     public <U, T extends JORMEntity<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
         if(searchPolicy == SearchPolicy.REFRESH_FIRST) {
             refresh(type, key);
@@ -156,14 +141,17 @@ public class JORMDatabase {
         return entity;
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException {
         return newEntity(type, (U)null);
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException {
         return newEntities(type, Arrays.asList(id)).get(0);
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
         if(numberOfEntities < 0) {
             throw new IllegalArgumentException("Cannot call JORMDatabase.newEntities with < 0 entities to create");
@@ -178,6 +166,7 @@ public class JORMDatabase {
         return newEntities(type, nulls);
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
         return newEntities(type, Arrays.asList(ids));
     }
@@ -204,14 +193,7 @@ public class JORMDatabase {
         return newEntities;
     }
     
-    public <U, T extends JORMEntity<U>> T persist(Persistable<T> persistable) throws SQLException {
-        return persist(Arrays.asList(persistable)).get(0);
-    }
-    
-    public <U, T extends JORMEntity<U>> List<T> persist(Persistable<T>... persistables) throws SQLException {
-        return persist(Arrays.asList(persistables));
-    }
-    
+    @Override
     public <U, T extends JORMEntity<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException {
         Map<Class<T>, List<Persistable<T>>> persistablesByClass = new HashMap<Class<T>, List<Persistable<T>>>();
         for(Persistable persistable: persistables) {
@@ -350,10 +332,7 @@ public class JORMDatabase {
         databaseConnection.createAutoExecutor().batchWrite(new BatchUpdateHandlerAdapter(), sb.toString(), batches);
     }
     
-    public <U, T extends JORMEntity<U>> void remove(T... entities) throws SQLException {
-        remove(Arrays.asList(entities));
-    }
-    
+    @Override
     public <U, T extends JORMEntity<U>> void remove(Collection<T> entities) throws SQLException {
         entities = removeNullElementsFromCollection(entities);
         if(entities == null || entities.isEmpty()) {
@@ -370,10 +349,7 @@ public class JORMDatabase {
         remove(entityType, keysToRemove);
     }
     
-    public <U, T extends JORMEntity<U>> void remove(Class<T> entityType, U... ids) throws SQLException {
-        remove(entityType, Arrays.asList(ids));
-    }
-    
+    @Override
     public <U, T extends JORMEntity<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException {
         if(entityType == null) {
             throw new IllegalArgumentException("Cannot call remove(...) with null entityType");
@@ -400,11 +376,8 @@ public class JORMDatabase {
         new SQLWorker(databaseConnection.createAutoExecutor()).write(sb.toString());
         cacheManager.getCache(entityType).removeAll(ids);
     }
-        
-    public void refresh() {
-        refresh(new SelfExecutor());
-    }
     
+    @Override
     public void refresh(Executor executor) {
         for(final Class entityType: (List<Class>)cacheManager.getAllKnownEntityTypes()) {
             executor.execute(new Runnable() {
@@ -416,6 +389,7 @@ public class JORMDatabase {
         }
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> void refresh(T... entities) {
         List<T> nonNullEntities = removeNullElementsFromCollection(Arrays.asList(entities));
         if(nonNullEntities.isEmpty())
@@ -432,6 +406,7 @@ public class JORMDatabase {
         refresh(entityType, keys);
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType) {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         String sql = "SELECT " +
@@ -442,6 +417,7 @@ public class JORMDatabase {
         queryAndProcess(entityType, sql, null);
     }
     
+    @Override
     public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, U... keys) {
         refresh(entityType, Arrays.asList(keys));
     }
