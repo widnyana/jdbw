@@ -342,7 +342,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void remove(Collection<T> entities) throws SQLException {
+    public <U, T extends Identifiable<U>> void delete(Collection<T> entities) throws SQLException {
         entities = removeNullElementsFromCollection(entities);
         if(entities == null || entities.isEmpty()) {
             return;
@@ -355,11 +355,11 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         for(T entity: entities) {
             keysToRemove.add(entity.getId());
         }
-        remove(entityType, keysToRemove);
+        delete(entityType, keysToRemove);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException {
+    public <U, T extends Identifiable<U>> void delete(Class<T> entityType, Collection<U> ids) throws SQLException {
         if(entityType == null) {
             throw new IllegalArgumentException("Cannot call remove(...) with null entityType");
         }

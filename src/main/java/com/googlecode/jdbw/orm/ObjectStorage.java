@@ -68,12 +68,19 @@ public interface ObjectStorage {
 
     <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException;
 
-    <U, T extends Identifiable<U>> void remove(T... entities) throws SQLException;
+    <U, T extends Identifiable<U>> void delete(T... entities) throws SQLException;
 
-    <U, T extends Identifiable<U>> void remove(Collection<T> entities) throws SQLException;
+    <U, T extends Identifiable<U>> void delete(Collection<T> entities) throws SQLException;
 
-    <U, T extends Identifiable<U>> void remove(Class<T> entityType, U... ids) throws SQLException;
+    <U, T extends Identifiable<U>> void delete(Class<T> entityType, U... ids) throws SQLException;
 
-    <U, T extends Identifiable<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException;
+    <U, T extends Identifiable<U>> void delete(Class<T> entityType, Collection<U> ids) throws SQLException;
     
+    void registerGlobalTrigger(Trigger trigger);
+    
+    <U, T extends Identifiable<U>> void registerTrigger(Class<T> entityType, Trigger trigger);
+    
+    void removeGlobalTrigger(Trigger trigger);    
+    
+    <U, T extends Identifiable<U>> void removeTrigger(Class<T> entityType, Trigger trigger);
 }

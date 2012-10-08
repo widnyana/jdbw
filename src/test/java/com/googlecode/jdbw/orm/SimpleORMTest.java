@@ -221,7 +221,7 @@ public class SimpleORMTest {
         jorm.refresh();
         Person elvis = jorm.get(Person.class, 1);
         assertNotNull(elvis);
-        jorm.remove(elvis);
+        jorm.delete(elvis);
         assertNull(jorm.get(Person.class, 1));
         jorm.refresh();
         assertNull(jorm.get(Person.class, 1));
@@ -235,7 +235,7 @@ public class SimpleORMTest {
         jorm.refresh();
         Person elvis = jorm.get(Person.class, 1);
         assertNotNull(elvis);
-        jorm.remove(Person.class, 1);
+        jorm.delete(Person.class, 1);
         assertNull(jorm.get(Person.class, 1));
         jorm.refresh();
         assertNull(jorm.get(Person.class, 1));
@@ -251,7 +251,7 @@ public class SimpleORMTest {
         Person jaques = jorm.get(Person.class, 2);
         assertNotNull(elvis);
         assertNotNull(jaques);
-        jorm.remove(elvis, jaques);
+        jorm.delete(elvis, jaques);
         assertNull(jorm.get(Person.class, 1));
         assertNull(jorm.get(Person.class, 2));
         jorm.refresh();
@@ -269,7 +269,7 @@ public class SimpleORMTest {
         Person jaques = jorm.get(Person.class, 2);
         assertNotNull(elvis);
         assertNotNull(jaques);
-        jorm.remove(Person.class, 1, 2);
+        jorm.delete(Person.class, 1, 2);
         assertNull(jorm.get(Person.class, 1));
         assertNull(jorm.get(Person.class, 2));
         jorm.refresh();
