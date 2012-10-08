@@ -106,7 +106,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Pers
                         "." + method.getName() + ", couldn't find field " + asFieldName + " in " +
                         "EntityProxy");
             }
-            return JORMDatabase.convertToReturnType(method.getReturnType(), getValue(asFieldName));
+            return DatabaseObjectStorage.convertToReturnType(method.getReturnType(), getValue(asFieldName));
         }
         else if(method.getName().startsWith("set") && method.getName().length() > 3 && method.getParameterTypes().length == 1) {
             String asFieldName = Character.toLowerCase(method.getName().charAt(3)) +

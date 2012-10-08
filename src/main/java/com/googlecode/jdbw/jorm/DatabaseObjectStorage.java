@@ -41,7 +41,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
-public class JORMDatabase extends AbstractObjectStorage {    
+public class DatabaseObjectStorage extends AbstractObjectStorage {    
     
     private static class EntityMapping {
         Class<? extends JORMEntity> entityType;
@@ -58,11 +58,11 @@ public class JORMDatabase extends AbstractObjectStorage {
     private final Map<Class<? extends JORMEntity>, EntityMapping> entityMappings;
     private final WeakHashMap<EntityProxy, Object> entitiesToBeInserted;
 
-    public JORMDatabase(DatabaseConnection databaseConnection) {
+    public DatabaseObjectStorage(DatabaseConnection databaseConnection) {
         this(databaseConnection, new DefaultClassTableMapping(), new DefaultEntityInitializer());
     }
     
-    public JORMDatabase(
+    public DatabaseObjectStorage(
             DatabaseConnection databaseConnection, 
             ClassTableMapping defaultClassTableMapping,
             EntityInitializer defaultEntityInitializer) {
