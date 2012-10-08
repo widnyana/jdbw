@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm.cache;
+package com.googlecode.jdbw.orm.impl;
 
 import com.googlecode.jdbw.orm.Identifiable;
 import java.util.ArrayList;

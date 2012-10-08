@@ -28,8 +28,6 @@ import com.googlecode.jdbw.orm.DefaultEntityInitializer;
 import com.googlecode.jdbw.orm.EntityInitializer;
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Persistable;
-import com.googlecode.jdbw.orm.cache.DataCache;
-import com.googlecode.jdbw.orm.cache.EntityCacheManager;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.lang.reflect.ParameterizedType;
