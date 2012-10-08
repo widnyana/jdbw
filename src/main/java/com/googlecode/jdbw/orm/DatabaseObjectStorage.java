@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;

@@ -16,8 +16,14 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
+import com.googlecode.jdbw.orm.Identifiable;
+import com.googlecode.jdbw.orm.Persistable;
+import com.googlecode.jdbw.orm.DefaultEntityInitializer;
+import com.googlecode.jdbw.orm.Modifiable;
+import com.googlecode.jdbw.orm.DatabaseObjectStorage;
+import com.googlecode.jdbw.orm.DefaultClassTableMapping;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;

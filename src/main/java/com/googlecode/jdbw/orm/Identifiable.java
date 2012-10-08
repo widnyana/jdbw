@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
 public interface Identifiable<T> {
     T getId();

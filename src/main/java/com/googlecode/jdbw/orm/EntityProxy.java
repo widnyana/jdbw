@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
