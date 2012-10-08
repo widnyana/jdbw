@@ -16,12 +16,13 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.cache;
 
+import com.googlecode.jdbw.orm.Identifiable;
 import java.util.Collection;
 import java.util.Set;
 
-interface DataCache<U, T extends Identifiable<U>> {
+public interface DataCache<U, T extends Identifiable<U>> {
     T get(U id);
     boolean contains(U id);
     void put(T entity);

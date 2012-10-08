@@ -16,11 +16,20 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.impl;
 
+import com.googlecode.jdbw.orm.cache.DataCache;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.Column;
+import com.googlecode.jdbw.orm.AbstractObjectStorage;
+import com.googlecode.jdbw.orm.ClassTableMapping;
+import com.googlecode.jdbw.orm.DefaultClassTableMapping;
+import com.googlecode.jdbw.orm.DefaultEntityInitializer;
+import com.googlecode.jdbw.orm.cache.EntityCacheManager;
+import com.googlecode.jdbw.orm.EntityInitializer;
+import com.googlecode.jdbw.orm.Identifiable;
+import com.googlecode.jdbw.orm.Persistable;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.lang.reflect.ParameterizedType;

@@ -16,15 +16,16 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.cache;
 
+import com.googlecode.jdbw.orm.Identifiable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-class ConcurrentDataCache<U, T extends Identifiable<U>> implements DataCache<U,T> {
+public class ConcurrentDataCache<U, T extends Identifiable<U>> implements DataCache<U,T> {
     private final Map<U, T> entityCache;
 
     public ConcurrentDataCache() {

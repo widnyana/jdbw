@@ -22,7 +22,7 @@ import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Persistable;
 import com.googlecode.jdbw.orm.DefaultEntityInitializer;
 import com.googlecode.jdbw.orm.Modifiable;
-import com.googlecode.jdbw.orm.DatabaseObjectStorage;
+import com.googlecode.jdbw.orm.impl.DatabaseObjectStorage;
 import com.googlecode.jdbw.orm.DefaultClassTableMapping;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
@@ -40,7 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SimpleJORMTest {
+public class SimpleORMTest {
     
     private static interface Person extends Identifiable<Integer>, Modifiable {
         String getName();
@@ -56,7 +56,7 @@ public class SimpleJORMTest {
     
     private final DatabaseConnection h2;
 
-    public SimpleJORMTest() {
+    public SimpleORMTest() {
         h2 = new H2InMemoryServer("junit").connect();
     }
     

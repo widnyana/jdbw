@@ -16,8 +16,11 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.impl;
 
+import com.googlecode.jdbw.orm.ClassTableMapping;
+import com.googlecode.jdbw.orm.Identifiable;
+import com.googlecode.jdbw.orm.Persistable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
