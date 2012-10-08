@@ -21,24 +21,10 @@ package com.googlecode.jdbw.orm;
 import com.googlecode.jdbw.util.SelfExecutor;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public abstract class AbstractObjectStorage implements ObjectStorage {
-    
-    private final Set<Trigger> globalTriggers;
-    private final Map<Class, Set<Trigger>> classTypeTriggers;
-
-    public AbstractObjectStorage() {
-        globalTriggers = new HashSet<Trigger>();
-        classTypeTriggers = new HashMap<Class, Set<Trigger>>();
-    }    
-    
+        
     @Override
     public <U, T extends Identifiable<U>> void register(Class<T> entityType) throws SQLException {
         register(entityType, null);
@@ -82,73 +68,5 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
     @Override
     public void refresh() {
         refresh(new SelfExecutor());
-    }
-
-    @Override
-    public void registerGlobalTrigger(Trigger trigger) {
-        if(trigger == null) {
-            throw new IllegalArgumentException("Illegal call to registerGlobalTrigger(...) with null trigger");
-        }
-        synchronized(globalTriggers) {
-            globalTriggers.add(trigger);
-        }
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> void registerTrigger(Class<T> entityType, Trigger trigger) {
-        if(entityType == null) {
-            throw new IllegalArgumentException("Illegal call to registerTrigger(...) with null entityType");
-        }
-        if(trigger == null) {
-            throw new IllegalArgumentException("Illegal call to registerTrigger(...) with null trigger");
-        }
-        synchronized(classTypeTriggers) {
-            if(!classTypeTriggers.containsKey(entityType)) {
-                classTypeTriggers.put(entityType, new HashSet<Trigger>());
-            }
-            classTypeTriggers.get(entityType).add(trigger);
-        }
-    }
-
-    @Override
-    public void removeGlobalTrigger(Trigger trigger) {
-        if(trigger == null) {
-            throw new IllegalArgumentException("Illegal call to removeGlobalTrigger(...) with null trigger");
-        }
-        synchronized(globalTriggers) {
-            globalTriggers.remove(trigger);
-        }
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> void removeTrigger(Class<T> entityType, Trigger trigger) {
-        if(entityType == null) {
-            throw new IllegalArgumentException("Illegal call to removeTrigger(...) with null entityType");
-        }
-        if(trigger == null) {
-            throw new IllegalArgumentException("Illegal call to removeTrigger(...) with null trigger");
-        }
-        synchronized(classTypeTriggers) {
-            if(!classTypeTriggers.containsKey(entityType)) {
-                return;
-            }
-            classTypeTriggers.get(entityType).remove(trigger);
-        }
-    }
-    
-    protected <U, T extends Identifiable<U>> Set<Trigger> getTriggersForClass(Class<T> entityType) {
-        if(entityType == null) {
-            throw new IllegalArgumentException("Illegal call to getTriggersForClass(...) with null entityType");
-        }
-        Set<Trigger> triggers = new HashSet<Trigger>();
-        synchronized(globalTriggers) {
-            triggers.addAll(globalTriggers);
-        }
-        synchronized(classTypeTriggers) {
-            if(classTypeTriggers.containsKey(entityType)) {
-                triggers.addAll(classTypeTriggers.get(entityType));
-            }
-        }
-        return Collections.unmodifiableSet(triggers);
     }
 }
