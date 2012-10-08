@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-class EntityProxy<U, T extends Identifiable<U>> implements InvocationHandler, Persistable<T> {
+public class EntityProxy<U, T extends Identifiable<U>> implements InvocationHandler, Persistable<T> {
 
     private static final Map<Class, Map<String, Integer>> INDEX_REFERENCE = new HashMap<Class, Map<String, Integer>>();
     
@@ -163,7 +163,7 @@ class EntityProxy<U, T extends Identifiable<U>> implements InvocationHandler, Pe
         return entityClass;
     }
     
-    static interface Resolver<U, T extends Identifiable<U>> {
+    public static interface Resolver<U, T extends Identifiable<U>> {
         EntityProxy<U, T> __underlying_proxy();
     }
 
