@@ -27,42 +27,42 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
     
     
     @Override
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType) throws SQLException {
+    public <U, T extends Identifiable<U>> void register(Class<T> entityType) throws SQLException {
         register(entityType, null);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException {
+    public <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException {
         register(entityType, classTableMapping, null);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> T get(Class<T> type, U key) {
+    public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
         return get(type, key, SearchPolicy.REFRESH_FIRST);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException {
+    public <U, T extends Identifiable<U>> T newEntity(Class<T> type) throws SQLException {
         return newEntity(type, (U)null);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> T persist(Persistable<T> persistable) throws SQLException {
+    public <U, T extends Identifiable<U>> T persist(Persistable<T> persistable) throws SQLException {
         return persist(Arrays.asList(persistable)).get(0);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> List<T> persist(Persistable<T>... persistables) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> persist(Persistable<T>... persistables) throws SQLException {
         return persist(Arrays.asList(persistables));
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void remove(T... entities) throws SQLException {
+    public <U, T extends Identifiable<U>> void remove(T... entities) throws SQLException {
         remove(Arrays.asList(entities));
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void remove(Class<T> entityType, U... ids) throws SQLException {
+    public <U, T extends Identifiable<U>> void remove(Class<T> entityType, U... ids) throws SQLException {
         remove(entityType, Arrays.asList(ids));
     }
         

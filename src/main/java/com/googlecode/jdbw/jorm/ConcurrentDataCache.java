@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-class ConcurrentDataCache<U, T extends JORMEntity<U>> implements DataCache<U,T> {
+class ConcurrentDataCache<U, T extends Identifiable<U>> implements DataCache<U,T> {
     private final Map<U, T> entityCache;
 
     public ConcurrentDataCache() {

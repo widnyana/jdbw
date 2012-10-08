@@ -44,7 +44,7 @@ import java.util.concurrent.Executor;
 public class DatabaseObjectStorage extends AbstractObjectStorage {    
     
     private static class EntityMapping {
-        Class<? extends JORMEntity> entityType;
+        Class<? extends Identifiable> entityType;
         ClassTableMapping tableMapping;
         EntityInitializer entityInitializer;
         Class idType;
@@ -55,7 +55,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     private final EntityCacheManager cacheManager;
     private final ClassTableMapping defaultClassTableMapping;
     private final EntityInitializer defaultEntityInitializer;
-    private final Map<Class<? extends JORMEntity>, EntityMapping> entityMappings;
+    private final Map<Class<? extends Identifiable>, EntityMapping> entityMappings;
     private final WeakHashMap<EntityProxy, Object> entitiesToBeInserted;
 
     public DatabaseObjectStorage(DatabaseConnection databaseConnection) {
@@ -76,14 +76,14 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         
         this.databaseConnection = databaseConnection;
         this.cacheManager = new EntityCacheManager();
-        this.entityMappings = new HashMap<Class<? extends JORMEntity>, EntityMapping>();
+        this.entityMappings = new HashMap<Class<? extends Identifiable>, EntityMapping>();
         this.entitiesToBeInserted = new WeakHashMap<EntityProxy, Object>();
         this.defaultClassTableMapping = defaultClassTableMapping;
         this.defaultEntityInitializer = defaultEntityInitializer;
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException {
+    public <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException {
         if(entityType == null)
             throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
         
@@ -124,13 +124,13 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type) {
+    public <U, T extends Identifiable<U>> ArrayList<T> getAll(Class<T> type) {
         refresh(type);
         return new ArrayList<T>(cacheManager.getCache(type).allValues());
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
+    public <U, T extends Identifiable<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
         if(searchPolicy == SearchPolicy.REFRESH_FIRST) {
             refresh(type, key);
         }
@@ -142,17 +142,17 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException {
+    public <U, T extends Identifiable<U>> T newEntity(Class<T> type) throws SQLException {
         return newEntity(type, (U)null);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException {
+    public <U, T extends Identifiable<U>> T newEntity(Class<T> type, U id) throws SQLException {
         return newEntities(type, Arrays.asList(id)).get(0);
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
         if(numberOfEntities < 0) {
             throw new IllegalArgumentException("Cannot call JORMDatabase.newEntities with < 0 entities to create");
         }
@@ -167,11 +167,11 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
         return newEntities(type, Arrays.asList(ids));
     }
     
-    private <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, List<U> ids) throws SQLException {
+    private <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, List<U> ids) throws SQLException {
         if(ids == null || ids.isEmpty()) {
             throw new IllegalArgumentException("Error creating newEntity of type " + type.getSimpleName() + 
                     "; id parameter was empty");
@@ -194,7 +194,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException {
         Map<Class<T>, List<Persistable<T>>> persistablesByClass = new HashMap<Class<T>, List<Persistable<T>>>();
         for(Persistable persistable: persistables) {
             if(persistable == null) {
@@ -212,7 +212,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         return result;
     }
     
-    private <U, T extends JORMEntity<U>> List<T> persist(Class<T> entityType, Collection<Persistable<T>> persistables) throws SQLException {
+    private <U, T extends Identifiable<U>> List<T> persist(Class<T> entityType, Collection<Persistable<T>> persistables) throws SQLException {
         if(persistables == null || persistables.isEmpty() || entityType == null) {
             return Collections.EMPTY_LIST;
         }
@@ -237,7 +237,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         return result;
     }
     
-    private <U, T extends JORMEntity<U>> void insert(Class<T> entityType, Collection<Persistable> persistables) throws SQLException {
+    private <U, T extends Identifiable<U>> void insert(Class<T> entityType, Collection<Persistable> persistables) throws SQLException {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         ClassTableMapping tableMapping = getClassTableMapping(entityType);
         List<String> fieldNames = tableMapping.getFieldNames(entityType);
@@ -292,7 +292,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         }
     }
     
-    private <U, T extends JORMEntity<U>> void update(Class<T> entityType, Collection<Persistable> persistables) throws SQLException {
+    private <U, T extends Identifiable<U>> void update(Class<T> entityType, Collection<Persistable> persistables) throws SQLException {
         if(persistables == null || persistables.isEmpty() || entityType == null) {
             return;
         }
@@ -333,7 +333,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void remove(Collection<T> entities) throws SQLException {
+    public <U, T extends Identifiable<U>> void remove(Collection<T> entities) throws SQLException {
         entities = removeNullElementsFromCollection(entities);
         if(entities == null || entities.isEmpty()) {
             return;
@@ -350,7 +350,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException {
+    public <U, T extends Identifiable<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException {
         if(entityType == null) {
             throw new IllegalArgumentException("Cannot call remove(...) with null entityType");
         }
@@ -390,7 +390,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void refresh(T... entities) {
+    public <U, T extends Identifiable<U>> void refresh(T... entities) {
         List<T> nonNullEntities = removeNullElementsFromCollection(Arrays.asList(entities));
         if(nonNullEntities.isEmpty())
             return;
@@ -407,7 +407,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType) {
+    public <U, T extends Identifiable<U>> void refresh(Class<T> entityType) {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         String sql = "SELECT " +
                         sqlDialect.escapeIdentifier("id") + 
@@ -418,11 +418,11 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
     }
     
     @Override
-    public <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, U... keys) {
+    public <U, T extends Identifiable<U>> void refresh(Class<T> entityType, U... keys) {
         refresh(entityType, Arrays.asList(keys));
     }
     
-    private <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, List<U> keys) {
+    private <U, T extends Identifiable<U>> void refresh(Class<T> entityType, List<U> keys) {
         if(keys.isEmpty())
             return;
         
@@ -446,7 +446,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         queryAndProcess(entityType, sql, keys);
     }
     
-    private <U, T extends JORMEntity<U>> void queryAndProcess(Class<T> entityType, String sql, List<U> expectedKeys) {
+    private <U, T extends Identifiable<U>> void queryAndProcess(Class<T> entityType, String sql, List<U> expectedKeys) {
         try {
             List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
             Set<U> idsReturned = new HashSet<U>();
@@ -515,7 +515,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         throw new IllegalArgumentException("Cannot typecast " + object.getClass().getName() + " to " + returnType.getName());
     }
     
-    private <U, T extends JORMEntity<U>> T newEntityProxy(Class<T> entityType, U id, Object[] initializationData) {
+    private <U, T extends Identifiable<U>> T newEntityProxy(Class<T> entityType, U id, Object[] initializationData) {
         EntityProxy<U, T> proxy = new EntityProxy<U, T>(entityType, getClassTableMapping(entityType), id, initializationData);
         T proxyInterface = (T)Proxy.newProxyInstance(
                                         ClassLoader.getSystemClassLoader(), 
@@ -525,7 +525,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         return proxyInterface;
     }
     
-    private <U, T extends JORMEntity<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
+    private <U, T extends Identifiable<U>> String getNonIdColumnsForSelect(Class<T> entityType) {
         final ClassTableMapping tableMapping = getClassTableMapping(entityType);
         List<String> fieldNames = tableMapping.getFieldNames(entityType);
         StringBuilder sb = new StringBuilder();
@@ -555,7 +555,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         for(Type type: entityType.getGenericInterfaces()) {
             if(type instanceof ParameterizedType) {
                 ParameterizedType ptype = (ParameterizedType)type;
-                if(ptype.getRawType() == JORMEntity.class) {
+                if(ptype.getRawType() == Identifiable.class) {
                     return (Class)ptype.getActualTypeArguments()[0];
                 }
             }
@@ -568,7 +568,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         return null;
     }
     
-    private <U, T extends JORMEntity<U>> Object[] getEntityInitializationData(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> Object[] getEntityInitializationData(Class<T> entityClass) {
         List<String> entityFields = getEntityFields(entityClass);
         EntityInitializer initializer = getEntityInitializer(entityClass);
         Object[] result = new Object[entityFields.size()];
@@ -579,15 +579,15 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         return result;
     }
         
-    private <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
+    private <U, T extends Identifiable<U>> String getTableName(Class<T> entityType) {
         return getClassTableMapping(entityType).getTableName(entityType);
     }
     
-    private <U, T extends JORMEntity<U>> List<String> getEntityFields(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> List<String> getEntityFields(Class<T> entityClass) {
         return getClassTableMapping(entityClass).getFieldNames(entityClass);
     }
     
-    private <U, T extends JORMEntity<U>> EntityInitializer getEntityInitializer(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> EntityInitializer getEntityInitializer(Class<T> entityClass) {
         EntityMapping mapping = getMapping(entityClass);
         if(mapping.entityInitializer == null)
             return defaultEntityInitializer;
@@ -595,7 +595,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
             return mapping.entityInitializer;
     }
     
-    private <U, T extends JORMEntity<U>> ClassTableMapping getClassTableMapping(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> ClassTableMapping getClassTableMapping(Class<T> entityClass) {
         EntityMapping mapping = getMapping(entityClass);
         if(mapping.tableMapping == null)
             return defaultClassTableMapping;
@@ -603,19 +603,19 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
             return mapping.tableMapping;
     }
     
-    private <U, T extends JORMEntity<U>> Map<String, Column> getEntityColumnMap(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> Map<String, Column> getEntityColumnMap(Class<T> entityClass) {
         return getMapping(entityClass).columnMap;
     }
     
-    private <U, T extends JORMEntity<U>> Column getEntityIdColumn(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> Column getEntityIdColumn(Class<T> entityClass) {
         return getEntityColumnMap(entityClass).get("id");
     }
     
-    private <U, T extends JORMEntity<U>> Class getIdType(Class<T> entityType) {
+    private <U, T extends Identifiable<U>> Class getIdType(Class<T> entityType) {
         return getMapping(entityType).idType;
     }
     
-    private <U, T extends JORMEntity<U>> EntityMapping getMapping(Class<T> entityType) {
+    private <U, T extends Identifiable<U>> EntityMapping getMapping(Class<T> entityType) {
         synchronized(entityMappings) {
             if(!entityMappings.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access the table name of an unregistered entity type " + entityType.getName());
@@ -623,7 +623,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         }
     }
     
-    private <U, T extends JORMEntity<U>> Object[] formatAsInputParameters(Class<T> entityType, Object[]data, boolean skipFirstElement) {
+    private <U, T extends Identifiable<U>> Object[] formatAsInputParameters(Class<T> entityType, Object[]data, boolean skipFirstElement) {
         List list = new ArrayList();
         ClassTableMapping classTableMapping = getClassTableMapping(entityType);
         List<String> fieldNames = classTableMapping.getFieldNames(entityType);
@@ -636,7 +636,7 @@ public class DatabaseObjectStorage extends AbstractObjectStorage {
         return list.toArray();
     }
 
-    private <U, T extends JORMEntity<U>> boolean isScheduledForInsertion(Persistable<T> persistable) {
+    private <U, T extends Identifiable<U>> boolean isScheduledForInsertion(Persistable<T> persistable) {
         synchronized(entitiesToBeInserted) {
             if(entitiesToBeInserted.containsKey((EntityProxy<U, T>)persistable)) {
                 entitiesToBeInserted.remove((EntityProxy<U, T>)persistable);

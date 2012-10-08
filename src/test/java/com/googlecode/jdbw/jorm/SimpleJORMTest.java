@@ -36,7 +36,7 @@ import org.junit.Test;
 
 public class SimpleJORMTest {
     
-    private static interface Person extends JORMEntity<Integer> {
+    private static interface Person extends Identifiable<Integer>, Modifiable {
         String getName();
         Person setName(String name);
         int getAge();
@@ -277,7 +277,7 @@ public class SimpleJORMTest {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultEntityInitializer() {
             @Override
-            public <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
+            public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
                 if(entityType.equals(Person.class) && fieldName.equals("age")) {
                     return 17;
                 }

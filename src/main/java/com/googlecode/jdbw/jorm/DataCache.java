@@ -21,7 +21,7 @@ package com.googlecode.jdbw.jorm;
 import java.util.Collection;
 import java.util.Set;
 
-interface DataCache<U, T extends JORMEntity<U>> {
+interface DataCache<U, T extends Identifiable<U>> {
     T get(U id);
     boolean contains(U id);
     void put(T entity);

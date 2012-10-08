@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Persistable<T> {
+class EntityProxy<U, T extends Identifiable<U>> implements InvocationHandler, Persistable<T> {
 
     private static final Map<Class, Map<String, Integer>> INDEX_REFERENCE = new HashMap<Class, Map<String, Integer>>();
     
-    private static <U, T extends JORMEntity<U>> void indexClass(Class<T> entityClass, ClassTableMapping classTableMapping) {
+    private static <U, T extends Identifiable<U>> void indexClass(Class<T> entityClass, ClassTableMapping classTableMapping) {
         synchronized(INDEX_REFERENCE) {
             if(INDEX_REFERENCE.containsKey(entityClass))
                 return;
@@ -43,13 +43,13 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Pers
         }
     }
     
-    private static <U, T extends JORMEntity<U>> int getNumberOfFields(Class<T> entityClass) {
+    private static <U, T extends Identifiable<U>> int getNumberOfFields(Class<T> entityClass) {
         synchronized(INDEX_REFERENCE) {
             return INDEX_REFERENCE.get(entityClass).size();
         }
     }
     
-    private static <U, T extends JORMEntity<U>> int getFieldIndex(Class<T> entityClass, String field) {
+    private static <U, T extends Identifiable<U>> int getFieldIndex(Class<T> entityClass, String field) {
         synchronized(INDEX_REFERENCE) {
             return INDEX_REFERENCE.get(entityClass).containsKey(field) ? 
                         INDEX_REFERENCE.get(entityClass).get(field) : -1;
@@ -160,7 +160,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Pers
         return entityClass;
     }
     
-    static interface Resolver<U, T extends JORMEntity<U>> {
+    static interface Resolver<U, T extends Identifiable<U>> {
         EntityProxy<U, T> __underlying_proxy();
     }
 
@@ -187,7 +187,7 @@ class EntityProxy<U, T extends JORMEntity<U>> implements InvocationHandler, Pers
         
         U otherId;
         if(entityClass.isAssignableFrom(obj.getClass())) {
-            otherId = ((JORMEntity<U>)obj).getId();
+            otherId = ((Identifiable<U>)obj).getId();
         }
         else {
             final EntityProxy<U, T> other = (EntityProxy<U, T>) obj;

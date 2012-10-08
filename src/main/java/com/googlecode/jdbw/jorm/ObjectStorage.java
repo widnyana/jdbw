@@ -32,48 +32,48 @@ public interface ObjectStorage {
         REFRESH_FIRST
     }
 
-    <U, T extends JORMEntity<U>> T get(Class<T> type, U key);
+    <U, T extends Identifiable<U>> T get(Class<T> type, U key);
 
-    <U, T extends JORMEntity<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy);
+    <U, T extends Identifiable<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy);
 
-    <U, T extends JORMEntity<U>> ArrayList<T> getAll(Class<T> type);
+    <U, T extends Identifiable<U>> ArrayList<T> getAll(Class<T> type);
 
-    <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException;
 
-    <U, T extends JORMEntity<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException;
 
-    <U, T extends JORMEntity<U>> T newEntity(Class<T> type) throws SQLException;
+    <U, T extends Identifiable<U>> T newEntity(Class<T> type) throws SQLException;
 
-    <U, T extends JORMEntity<U>> T newEntity(Class<T> type, U id) throws SQLException;
+    <U, T extends Identifiable<U>> T newEntity(Class<T> type, U id) throws SQLException;
 
-    <U, T extends JORMEntity<U>> T persist(Persistable<T> persistable) throws SQLException;
+    <U, T extends Identifiable<U>> T persist(Persistable<T> persistable) throws SQLException;
 
-    <U, T extends JORMEntity<U>> List<T> persist(Persistable<T>... persistables) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> persist(Persistable<T>... persistables) throws SQLException;
 
-    <U, T extends JORMEntity<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException;
 
     void refresh();
 
     void refresh(Executor executor);
 
-    <U, T extends JORMEntity<U>> void refresh(T... entities);
+    <U, T extends Identifiable<U>> void refresh(T... entities);
 
-    <U, T extends JORMEntity<U>> void refresh(Class<T> entityType);
+    <U, T extends Identifiable<U>> void refresh(Class<T> entityType);
 
-    <U, T extends JORMEntity<U>> void refresh(Class<T> entityType, U... keys);
+    <U, T extends Identifiable<U>> void refresh(Class<T> entityType, U... keys);
 
-    <U, T extends JORMEntity<U>> void register(Class<T> entityType) throws SQLException;
+    <U, T extends Identifiable<U>> void register(Class<T> entityType) throws SQLException;
 
-    <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException;
+    <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException;
 
-    <U, T extends JORMEntity<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException;
+    <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException;
 
-    <U, T extends JORMEntity<U>> void remove(T... entities) throws SQLException;
+    <U, T extends Identifiable<U>> void remove(T... entities) throws SQLException;
 
-    <U, T extends JORMEntity<U>> void remove(Collection<T> entities) throws SQLException;
+    <U, T extends Identifiable<U>> void remove(Collection<T> entities) throws SQLException;
 
-    <U, T extends JORMEntity<U>> void remove(Class<T> entityType, U... ids) throws SQLException;
+    <U, T extends Identifiable<U>> void remove(Class<T> entityType, U... ids) throws SQLException;
 
-    <U, T extends JORMEntity<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException;
+    <U, T extends Identifiable<U>> void remove(Class<T> entityType, Collection<U> ids) throws SQLException;
     
 }

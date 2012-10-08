@@ -20,7 +20,7 @@ package com.googlecode.jdbw.jorm;
 
 public class DefaultEntityInitializer implements EntityInitializer {
     @Override
-    public <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
+    public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
         return null;
     }    
 }

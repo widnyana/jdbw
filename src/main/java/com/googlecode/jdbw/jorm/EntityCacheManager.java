@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 class EntityCacheManager {
-    private final Map<Class<? extends JORMEntity>, DataCache> entityCache;
+    private final Map<Class<? extends Identifiable>, DataCache> entityCache;
 
     EntityCacheManager() {
-        this.entityCache = new HashMap<Class<? extends JORMEntity>, DataCache>();
+        this.entityCache = new HashMap<Class<? extends Identifiable>, DataCache>();
     }
     
-    <U, T extends JORMEntity<U>> void createDataCache(Class<T> entityType) {
+    <U, T extends Identifiable<U>> void createDataCache(Class<T> entityType) {
         synchronized(entityCache) {
             entityCache.put(entityType, new ConcurrentDataCache());
         }
@@ -43,7 +43,7 @@ class EntityCacheManager {
         }
     }
     
-    <U, T extends JORMEntity<U>> DataCache<U, T> getCache(Class<T> entityType) {
+    <U, T extends Identifiable<U>> DataCache<U, T> getCache(Class<T> entityType) {
         synchronized(entityCache) {
             if(!entityCache.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access unregistered entity type " + entityType.getName());

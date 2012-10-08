@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.jorm;
 
-public interface JORMEntity<T> {
+public interface Identifiable<T> {
     T getId();
-    Persistable<? extends JORMEntity> finish();
 }

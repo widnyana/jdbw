@@ -18,6 +18,6 @@
  */
 package com.googlecode.jdbw.jorm;
 
-public interface Persistable<T extends Identifiable> {
-    
+public interface Modifiable {
+    Persistable<? extends Identifiable> finish();
 }

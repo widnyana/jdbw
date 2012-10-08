@@ -19,5 +19,5 @@
 package com.googlecode.jdbw.jorm;
 
 public interface EntityInitializer {
-    <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName);
+    <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName);
 }
