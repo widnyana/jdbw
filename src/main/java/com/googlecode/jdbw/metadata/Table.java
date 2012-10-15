@@ -198,6 +198,7 @@ public class Table implements Comparable<Table> {
                 indexMap.put(indexName, new Index(indexName, unique, clustered, primaryKey, this, column));
             }
         }
+        cachedIndexes = new ArrayList<Index>(indexMap.values());
         return new ArrayList<Index>(cachedIndexes);
     }
 
