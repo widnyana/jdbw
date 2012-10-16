@@ -16,8 +16,14 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
+import com.googlecode.jdbw.orm.Identifiable;
+import com.googlecode.jdbw.orm.Persistable;
+import com.googlecode.jdbw.orm.DefaultEntityInitializer;
+import com.googlecode.jdbw.orm.Modifiable;
+import com.googlecode.jdbw.orm.impl.DatabaseObjectStorage;
+import com.googlecode.jdbw.orm.DefaultClassTableMapping;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
@@ -34,9 +40,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SimpleJORMTest {
+public class SimpleORMTest {
     
-    private static interface Person extends JORMEntity<Integer> {
+    private static interface Person extends Identifiable<Integer>, Modifiable {
         String getName();
         Person setName(String name);
         int getAge();
@@ -50,7 +56,7 @@ public class SimpleJORMTest {
     
     private final DatabaseConnection h2;
 
-    public SimpleJORMTest() {
+    public SimpleORMTest() {
         h2 = new H2InMemoryServer("junit").connect();
     }
     
@@ -81,7 +87,7 @@ public class SimpleJORMTest {
     
     @Test
     public void settingUpAndRegisteringJORMInterfaceWorks() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         jorm.refresh();
         List<Person> persons = jorm.getAll(Person.class);
@@ -97,27 +103,27 @@ public class SimpleJORMTest {
     
     @Test
     public void testingLocalAndRemoteSearch() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
-        assertNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.LOCAL_ONLY));
-        assertNotNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.CHECK_DATABASE_IF_MISSING));
-        assertNotNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.LOCAL_ONLY));
+        assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.CHECK_DATABASE_IF_MISSING));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
         assertEquals((Integer)1, jorm.get(Person.class, 1).getId());
     }
     
     @Test
     public void testingRefreshSearch() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
-        assertNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.LOCAL_ONLY));
-        assertNotNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.REFRESH_FIRST));
-        assertNotNull(jorm.get(Person.class, 1, JORMDatabase.SearchPolicy.LOCAL_ONLY));
+        assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.REFRESH_FIRST));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
         assertEquals((Integer)1, jorm.get(Person.class, 1).getId());
     }
     
     @Test
     public void testingRefresh() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         Person kyoChan = jorm.get(Person.class, 3);
         assertNotNull(kyoChan);
@@ -132,7 +138,7 @@ public class SimpleJORMTest {
     
     @Test
     public void canInsertNewRowsIntoTheJORM() throws ParseException, SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         Person reinhard = jorm.persist(
                             jorm.newEntity(Person.class)
@@ -148,7 +154,7 @@ public class SimpleJORMTest {
     
     @Test
     public void canBatchInsertMultipleRows() throws ParseException, SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         List<Person> newPersons = jorm.persist(
                     jorm.newEntity(Person.class)
@@ -171,7 +177,7 @@ public class SimpleJORMTest {
     
     @Test
     public void testingEquality() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         Person brel = jorm.get(Person.class, 2);
         assertEquals(brel, brel);
@@ -196,8 +202,8 @@ public class SimpleJORMTest {
     
     @Test
     public void testingEqualityAcrossJORMs() throws SQLException {
-        JORMDatabase jorm1 = new JORMDatabase(h2);
-        JORMDatabase jorm2 = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm1 = new DatabaseObjectStorage(h2);
+        DatabaseObjectStorage jorm2 = new DatabaseObjectStorage(h2);
         jorm1.register(Person.class);
         jorm2.register(Person.class);
         Person brel1 = jorm1.get(Person.class, 2);
@@ -210,12 +216,12 @@ public class SimpleJORMTest {
     
     @Test
     public void removingOneEntityByInstanceWorks() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         jorm.refresh();
         Person elvis = jorm.get(Person.class, 1);
         assertNotNull(elvis);
-        jorm.remove(elvis);
+        jorm.delete(elvis);
         assertNull(jorm.get(Person.class, 1));
         jorm.refresh();
         assertNull(jorm.get(Person.class, 1));
@@ -224,12 +230,12 @@ public class SimpleJORMTest {
     
     @Test
     public void removingOneEntityByKeyWorks() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         jorm.refresh();
         Person elvis = jorm.get(Person.class, 1);
         assertNotNull(elvis);
-        jorm.remove(Person.class, 1);
+        jorm.delete(Person.class, 1);
         assertNull(jorm.get(Person.class, 1));
         jorm.refresh();
         assertNull(jorm.get(Person.class, 1));
@@ -238,14 +244,14 @@ public class SimpleJORMTest {
     
     @Test
     public void removingMultipleEntitiesByInstanceWorks() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         jorm.refresh();
         Person elvis = jorm.get(Person.class, 1);
         Person jaques = jorm.get(Person.class, 2);
         assertNotNull(elvis);
         assertNotNull(jaques);
-        jorm.remove(elvis, jaques);
+        jorm.delete(elvis, jaques);
         assertNull(jorm.get(Person.class, 1));
         assertNull(jorm.get(Person.class, 2));
         jorm.refresh();
@@ -256,14 +262,14 @@ public class SimpleJORMTest {
     
     @Test
     public void removingMultipleEntitiesByKeyWorks() throws SQLException {
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         jorm.refresh();
         Person elvis = jorm.get(Person.class, 1);
         Person jaques = jorm.get(Person.class, 2);
         assertNotNull(elvis);
         assertNotNull(jaques);
-        jorm.remove(Person.class, 1, 2);
+        jorm.delete(Person.class, 1, 2);
         assertNull(jorm.get(Person.class, 1));
         assertNull(jorm.get(Person.class, 2));
         jorm.refresh();
@@ -274,10 +280,10 @@ public class SimpleJORMTest {
     
     @Test
     public void usingEntityInitializerWorks() throws SQLException, ParseException { 
-        JORMDatabase jorm = new JORMDatabase(h2);
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultEntityInitializer() {
             @Override
-            public <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
+            public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
                 if(entityType.equals(Person.class) && fieldName.equals("age")) {
                     return 17;
                 }

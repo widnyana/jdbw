@@ -16,8 +16,8 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
-public interface Persistable<T extends JORMEntity> {
-    
+public interface Modifiable {
+    Persistable<? extends Identifiable> finish();
 }

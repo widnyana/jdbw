@@ -16,34 +16,35 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm.impl;
 
+import com.googlecode.jdbw.orm.Identifiable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class EntityCacheManager {
-    private final Map<Class<? extends JORMEntity>, DataCache> entityCache;
+public class EntityCacheManager {
+    private final Map<Class<? extends Identifiable>, DataCache> entityCache;
 
-    EntityCacheManager() {
-        this.entityCache = new HashMap<Class<? extends JORMEntity>, DataCache>();
+    public EntityCacheManager() {
+        this.entityCache = new HashMap<Class<? extends Identifiable>, DataCache>();
     }
     
-    <U, T extends JORMEntity<U>> void createDataCache(Class<T> entityType) {
+    public <U, T extends Identifiable<U>> void createDataCache(Class<T> entityType) {
         synchronized(entityCache) {
             entityCache.put(entityType, new ConcurrentDataCache());
         }
     }
     
-    List<Class> getAllKnownEntityTypes() {
+    public List<Class> getAllKnownEntityTypes() {
         synchronized(entityCache) {
             return Collections.unmodifiableList(new ArrayList(entityCache.keySet()));
         }
     }
     
-    <U, T extends JORMEntity<U>> DataCache<U, T> getCache(Class<T> entityType) {
+    public <U, T extends Identifiable<U>> DataCache<U, T> getCache(Class<T> entityType) {
         synchronized(entityCache) {
             if(!entityCache.containsKey(entityType))
                 throw new IllegalArgumentException("Trying to access unregistered entity type " + entityType.getName());

@@ -16,12 +16,8 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
-import java.util.List;
-
-public interface ClassTableMapping {
-    <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType);
-    <U, T extends JORMEntity<U>> List<String> getFieldNames(Class<T> entityType);
-    <U, T extends JORMEntity<U>> String toColumnName(Class<T> entityType, String fieldName);
+public interface Identifiable<T> {
+    T getId();
 }

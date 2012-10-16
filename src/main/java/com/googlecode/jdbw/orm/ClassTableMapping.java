@@ -16,8 +16,12 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
-public interface EntityInitializer {
-    <U, T extends JORMEntity<U>> Object getInitialValue(Class<T> entityType, String fieldName);
+import java.util.List;
+
+public interface ClassTableMapping {
+    <U, T extends Identifiable<U>> String getTableName(Class<T> entityType);
+    <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> entityType);
+    <U, T extends Identifiable<U>> String toColumnName(Class<T> entityType, String fieldName);
 }

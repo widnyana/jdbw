@@ -16,17 +16,13 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
-import java.util.Collection;
-import java.util.Set;
-
-interface DataCache<U, T extends JORMEntity<U>> {
-    T get(U id);
-    boolean contains(U id);
-    void put(T entity);
-    boolean remove(U id);
-    boolean removeAll(Collection<U> ids);
-    Set<U> allIds();
-    Collection<T> allValues();
+public interface Trigger {
+    <U, T extends Identifiable<U>> void onCreated(T entity);
+    <U, T extends Identifiable<U>> void onBeforeRefresh(T entity);
+    <U, T extends Identifiable<U>> void onAfterRefresh(T entity);
+    <U, T extends Identifiable<U>> void onBeforePersist(T entity);
+    <U, T extends Identifiable<U>> void onAfterPersist(T entity);
+    <U, T extends Identifiable<U>> void onDelete(T entity);
 }

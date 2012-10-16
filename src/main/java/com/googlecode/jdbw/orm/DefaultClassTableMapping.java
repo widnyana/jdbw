@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -44,12 +44,12 @@ public class DefaultClassTableMapping implements ClassTableMapping {
     }
 
     @Override
-    public <U, T extends JORMEntity<U>> String getTableName(Class<T> entityType) {
+    public <U, T extends Identifiable<U>> String getTableName(Class<T> entityType) {
         return prefix + entityType.getSimpleName() + postfix; 
     }
 
     @Override
-    public <U, T extends JORMEntity<U>> List<String> getFieldNames(Class<T> entityType) {
+    public <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> entityType) {
         Set<String> fields = new TreeSet<String>();
         for(Method method: entityType.getMethods()) {
             if((method.getModifiers() & Modifier.STATIC) != 0)
@@ -79,7 +79,7 @@ public class DefaultClassTableMapping implements ClassTableMapping {
     }
 
     @Override
-    public <U, T extends JORMEntity<U>> String toColumnName(Class<T> entityType, String fieldName) {
+    public <U, T extends Identifiable<U>> String toColumnName(Class<T> entityType, String fieldName) {
         return fieldName;
     }
 }

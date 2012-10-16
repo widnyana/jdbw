@@ -16,9 +16,11 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.jorm;
+package com.googlecode.jdbw.orm;
 
-public interface JORMEntity<T> {
-    T getId();
-    Persistable<? extends JORMEntity> finish();
+public class DefaultEntityInitializer implements EntityInitializer {
+    @Override
+    public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
+        return null;
+    }    
 }
