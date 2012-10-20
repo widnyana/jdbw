@@ -20,6 +20,8 @@ package com.googlecode.jdbw.metadata;
 
 import com.googlecode.jdbw.util.StringUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,14 +47,14 @@ public class Index implements Comparable<Index> {
     private final Table table;
     private final List<TableColumn> columns;
 
-    public Index(String indexName, boolean unique, boolean clustered, boolean primaryKey, Table table, TableColumn firstColumn) {
+    public Index(Table table, String indexName, boolean unique, boolean clustered, boolean primaryKey, TableColumn... columns) {
+        this.table = table;
         this.name = indexName;
         this.unique = unique;
         this.clustered = clustered;
         this.primaryKey = primaryKey;
-        this.table = table;
         this.columns = new ArrayList<TableColumn>();
-        this.columns.add(firstColumn);
+        this.columns.addAll(Arrays.asList(columns));
     }
 
     public void addColumn(TableColumn column) {
@@ -65,6 +67,11 @@ public class Index implements Comparable<Index> {
 
     @Override
     public int compareTo(Index o) {
+        if(primaryKey && !o.primaryKey)
+            return -1;
+        else if(!primaryKey && o.primaryKey)
+            return 1;
+        
         return name.compareTo(o.name);
     }
 

@@ -19,7 +19,6 @@
 package com.googlecode.jdbw.metadata;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +35,11 @@ import java.util.Map;
  */
 public class Schema implements Comparable<Schema> {
 
-    private final MetaDataResolver metaDataResolver;
+    private final ServerMetaData metaDataResolver;
     private final Catalog catalog;
     private final String name;
 
-    public Schema(MetaDataResolver metaDataResolver, Catalog catalog, String name) {
+    public Schema(ServerMetaData metaDataResolver, Catalog catalog, String name) {
         this.metaDataResolver = metaDataResolver;
         this.catalog = catalog;
         this.name = name;
@@ -65,7 +64,7 @@ public class Schema implements Comparable<Schema> {
      * @throws SQLException If an error occurred while reading the list of tables
      */
     public List<Table> getTables() throws SQLException {
-        return getTableMetaData(null);
+        return metaDataResolver.getTables(this);
     }
 
     /**
@@ -91,26 +90,7 @@ public class Schema implements Comparable<Schema> {
      * @throws SQLException If an error occurred while reading the list of tables
      */
     public Table getTable(String tableName) throws SQLException {
-        List<Table> list = getTableMetaData(tableName);
-        if(list.isEmpty()) {
-            return null;
-        } else {
-            return list.get(0);
-        }
-    }
-
-    private List<Table> getTableMetaData(String tableNameFilter) throws SQLException {
-        List<String> userTableNames = metaDataResolver.getUserTableNames(catalog.getName(), name);
-        List<Table> tables = new ArrayList<Table>(userTableNames.size());
-        for(String tableName : userTableNames) {
-            if(tableNameFilter != null && !tableNameFilter.equals(tableName)) {
-                continue;
-            }
-
-            Table table = new Table(metaDataResolver, this, tableName);
-            tables.add(table);
-        }
-        return tables;
+        return metaDataResolver.getTable(this, tableName);
     }
 
     /**
@@ -118,21 +98,15 @@ public class Schema implements Comparable<Schema> {
      * @throws SQLException If an error occurred while reading the list of views
      */
     public List<View> getViews() throws SQLException {
-        return getViewMetaData(null);
+        return metaDataResolver.getViews(this);
     }
 
-    private List<View> getViewMetaData(String viewNameFilter) throws SQLException {
-        List<String> viewNames = metaDataResolver.getViewNames(catalog.getName(), name);
-        List<View> views = new ArrayList<View>(viewNames.size());
-        for(String viewName : viewNames) {
-            if(viewNameFilter != null && !viewNameFilter.equals(viewName)) {
-                continue;
-            }
-
-            View view = new View(metaDataResolver, this, viewName);
-            views.add(view);
-        }
-        return views;
+    /**
+     * @return List of all views in this schema
+     * @throws SQLException If an error occurred while reading the list of views
+     */
+    public View getView(String viewName) throws SQLException {
+        return metaDataResolver.getView(this, viewName);
     }
 
     /**
@@ -141,21 +115,7 @@ public class Schema implements Comparable<Schema> {
      * procedures
      */
     public List<StoredProcedure> getStoredProcedures() throws SQLException {
-        return getStoredProceduresMetaData(null);
-    }
-
-    private List<StoredProcedure> getStoredProceduresMetaData(String procNameFilter) throws SQLException {
-        List<String> procNames = metaDataResolver.getStoredProcedureNames(catalog.getName(), name);
-        List<StoredProcedure> procs = new ArrayList<StoredProcedure>(procNames.size());
-        for(String procName : procNames) {
-            if(procNameFilter != null && !procNameFilter.equals(procName)) {
-                continue;
-            }
-
-            StoredProcedure storedProcedure = new StoredProcedure(metaDataResolver, catalog, this, procName);
-            procs.add(storedProcedure);
-        }
-        return procs;
+        return metaDataResolver.getStoredProcedures(this);
     }
 
     @Override

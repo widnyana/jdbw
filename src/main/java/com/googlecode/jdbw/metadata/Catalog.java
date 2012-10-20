@@ -19,7 +19,6 @@
 package com.googlecode.jdbw.metadata;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,10 +36,10 @@ import java.util.List;
  */
 public class Catalog implements Comparable<Catalog> {
 
-    private final MetaDataResolver metaDataResolver;
+    private final ServerMetaData metaDataResolver;
     private final String name;
 
-    public Catalog(MetaDataResolver metaDataResolver, String name) {
+    public Catalog(ServerMetaData metaDataResolver, String name) {
         this.metaDataResolver = metaDataResolver;
         this.name = name;
     }
@@ -50,22 +49,11 @@ public class Catalog implements Comparable<Catalog> {
     }
 
     public List<Schema> getSchemas() throws SQLException {
-        List<String> schemaNames = metaDataResolver.getSchemaNames(name);
-        List<Schema> schemas = new ArrayList<Schema>();
-        for(String schemaName : schemaNames) {
-            schemas.add(metaDataResolver.getMetaDataFactory().createSchema(this, schemaName));
-        }
-        return schemas;
+        return metaDataResolver.getSchemas(this);
     }
 
     public Schema getSchema(String schemaName) throws SQLException {
-        List<Schema> schemas = getSchemas();
-        for(Schema schema : schemas) {
-            if(schema.getName().equals(schemaName)) {
-                return schema;
-            }
-        }
-        return null;
+        return metaDataResolver.getSchema(this, schemaName);
     }
 
     @Override

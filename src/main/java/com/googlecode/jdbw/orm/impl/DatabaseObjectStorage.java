@@ -21,6 +21,7 @@ package com.googlecode.jdbw.orm.impl;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.Column;
+import com.googlecode.jdbw.metadata.TableColumn;
 import com.googlecode.jdbw.orm.AutoTriggeredObjectStorage;
 import com.googlecode.jdbw.orm.ClassTableMapping;
 import com.googlecode.jdbw.orm.DefaultClassTableMapping;
@@ -55,7 +56,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
         ClassTableMapping tableMapping;
         EntityInitializer entityInitializer;
         Class idType;
-        Map<String, Column> columnMap;
+        Map<String, TableColumn> columnMap;
     }
     
     private final DatabaseConnection databaseConnection;
@@ -610,7 +611,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
             return mapping.tableMapping;
     }
     
-    private <U, T extends Identifiable<U>> Map<String, Column> getEntityColumnMap(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> Map<String, TableColumn> getEntityColumnMap(Class<T> entityClass) {
         return getMapping(entityClass).columnMap;
     }
     
@@ -634,7 +635,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
         List list = new ArrayList();
         ClassTableMapping classTableMapping = getClassTableMapping(entityType);
         List<String> fieldNames = classTableMapping.getFieldNames(entityType);
-        Map<String, Column> columnMap = getEntityColumnMap(entityType);
+        Map<String, TableColumn> columnMap = getEntityColumnMap(entityType);
         for(int i = 0; i < fieldNames.size(); i++) {
             Object fieldData = data[skipFirstElement ? i + 1 : i];
             Column column = columnMap.get(classTableMapping.toColumnName(entityType, fieldNames.get(i)));

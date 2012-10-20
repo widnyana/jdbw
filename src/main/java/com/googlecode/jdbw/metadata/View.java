@@ -20,8 +20,10 @@ package com.googlecode.jdbw.metadata;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A <i>View</i> in the database world is a kind of virtual table, defined by
@@ -35,18 +37,14 @@ import java.util.Map;
  */
 public class View implements Comparable<View> {
     
-    private final MetaDataResolver metaDataResolver;
+    private final ServerMetaData metaDataResolver;
     private final Schema schema;
     private final String name;
-    private List<Index> cachedIndexes;
-    private List<ViewColumn> cachedColumns;
 
-    public View(MetaDataResolver metaDataResolver, Schema schema, String name) {
+    public View(ServerMetaData metaDataResolver, Schema schema, String name) {
         this.metaDataResolver = metaDataResolver;
         this.schema = schema;
         this.name = name;
-        this.cachedIndexes = null;
-        this.cachedColumns = null;
     }
 
     /**
@@ -71,6 +69,40 @@ public class View implements Comparable<View> {
         return schema.getCatalog();
     }
 
+    public List<ViewColumn> getColumns() throws SQLException {
+        return metaDataResolver.getColumns(this);
+    }
+
+    public ViewColumn getColumn(String columnName) throws SQLException {
+        for(ViewColumn column: metaDataResolver.getColumns(this)) {
+            if(column.getName().equals(columnName)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    public ViewColumn getColumn(int columnIndex) throws SQLException {
+        return getColumns().get(columnIndex);
+    }
+
+    public Map<String, ViewColumn> getColumnMap() throws SQLException {
+        Map<String, ViewColumn> columnMap = new TreeMap<String, ViewColumn>();
+        for(ViewColumn column : getColumns()) {
+            columnMap.put(column.getName(), column);
+        }
+        return new HashMap<String, ViewColumn>(columnMap);
+    }
+
+    /**
+     * @return Number of columns this table has
+     * @throws SQLException In an error occurred while reading information from
+     * the database
+     */
+    public int getColumnCount() throws SQLException {
+        return getColumns().size();
+    }
+
     @Override
     public int compareTo(View o) {
         return getName().toLowerCase().compareTo(o.getName().toLowerCase());
@@ -79,46 +111,5 @@ public class View implements Comparable<View> {
     @Override
     public String toString() {
         return getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName();
-    }
-
-    /**
-     * This view class will cache the columns and indexes after reading them
-     * from the database server once, this method will clear the cache, forcing
-     * them to be re-read. 
-     */
-    public void invalidateCache() {
-        cachedColumns = null;
-        cachedIndexes = null;
-    }
-
-    public List<ViewColumn> getColumns() throws SQLException {
-        if(cachedColumns != null) {
-            return new ArrayList<ViewColumn>(cachedColumns);
-        }
-
-        List<Map<String, Object>> columnMaps = metaDataResolver.getColumns(schema.getCatalog().getName(), schema.getName(), getName());
-        List<ViewColumn> columns = new ArrayList<ViewColumn>();
-        for(Map<String, Object> columnMap: columnMaps) {
-            String columnName = (String)columnMap.get("COLUMN_NAME");
-            int sqlType = (Integer)columnMap.get("DATA_TYPE");
-            String typeName = (String)columnMap.get("TYPE_NAME");
-            int columnSize = (Integer)columnMap.get("COLUMN_SIZE");
-            int decimalDigits = (Integer)columnMap.get("DECIMAL_DIGITS");
-            int nullable = (Integer)columnMap.get("NULLABLE");
-            int ordinalPosition = (Integer)columnMap.get("ORDINAL_POSITION");
-            String isAutoIncrement = (String)columnMap.get("IS_AUTOINCREMENT");
-            columns.add(new ViewColumn(
-                    this,
-                    ordinalPosition, 
-                    columnName, 
-                    sqlType, 
-                    typeName, 
-                    columnSize, 
-                    decimalDigits, 
-                    nullable, 
-                    isAutoIncrement));
-        }
-        cachedColumns = columns;
-        return new ArrayList<ViewColumn>(cachedColumns);
     }
 }

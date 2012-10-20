@@ -19,54 +19,48 @@
 
 package com.googlecode.jdbw.server.sybase;
 
-import com.googlecode.jdbw.DatabaseConnection;
-import com.googlecode.jdbw.DatabaseServerTypes;
-import com.googlecode.jdbw.DatabaseTransaction;
-import com.googlecode.jdbw.TransactionIsolation;
-import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
-import com.googlecode.jdbw.metadata.MetaDataResolver;
-import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
+import com.googlecode.jdbw.metadata.DefaultServerMetaData;
+import com.googlecode.jdbw.metadata.Index;
+import com.googlecode.jdbw.metadata.Schema;
+import com.googlecode.jdbw.metadata.Table;
+import com.googlecode.jdbw.util.MockResultSet;
 import com.googlecode.jdbw.util.SQLWorker;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import javax.sql.DataSource;
 
 /**
  * A meta data resolver tuned to Sybase ASE
  * @author Martin Berglund
  */
-class SybaseASEMetaDataResolver extends MetaDataResolver {
+class SybaseASEMetaDataResolver extends DefaultServerMetaData {
 
     SybaseASEMetaDataResolver(DataSource dataSource) {
         super(dataSource);
     }
 
     @Override
-    protected Map<String, Object> extractColumnFromMetaResult(ResultSet resultSet) throws SQLException {
-        Map<String, Object> columnProperties = new HashMap<String, Object>(8);
-        columnProperties.put("COLUMN_NAME", resultSet.getString("COLUMN_NAME"));
-        columnProperties.put("DATA_TYPE", resultSet.getInt("DATA_TYPE"));
-        columnProperties.put("TYPE_NAME", resultSet.getString("TYPE_NAME"));
-        columnProperties.put("COLUMN_SIZE", resultSet.getInt("COLUMN_SIZE"));
-        columnProperties.put("DECIMAL_DIGITS", resultSet.getInt("DECIMAL_DIGITS"));
-        columnProperties.put("NULLABLE", resultSet.getInt("NULLABLE"));
-        columnProperties.put("ORDINAL_POSITION", resultSet.getInt("ORDINAL_POSITION"));
-        columnProperties.put("IS_AUTOINCREMENT", "");
-        return columnProperties;
+    protected ResultSet getStoredProcedureMetadata(Connection pooledConnection, Schema schema, String procedureName) throws SQLException {
+        SQLWorker worker = new SQLWorker(new SybaseExecutor(pooledConnection));
+        List<Object[]> rows = new ArrayList<Object[]>();
+        for(String foundProcedureName: worker.leftColumnAsString(
+                "SELECT name FROM " + schema.getCatalog().getName() + "..sysobjects WHERE type = 'P' ORDER BY name ASC")) {
+            
+            if(procedureName == null || procedureName.equals(foundProcedureName)) {
+                rows.add(new Object[] { null, null, procedureName });
+            }
+        }
+        return new MockResultSet(rows);
     }
-
-    @Override
-    protected List<String> getStoredProcedureNames(String catalogName, String schemaName) throws SQLException {
-        DatabaseConnection tempConnection = new DatabaseConnectionImpl(dataSource, null, DatabaseServerTypes.SYBASE_ASE);
-        SQLWorker worker = new SQLWorker(tempConnection.createAutoExecutor());
-        return worker.leftColumnAsString("SELECT name FROM " + catalogName + "..sysobjects WHERE type = 'P'");
-    }
-
+/*
     @Override
     public String getStoredProcedureCode(String catalogName, String schemaName, String procedureName) throws SQLException {
         final StringBuilder sb = new StringBuilder();
@@ -94,32 +88,56 @@ class SybaseASEMetaDataResolver extends MetaDataResolver {
         transaction.rollback();
         return sb.toString();
     }
+*/
 
     @Override
-    protected List<Map<String, Object>> getIndexes(String catalogName, String schemaName, String tableName) throws SQLException {
-        List<Map<String, Object>> indexes = super.getIndexes(catalogName, schemaName, tableName);
-        SQLWorker worker = new SQLWorker(new DatabaseConnectionImpl(dataSource, null, DatabaseServerTypes.SYBASE_ASE).createAutoExecutor());
+    public List<Index> getIndexes(Table table) throws SQLException {
+        Connection pooledConnection = dataSource.getConnection();
+        
+        SQLWorker worker = new SQLWorker(new SybaseExecutor(pooledConnection));
+        String catalogName = table.getSchema().getCatalog().getName();
+        String schemaName = table.getSchema().getName();
         List<Object[]> rows = worker.query("select i.name, i.status, i.status2 " + 
                 "FROM " + catalogName + "." + schemaName + ".sysobjects o, " + 
                 "     " + catalogName + "." + schemaName + ".sysindexes i " + 
                 "WHERE o.name = ? AND o.type = 'U' AND " + 
-                "         o.id = i.id", tableName);
-        //Use a safer way of detecting clustered indexes
-        indexLoop:
-        for(Map<String, Object> indexDef : indexes) {
-            for(Object[] row : rows) {
-                if(row[0].toString().trim().equals(indexDef.get("INDEX_NAME"))) {
-                    int status = (Integer) row[1];
-                    int status2 = (Integer) row[2];
-                    boolean clustered = (status & 16) > 0 || (status2 & 512) > 0;
-                    if(clustered) {
-                        indexDef.put("TYPE", DatabaseMetaData.tableIndexClustered);
-                    }
-                    continue indexLoop;
-                }
+                "         o.id = i.id", table.getName());
+        Set<String> clusteredIndexes = new HashSet<String>();
+        for(Object[] row: rows) {
+            String indexName = (row[0] != null ? row[0].toString().trim() : null);
+            if(indexName == null || "".equals(indexName) || clusteredIndexes.contains(indexName))
+                continue;
+            
+            int status = (Integer) row[1];
+            int status2 = (Integer) row[2];
+            boolean clustered = (status & 16) > 0 || (status2 & 512) > 0;
+            if(clustered) {
+                clusteredIndexes.add(indexName);
             }
         }
-        return indexes;
+        
+        try {
+            Map<String, Index> result = new HashMap<String, Index>();
+            ResultSet resultSet = getIndexMetadata(pooledConnection, table);
+            while(resultSet.next()) {
+                String indexName = resultSet.getString("INDEX_NAME");
+                String columnName = resultSet.getString("COLUMN_NAME");
+                if(result.containsKey(indexName)) {
+                    result.get(indexName).addColumn(table.getColumn(columnName));
+                }
+                else {
+                    result.put(indexName, 
+                            createIndex(
+                                table, 
+                                indexName,
+                                clusteredIndexes.contains(indexName) ? DatabaseMetaData.tableIndexClustered : 0,
+                                resultSet.getBoolean("NON_UNIQUE"),
+                                table.getColumn(columnName)));
+                }
+            }
+            return sortIndexList(new ArrayList<Index>(result.values()));
+        } finally {
+            pooledConnection.close();
+        }
     }
-    
 }

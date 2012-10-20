@@ -20,74 +20,33 @@
 package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.metadata.*;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.sql.DataSource;
 
 /**
  * A meta data resolver tuned for MySQL
  * @author Martin Berglund
  */
-class MySQLMetaDataResolver extends MetaDataResolver {
+class MySQLMetaDataResolver extends DefaultServerMetaData {
 
     MySQLMetaDataResolver(DataSource dataSource) {
         super(dataSource);
     }
 
     @Override
-    protected MetaDataFactory getMetaDataFactory() {
-        return new MySQLMetaDataFactory(this);
+    public List<Schema> getSchemas(Catalog catalog) throws SQLException {
+        return Arrays.asList(createSchema(catalog, "schema"));
     }
 
     @Override
-    protected List<String> getSchemaNames(String catalogName) throws SQLException {
-        return Arrays.asList("schema");
-    }
-
-    @Override
-    protected List<String> getProcedureInputParameterNames(String catalogName, String schemaName, StoredProcedure procedure) throws SQLException {
-        return super.getProcedureInputParameterNames(catalogName, null, procedure);
-    }
-
-    @Override
-    protected Map<String, Object> extractIndexDataFromMetaResult(ResultSet resultSet) throws SQLException {
-        Map<String, Object> indexDefMap = new HashMap<String, Object>();
-        indexDefMap.put("INDEX_NAME", resultSet.getString("INDEX_NAME"));
-        indexDefMap.put("NON_UNIQUE", resultSet.getBoolean("NON_UNIQUE"));
-        indexDefMap.put("TYPE", resultSet.getShort("TYPE"));
-        indexDefMap.put("COLUMN_NAME", resultSet.getString("COLUMN_NAME"));
-        if(indexDefMap.get("INDEX_NAME").equals("PRIMARY")) {
-            indexDefMap.put("TYPE", DatabaseMetaData.tableIndexClustered);
+    public Schema getSchema(Catalog catalog, String schemaName) throws SQLException {
+        if("schema".equals(schemaName)) {
+            return getSchemas(catalog).get(0);
         }
-        return indexDefMap;
-    }
-
-    private static class MySQLMetaDataFactory extends DefaultMetaDataFactory {
-
-        public MySQLMetaDataFactory(MetaDataResolver metaDataResolver) {
-            super(metaDataResolver);
-        }
-
-        @Override
-        public Catalog createCatalog(String catalogName) {
-            return new MySQLCatalog(metaDataResolver, catalogName);
-        }
-    }
-    
-    private static class MySQLCatalog extends Catalog {
-
-        public MySQLCatalog(MetaDataResolver metaDataResolver, String name) {
-            super(metaDataResolver, name);
-        }
-
-        @Override
-        public Schema getSchema(String schemaName) throws SQLException {
-            return getSchemas().get(0);
+        else {
+            return null;
         }
     }
 }

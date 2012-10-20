@@ -20,7 +20,7 @@ package com.googlecode.jdbw.impl;
 
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.metadata.Catalog;
-import com.googlecode.jdbw.metadata.MetaDataResolver;
+import com.googlecode.jdbw.metadata.ServerMetaData;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -260,13 +260,13 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public List<Catalog> getCatalogs() throws SQLException {
-        MetaDataResolver metaDataResolver = createMetaDataResolver();
+        ServerMetaData metaDataResolver = createMetaDataResolver();
         return metaDataResolver.getCatalogs();
     }
 
     @Override
     public Catalog getCatalog(String catalogName) throws SQLException {
-        MetaDataResolver metaDataResolver = createMetaDataResolver();
+        ServerMetaData metaDataResolver = createMetaDataResolver();
         return metaDataResolver.getCatalog(catalogName);
     }
 
@@ -295,7 +295,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
         return null;
     }
 
-    protected MetaDataResolver createMetaDataResolver() {
+    protected ServerMetaData createMetaDataResolver() {
         return getServerType().createMetaDataResolver(dataSource);
     }
 

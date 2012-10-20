@@ -22,6 +22,8 @@ package com.googlecode.jdbw.metadata;
  * Will hold metadata information about a system table
  * @author Martin Berglund
  */
-public class SystemTable {
-    //Not implemented yet
+public class SystemTable extends Table {
+    public SystemTable(ServerMetaData metaDataResolver, Schema schema, String tableName) {
+        super(metaDataResolver, schema, tableName);
+    }
 }

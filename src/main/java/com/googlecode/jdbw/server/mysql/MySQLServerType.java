@@ -21,7 +21,7 @@ package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.SQLExecutor;
-import com.googlecode.jdbw.metadata.MetaDataResolver;
+import com.googlecode.jdbw.metadata.ServerMetaData;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
 import java.sql.Connection;
 import javax.sql.DataSource;
@@ -53,7 +53,7 @@ public class MySQLServerType extends AbstractDatabaseType {
     }
 
     @Override
-    public MetaDataResolver createMetaDataResolver(DataSource dataSource) {
+    public ServerMetaData createMetaDataResolver(DataSource dataSource) {
         return new MySQLMetaDataResolver(dataSource);
     }
 }

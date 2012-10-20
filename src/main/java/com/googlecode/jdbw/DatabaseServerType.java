@@ -18,7 +18,7 @@
  */
 package com.googlecode.jdbw;
 
-import com.googlecode.jdbw.metadata.MetaDataResolver;
+import com.googlecode.jdbw.metadata.ServerMetaData;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -60,7 +60,7 @@ public interface DatabaseServerType {
      * @param dataSource DataSource to be used by this MetaDataResolver
      * @return MetaDataResolver-implementation for this server type
      */
-    MetaDataResolver createMetaDataResolver(DataSource dataSource);   
+    ServerMetaData createMetaDataResolver(DataSource dataSource);   
     
     /**
      * Check an SQLException with this server type if it is considered a connection error

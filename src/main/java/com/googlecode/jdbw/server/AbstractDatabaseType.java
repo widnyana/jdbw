@@ -21,7 +21,8 @@ package com.googlecode.jdbw.server;
 
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.impl.SQLExecutorImpl;
-import com.googlecode.jdbw.metadata.MetaDataResolver;
+import com.googlecode.jdbw.metadata.DefaultServerMetaData;
+import com.googlecode.jdbw.metadata.ServerMetaData;
 import java.sql.*;
 import javax.sql.DataSource;
 
@@ -47,8 +48,8 @@ public abstract class AbstractDatabaseType implements DatabaseServerType {
     }
 
     @Override
-    public MetaDataResolver createMetaDataResolver(DataSource dataSource) {
-        return new MetaDataResolver(dataSource);
+    public ServerMetaData createMetaDataResolver(DataSource dataSource) {
+        return new DefaultServerMetaData(dataSource);
     }
     
     @Override

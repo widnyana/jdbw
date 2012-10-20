@@ -40,18 +40,14 @@ import java.util.List;
  */
 public class StoredProcedure implements Comparable<StoredProcedure> {
 
-    private final MetaDataResolver metaDataResolver;
-    private final Catalog catalog;
+    private final ServerMetaData metaDataResolver;
     private final Schema schema;
     private final String name;
-    private List<String> inputParameterNamesCache;
 
-    public StoredProcedure(MetaDataResolver metaDataResolver, Catalog catalog, Schema schema, String name) {
+    public StoredProcedure(ServerMetaData metaDataResolver, Schema schema, String name) {
         this.metaDataResolver = metaDataResolver;
-        this.catalog = catalog;
         this.schema = schema;
         this.name = name;
-        this.inputParameterNamesCache = null;
     }
 
     /**
@@ -68,38 +64,13 @@ public class StoredProcedure implements Comparable<StoredProcedure> {
         return schema;
     }
 
-    /**
-     * @return Catalog this stored procedure is sorted under, i.e. the owner
-     * of this stored procedure's schema
-     */
-    public Catalog getCatalog() {
-        return catalog;
-    }
-
-    /**
-     * @return List of input parameter names, in the order the stored procedure
-     * expects them
-     * @throws SQLException If an error occurred while reading the information
-     * from the database
-     */
-    public List<String> getInputParameterNames() throws SQLException {
-        if(inputParameterNamesCache == null) {
-            inputParameterNamesCache = metaDataResolver.getProcedureInputParameterNames(catalog.getName(), schema.getName(), this);
-        }
-        return Collections.unmodifiableList(inputParameterNamesCache);
-    }
-
     @Override
     public int compareTo(StoredProcedure o) {
         return getName().toLowerCase().compareTo(o.getName().toLowerCase());
     }
 
-    public String getCode() throws SQLException {
-        return metaDataResolver.getStoredProcedureCode(catalog.getName(), schema.getName(), name);
-    }
-
     @Override
     public String toString() {
-        return getName();
+        return schema.getCatalog().getName() + "." + schema.getName() + "." + getName();
     }
 }

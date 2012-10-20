@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.metadata;
 
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -44,26 +43,14 @@ import java.util.*;
  */
 public class Table implements Comparable<Table> {
 
-    private final MetaDataResolver metaDataResolver;
+    private final ServerMetaData metaDataResolver;
     private final Schema schema;
     private final String name;
-    private List<Index> cachedIndexes;
-    private List<TableColumn> cachedColumns;
 
-    public Table(MetaDataResolver metaDataResolver, Schema schema, String tableName) {
+    public Table(ServerMetaData metaDataResolver, Schema schema, String tableName) {
         this.metaDataResolver = metaDataResolver;
         this.schema = schema;
         this.name = tableName;
-        this.cachedIndexes = null;
-        this.cachedColumns = null;
-    }
-
-    /**
-     * @return The catalog which this table sorts under, i.e. the owner of this
-     * table's schema
-     */
-    public Catalog getCatalog() {
-        return schema.getCatalog();
     }
 
     /**
@@ -93,13 +80,11 @@ public class Table implements Comparable<Table> {
         if(getPrimaryKey() != null) {
             return getPrimaryKey();
         }
-
-        for(Index index : getAllIndexes()) {
+        for(Index index : getIndexes()) {
             if(index.isUnique()) {
                 return index;
             }
         }
-
         return null;
     }
 
@@ -110,10 +95,7 @@ public class Table implements Comparable<Table> {
      * the database
      */
     public Index getPrimaryKey() throws SQLException {
-        if(cachedIndexes == null) {
-            getAllIndexes();
-        }
-        for(Index index : cachedIndexes) {
+        for(Index index : getIndexes()) {
             if(index.isPrimaryKey()) {
                 return index;
             }
@@ -122,49 +104,12 @@ public class Table implements Comparable<Table> {
     }
 
     /**
-     * This table class will cache the columns and indexes after reading them
-     * from the database server once, this method will clear the cache, forcing
-     * them to be re-read. 
-     */
-    public void invalidateCache() {
-        cachedColumns = null;
-        cachedIndexes = null;
-    }
-
-    /**
      * @return List of columns in the table, expected to be in order
      * @throws SQLException In an error occurred while reading information from
      * the database
      */
     public List<TableColumn> getColumns() throws SQLException {
-        if(cachedColumns != null) {
-            return new ArrayList<TableColumn>(cachedColumns);
-        }
-
-        List<Map<String, Object>> columnMaps = metaDataResolver.getColumns(schema.getCatalog().getName(), schema.getName(), getName());
-        List<TableColumn> columns = new ArrayList<TableColumn>();
-        for(Map<String, Object> columnMap: columnMaps) {
-            String columnName = (String)columnMap.get("COLUMN_NAME");
-            int sqlType = (Integer)columnMap.get("DATA_TYPE");
-            String typeName = (String)columnMap.get("TYPE_NAME");
-            int columnSize = (Integer)columnMap.get("COLUMN_SIZE");
-            int decimalDigits = (Integer)columnMap.get("DECIMAL_DIGITS");
-            int nullable = (Integer)columnMap.get("NULLABLE");
-            int ordinalPosition = (Integer)columnMap.get("ORDINAL_POSITION");
-            String isAutoIncrement = (String)columnMap.get("IS_AUTOINCREMENT");
-            columns.add(new TableColumn(
-                    this,
-                    ordinalPosition, 
-                    columnName, 
-                    sqlType, 
-                    typeName, 
-                    columnSize, 
-                    decimalDigits, 
-                    nullable, 
-                    isAutoIncrement));
-        }
-        cachedColumns = columns;
-        return new ArrayList<TableColumn>(cachedColumns);
+        return metaDataResolver.getColumns(this);
     }
 
     /**
@@ -172,34 +117,22 @@ public class Table implements Comparable<Table> {
      * @throws SQLException In an error occurred while reading information from
      * the database
      */
-    public List<Index> getAllIndexes() throws SQLException {
-        if(cachedIndexes != null) {
-            return new ArrayList<Index>(cachedIndexes);
+    public List<Index> getIndexes() throws SQLException {
+        return metaDataResolver.getIndexes(this);
+    }
+
+    /**
+     * @return Map (index name to {@code Index} object) of all indexes in this
+     * table, including the primary key
+     * @throws SQLException In an error occurred while reading information from
+     * the database
+     */
+    public Map<String, Index> getIndexMap() throws SQLException {
+        Map<String, Index> indexMap = new TreeMap<String, Index>();
+        for(Index index : getIndexes()) {
+            indexMap.put(index.getName(), index);
         }
-
-        Map<String, Index> indexMap = new HashMap<String, Index>();
-        List<Map<String, Object>> indexDefMaps = 
-                metaDataResolver.getIndexes(schema.getCatalog().getName(), schema.getName(), getName());
-        for(Map<String, Object> indexDef: indexDefMaps) {
-            String indexName = (String)indexDef.get("INDEX_NAME");
-            boolean unique = !(Boolean)indexDef.get("NON_UNIQUE");
-            boolean clustered = ((Short)indexDef.get("TYPE") == DatabaseMetaData.tableIndexClustered);
-            String columnName = (String)indexDef.get("COLUMN_NAME");
-            boolean primaryKey = unique && clustered;
-
-            TableColumn column = getColumn(columnName);
-            if(indexName == null || column == null) //Only named indexes and existing columns
-                continue;
-
-            if(indexMap.containsKey(indexName)) {
-                indexMap.get(indexName).addColumn(column);
-            } 
-            else {
-                indexMap.put(indexName, new Index(indexName, unique, clustered, primaryKey, this, column));
-            }
-        }
-        cachedIndexes = new ArrayList<Index>(indexMap.values());
-        return new ArrayList<Index>(cachedIndexes);
+        return new HashMap<String, Index>(indexMap);
     }
 
     /**
@@ -211,10 +144,7 @@ public class Table implements Comparable<Table> {
      * the database
      */
     public TableColumn getColumn(String columnName) throws SQLException {
-        if(cachedColumns == null) {
-            getColumns();
-        }
-        for(TableColumn column : cachedColumns) {
+        for(TableColumn column: metaDataResolver.getColumns(this)) {
             if(column.getName().equals(columnName)) {
                 return column;
             }
@@ -229,29 +159,11 @@ public class Table implements Comparable<Table> {
      * @return Column representing the column at this index in the table
      * @throws SQLException In an error occurred while reading information from
      * the database
+     * @throws IndexOutOfBoundsException When the {@code columnIndex} is less than 0 or larger
+     * than the number of columns in the table
      */
-    public Column getColumn(int columnIndex) throws SQLException {
-        if(cachedColumns == null) {
-            getColumns();
-        }
-        return cachedColumns.get(columnIndex);
-    }
-
-    /**
-     * @return Number of columns this table has
-     * @throws SQLException In an error occurred while reading information from
-     * the database
-     */
-    public int getNrOfColumns() throws SQLException {
-        if(cachedColumns == null) {
-            getColumns();
-        }
-        return cachedColumns.size();
-    }
-
-    @Override
-    public int compareTo(Table o) {
-        return getName().toLowerCase().compareTo(o.getName().toLowerCase());
+    public TableColumn getColumn(int columnIndex) throws SQLException {
+        return metaDataResolver.getColumns(this).get(columnIndex);
     }
 
     /**
@@ -260,26 +172,26 @@ public class Table implements Comparable<Table> {
      * @throws SQLException In an error occurred while reading information from
      * the database
      */
-    public Map<String, Column> getColumnMap() throws SQLException {
-        Map<String, Column> columnMap = new TreeMap<String, Column>();
-        for(Column column : getColumns()) {
+    public Map<String, TableColumn> getColumnMap() throws SQLException {
+        Map<String, TableColumn> columnMap = new TreeMap<String, TableColumn>();
+        for(TableColumn column : getColumns()) {
             columnMap.put(column.getName(), column);
         }
-        return new HashMap<String, Column>(columnMap);
+        return new HashMap<String, TableColumn>(columnMap);
     }
 
     /**
-     * @return Map (index name to {@code Index} object) of all indexes in this
-     * table, including the primary key
+     * @return Number of columns this table has
      * @throws SQLException In an error occurred while reading information from
      * the database
      */
-    public Map<String, Index> getIndexMap() throws SQLException {
-        Map<String, Index> indexMap = new TreeMap<String, Index>();
-        for(Index index : getAllIndexes()) {
-            indexMap.put(index.getName(), index);
-        }
-        return new HashMap<String, Index>(indexMap);
+    public int getColumnCount() throws SQLException {
+        return getColumns().size();
+    }
+
+    @Override
+    public int compareTo(Table o) {
+        return getName().toLowerCase().compareTo(o.getName().toLowerCase());
     }
 
     @Override
