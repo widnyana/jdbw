@@ -16,7 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm.impl;
+package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
 import java.util.Collection;
