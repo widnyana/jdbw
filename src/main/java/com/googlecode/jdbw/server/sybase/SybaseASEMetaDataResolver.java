@@ -112,7 +112,9 @@ class SybaseASEMetaDataResolver extends MetaDataResolver {
                     int status = (Integer) row[1];
                     int status2 = (Integer) row[2];
                     boolean clustered = (status & 16) > 0 || (status2 & 512) > 0;
-                    indexDef.put("TYPE", DatabaseMetaData.tableIndexClustered);
+                    if(clustered) {
+                        indexDef.put("TYPE", DatabaseMetaData.tableIndexClustered);
+                    }
                     continue indexLoop;
                 }
             }
