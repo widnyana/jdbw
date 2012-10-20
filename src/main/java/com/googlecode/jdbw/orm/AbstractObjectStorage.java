@@ -29,10 +29,6 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
         register(objectType, null);
     }
     
-    public <U, T extends Identifiable<U>> void register(Class<T> objectType, ClassTableMapping classTableMapping) throws SQLException {
-        register(objectType, classTableMapping, null);
-    }
-    
     @Override
     public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
         return get(type, key, CachePolicy.DEEP_GET);

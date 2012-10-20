@@ -89,8 +89,12 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
         this.defaultClassTableMapping = defaultClassTableMapping;
         this.defaultEntityInitializer = defaultEntityInitializer;
     }
-    
+
     @Override
+    public <U, T extends Identifiable<U>> void register(Class<T> objectType, ObjectInitializer initializer) throws SQLException {
+        register(objectType, new DefaultClassTableMapping(), initializer);
+    }
+    
     public <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, ObjectInitializer initializer) throws SQLException {
         if(entityType == null)
             throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");

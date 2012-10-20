@@ -60,7 +60,9 @@ public interface ObjectStorage {
 
     <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys);
 
-    <U, T extends Identifiable<U>> void register(Class<T> objectType, ClassTableMapping classTableMapping, ObjectInitializer initializer) throws SQLException;
+    <U, T extends Identifiable<U>> void register(Class<T> objectType) throws SQLException;
+    
+    <U, T extends Identifiable<U>> void register(Class<T> objectType, ObjectInitializer initializer) throws SQLException;
 
     <U, T extends Identifiable<U>> void delete(T... objects) throws SQLException;
 
