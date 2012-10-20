@@ -18,9 +18,9 @@
  */
 package com.googlecode.jdbw.orm;
 
-public class DefaultEntityInitializer implements EntityInitializer {
+public class DefaultObjectInitializer implements ObjectInitializer {
     @Override
-    public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
+    public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> objectType, String fieldName) {
         return null;
     }    
 }

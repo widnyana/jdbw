@@ -25,30 +25,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EntityCacheManager {
-    private final Map<Class<? extends Identifiable>, DataCache> entityCache;
+public class ObjectCacheManager {
+    private final Map<Class<? extends Identifiable>, DataCache> objectCache;
 
-    public EntityCacheManager() {
-        this.entityCache = new HashMap<Class<? extends Identifiable>, DataCache>();
+    public ObjectCacheManager() {
+        this.objectCache = new HashMap<Class<? extends Identifiable>, DataCache>();
     }
     
-    public <U, T extends Identifiable<U>> void createDataCache(Class<T> entityType) {
-        synchronized(entityCache) {
-            entityCache.put(entityType, new ConcurrentDataCache());
+    public <U, T extends Identifiable<U>> void createDataCache(Class<T> objectType) {
+        synchronized(objectCache) {
+            objectCache.put(objectType, new ConcurrentDataCache());
         }
     }
     
-    public List<Class> getAllKnownEntityTypes() {
-        synchronized(entityCache) {
-            return Collections.unmodifiableList(new ArrayList(entityCache.keySet()));
+    public List<Class> getAllKnownObjectTypes() {
+        synchronized(objectCache) {
+            return Collections.unmodifiableList(new ArrayList(objectCache.keySet()));
         }
     }
     
-    public <U, T extends Identifiable<U>> DataCache<U, T> getCache(Class<T> entityType) {
-        synchronized(entityCache) {
-            if(!entityCache.containsKey(entityType))
-                throw new IllegalArgumentException("Trying to access unregistered entity type " + entityType.getName());
-            return entityCache.get(entityType);
+    public <U, T extends Identifiable<U>> DataCache<U, T> getCache(Class<T> objectType) {
+        synchronized(objectCache) {
+            if(!objectCache.containsKey(objectType))
+                throw new IllegalArgumentException("Trying to access unregistered object type " + objectType.getName());
+            return objectCache.get(objectType);
         }
     }    
 }

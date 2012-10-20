@@ -18,6 +18,6 @@
  */
 package com.googlecode.jdbw.orm;
 
-public interface EntityInitializer {
-    <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName);
+public interface ObjectInitializer {
+    <U, T extends Identifiable<U>> Object getInitialValue(Class<T> objectType, String fieldName);
 }

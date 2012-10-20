@@ -26,25 +26,25 @@ import java.util.concurrent.Executor;
 
 public interface ObjectStorage {
     
-    public static enum SearchPolicy {
-        LOCAL_ONLY,
-        CHECK_DATABASE_IF_MISSING,
-        REFRESH_FIRST
+    public static enum CachePolicy {
+        SHALLOW_GET,
+        SHALLOW_AND_DEEP_GET,
+        DEEP_GET
     }
 
     <U, T extends Identifiable<U>> T get(Class<T> type, U key);
-
-    <U, T extends Identifiable<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy);
+    
+    <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy);
 
     <U, T extends Identifiable<U>> ArrayList<T> getAll(Class<T> type);
 
-    <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> newObjects(final Class<T> type, int numberOfObjects) throws SQLException;
 
-    <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> newObjects(final Class<T> type, U... ids) throws SQLException;
 
-    <U, T extends Identifiable<U>> T newEntity(Class<T> type) throws SQLException;
+    <U, T extends Identifiable<U>> T newObject(Class<T> type) throws SQLException;
 
-    <U, T extends Identifiable<U>> T newEntity(Class<T> type, U id) throws SQLException;
+    <U, T extends Identifiable<U>> T newObject(Class<T> type, U id) throws SQLException;
 
     <U, T extends Identifiable<U>> T persist(Persistable<T> persistable) throws SQLException;
 
@@ -56,31 +56,25 @@ public interface ObjectStorage {
 
     void refresh(Executor executor);
 
-    <U, T extends Identifiable<U>> void refresh(T... entities);
+    <U, T extends Identifiable<U>> void refresh(T... objects);
 
-    <U, T extends Identifiable<U>> void refresh(Class<T> entityType);
+    <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys);
 
-    <U, T extends Identifiable<U>> void refresh(Class<T> entityType, U... keys);
+    <U, T extends Identifiable<U>> void register(Class<T> objectType, ClassTableMapping classTableMapping, ObjectInitializer initializer) throws SQLException;
 
-    <U, T extends Identifiable<U>> void register(Class<T> entityType) throws SQLException;
+    <U, T extends Identifiable<U>> void delete(T... objects) throws SQLException;
 
-    <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException;
-
-    <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException;
-
-    <U, T extends Identifiable<U>> void delete(T... entities) throws SQLException;
-
-    <U, T extends Identifiable<U>> void delete(Collection<T> entities) throws SQLException;
-
-    <U, T extends Identifiable<U>> void delete(Class<T> entityType, U... ids) throws SQLException;
-
-    <U, T extends Identifiable<U>> void delete(Class<T> entityType, Collection<U> ids) throws SQLException;
+    <U, T extends Identifiable<U>> void delete(Collection<T> objects) throws SQLException;
+    
+    <U, T extends Identifiable<U>> void delete(Class<T> objectType, U... ids) throws SQLException;
+    
+    <U, T extends Identifiable<U>> void delete(Class<T> objectType, Collection<U> ids) throws SQLException;
+    
+    <U, T extends Identifiable<U>> void registerTrigger(Class<T> objectType, Trigger trigger);
+    
+    <U, T extends Identifiable<U>> void removeTrigger(Class<T> objectType, Trigger trigger);
     
     void registerGlobalTrigger(Trigger trigger);
     
-    <U, T extends Identifiable<U>> void registerTrigger(Class<T> entityType, Trigger trigger);
-    
     void removeGlobalTrigger(Trigger trigger);    
-    
-    <U, T extends Identifiable<U>> void removeTrigger(Class<T> entityType, Trigger trigger);
 }

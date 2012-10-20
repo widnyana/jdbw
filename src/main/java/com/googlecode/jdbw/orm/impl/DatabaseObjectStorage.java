@@ -25,8 +25,8 @@ import com.googlecode.jdbw.metadata.TableColumn;
 import com.googlecode.jdbw.orm.AutoTriggeredObjectStorage;
 import com.googlecode.jdbw.orm.ClassTableMapping;
 import com.googlecode.jdbw.orm.DefaultClassTableMapping;
-import com.googlecode.jdbw.orm.DefaultEntityInitializer;
-import com.googlecode.jdbw.orm.EntityInitializer;
+import com.googlecode.jdbw.orm.DefaultObjectInitializer;
+import com.googlecode.jdbw.orm.ObjectInitializer;
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Persistable;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
@@ -54,26 +54,26 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     private static class EntityMapping {
         Class<? extends Identifiable> entityType;
         ClassTableMapping tableMapping;
-        EntityInitializer entityInitializer;
+        ObjectInitializer entityInitializer;
         Class idType;
         Map<String, TableColumn> columnMap;
     }
     
     private final DatabaseConnection databaseConnection;
-    private final EntityCacheManager cacheManager;
+    private final ObjectCacheManager cacheManager;
     private final ClassTableMapping defaultClassTableMapping;
-    private final EntityInitializer defaultEntityInitializer;
+    private final ObjectInitializer defaultEntityInitializer;
     private final Map<Class<? extends Identifiable>, EntityMapping> entityMappings;
     private final WeakHashMap<EntityProxy, Object> entitiesToBeInserted;
 
     public DatabaseObjectStorage(DatabaseConnection databaseConnection) {
-        this(databaseConnection, new DefaultClassTableMapping(), new DefaultEntityInitializer());
+        this(databaseConnection, new DefaultClassTableMapping(), new DefaultObjectInitializer());
     }
     
     public DatabaseObjectStorage(
             DatabaseConnection databaseConnection, 
             ClassTableMapping defaultClassTableMapping,
-            EntityInitializer defaultEntityInitializer) {
+            ObjectInitializer defaultEntityInitializer) {
         
         if(databaseConnection == null)
             throw new IllegalArgumentException("Cannot create JORMDatabase with null databaseConnection");
@@ -83,7 +83,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
             throw new IllegalArgumentException("Cannot create JORMDatabase with null defaultEntityInitializer");
         
         this.databaseConnection = databaseConnection;
-        this.cacheManager = new EntityCacheManager();
+        this.cacheManager = new ObjectCacheManager();
         this.entityMappings = new HashMap<Class<? extends Identifiable>, EntityMapping>();
         this.entitiesToBeInserted = new WeakHashMap<EntityProxy, Object>();
         this.defaultClassTableMapping = defaultClassTableMapping;
@@ -91,7 +91,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, EntityInitializer initializer) throws SQLException {
+    public <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping, ObjectInitializer initializer) throws SQLException {
         if(entityType == null)
             throw new IllegalArgumentException("Illegal call to JORMDatabase.register(...) with null entityType");
         
@@ -138,29 +138,29 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T get(Class<T> type, U key, SearchPolicy searchPolicy) {
-        if(searchPolicy == SearchPolicy.REFRESH_FIRST) {
+    public <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy) {
+        if(searchPolicy == CachePolicy.DEEP_GET) {
             refresh(type, key);
         }
         T entity = cacheManager.getCache(type).get(key);
-        if(entity == null && searchPolicy == SearchPolicy.CHECK_DATABASE_IF_MISSING) {
-            return get(type, key, SearchPolicy.REFRESH_FIRST);
+        if(entity == null && searchPolicy == CachePolicy.SHALLOW_AND_DEEP_GET) {
+            return get(type, key, CachePolicy.DEEP_GET);
         }
         return entity;
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T newEntity(Class<T> type) throws SQLException {
-        return newEntity(type, (U)null);
+    public <U, T extends Identifiable<U>> T newObject(Class<T> type) throws SQLException {
+        return newObject(type, (U)null);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T newEntity(Class<T> type, U id) throws SQLException {
+    public <U, T extends Identifiable<U>> T newObject(Class<T> type, U id) throws SQLException {
         return newEntities(type, Arrays.asList(id)).get(0);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, int numberOfEntities) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> newObjects(final Class<T> type, int numberOfEntities) throws SQLException {
         if(numberOfEntities < 0) {
             throw new IllegalArgumentException("Cannot call JORMDatabase.newEntities with < 0 entities to create");
         }
@@ -175,7 +175,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     }
     
     @Override
-    public <U, T extends Identifiable<U>> List<T> newEntities(final Class<T> type, U... ids) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> newObjects(final Class<T> type, U... ids) throws SQLException {
         return newEntities(type, Arrays.asList(ids));
     }
     
@@ -387,7 +387,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     
     @Override
     public void refresh(Executor executor) {
-        for(final Class entityType: (List<Class>)cacheManager.getAllKnownEntityTypes()) {
+        for(final Class entityType: (List<Class>)cacheManager.getAllKnownObjectTypes()) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -414,7 +414,6 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
         refresh(entityType, keys);
     }
     
-    @Override
     public <U, T extends Identifiable<U>> void refresh(Class<T> entityType) {
         SQLDialect sqlDialect = databaseConnection.getServerType().getSQLDialect();
         String sql = "SELECT " +
@@ -427,7 +426,12 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     
     @Override
     public <U, T extends Identifiable<U>> void refresh(Class<T> entityType, U... keys) {
-        refresh(entityType, Arrays.asList(keys));
+        if(keys == null || keys.length == 0) {
+            refresh(entityType);
+        }
+        else {
+            refresh(entityType, Arrays.asList(keys));
+        }
     }
     
     private <U, T extends Identifiable<U>> void refresh(Class<T> entityType, List<U> keys) {
@@ -578,7 +582,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     
     private <U, T extends Identifiable<U>> Object[] getEntityInitializationData(Class<T> entityClass) {
         List<String> entityFields = getEntityFields(entityClass);
-        EntityInitializer initializer = getEntityInitializer(entityClass);
+        ObjectInitializer initializer = getEntityInitializer(entityClass);
         Object[] result = new Object[entityFields.size()];
         int counter = 0;
         for(String fieldName: entityFields) {
@@ -595,7 +599,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
         return getClassTableMapping(entityClass).getFieldNames(entityClass);
     }
     
-    private <U, T extends Identifiable<U>> EntityInitializer getEntityInitializer(Class<T> entityClass) {
+    private <U, T extends Identifiable<U>> ObjectInitializer getEntityInitializer(Class<T> entityClass) {
         EntityMapping mapping = getMapping(entityClass);
         if(mapping.entityInitializer == null)
             return defaultEntityInitializer;

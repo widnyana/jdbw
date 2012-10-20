@@ -25,24 +25,22 @@ import java.util.List;
 
 public abstract class AbstractObjectStorage implements ObjectStorage {
         
-    @Override
-    public <U, T extends Identifiable<U>> void register(Class<T> entityType) throws SQLException {
-        register(entityType, null);
+    public <U, T extends Identifiable<U>> void register(Class<T> objectType) throws SQLException {
+        register(objectType, null);
     }
     
-    @Override
-    public <U, T extends Identifiable<U>> void register(Class<T> entityType, ClassTableMapping classTableMapping) throws SQLException {
-        register(entityType, classTableMapping, null);
+    public <U, T extends Identifiable<U>> void register(Class<T> objectType, ClassTableMapping classTableMapping) throws SQLException {
+        register(objectType, classTableMapping, null);
     }
     
     @Override
     public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
-        return get(type, key, SearchPolicy.REFRESH_FIRST);
+        return get(type, key, CachePolicy.DEEP_GET);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T newEntity(Class<T> type) throws SQLException {
-        return newEntity(type, (U)null);
+    public <U, T extends Identifiable<U>> T newObject(Class<T> type) throws SQLException {
+        return newObject(type, (U)null);
     }
     
     @Override
@@ -56,15 +54,15 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void delete(T... entities) throws SQLException {
-        delete(Arrays.asList(entities));
+    public <U, T extends Identifiable<U>> void delete(T... objects) throws SQLException {
+        delete(Arrays.asList(objects));
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void delete(Class<T> entityType, U... ids) throws SQLException {
-        delete(entityType, Arrays.asList(ids));
+    public <U, T extends Identifiable<U>> void delete(Class<T> objectType, U... ids) throws SQLException {
+        delete(objectType, Arrays.asList(ids));
     }
-        
+                
     @Override
     public void refresh() {
         refresh(new SelfExecutor());

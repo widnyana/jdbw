@@ -25,7 +25,7 @@ import java.util.Set;
 public interface DataCache<U, T extends Identifiable<U>> {
     T get(U id);
     boolean contains(U id);
-    void put(T entity);
+    void put(T object);
     boolean remove(U id);
     boolean removeAll(Collection<U> ids);
     Set<U> allIds();

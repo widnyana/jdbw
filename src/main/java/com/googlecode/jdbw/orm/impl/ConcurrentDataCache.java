@@ -26,44 +26,44 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConcurrentDataCache<U, T extends Identifiable<U>> implements DataCache<U,T> {
-    private final Map<U, T> entityCache;
+    private final Map<U, T> objectCache;
 
     public ConcurrentDataCache() {
-        entityCache = new ConcurrentHashMap<U, T>();
+        objectCache = new ConcurrentHashMap<U, T>();
     }
 
     @Override
     public T get(U id) {
-        return entityCache.get(id);
+        return objectCache.get(id);
     }
 
     @Override
     public boolean contains(U id) {
-        return entityCache.containsKey(id);
+        return objectCache.containsKey(id);
     }
 
     @Override
-    public void put(T entity) {
-        entityCache.put(entity.getId(), entity);
+    public void put(T object) {
+        objectCache.put(object.getId(), object);
     }
 
     @Override
     public boolean remove(U id) {
-        return entityCache.remove(id) != null;
+        return objectCache.remove(id) != null;
     }
 
     @Override
     public boolean removeAll(Collection<U> ids) {
-        return entityCache.keySet().removeAll(ids);
+        return objectCache.keySet().removeAll(ids);
     }
 
     @Override
     public Set<U> allIds() {
-        return Collections.unmodifiableSet(entityCache.keySet());
+        return Collections.unmodifiableSet(objectCache.keySet());
     }
 
     @Override
     public Collection<T> allValues() {
-        return Collections.unmodifiableCollection(entityCache.values());
+        return Collections.unmodifiableCollection(objectCache.values());
     }
 }
