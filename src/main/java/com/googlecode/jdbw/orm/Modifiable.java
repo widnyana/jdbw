@@ -19,5 +19,6 @@
 package com.googlecode.jdbw.orm;
 
 public interface Modifiable {
+    <T extends Modifiable> T modify();
     Persistable<? extends Identifiable> finish();
 }
