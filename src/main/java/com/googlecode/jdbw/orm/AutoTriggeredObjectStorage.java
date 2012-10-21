@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AutoTriggeredObjectStorage extends AbstractObjectStorage {
+public abstract class AutoTriggeredObjectStorage extends AbstractExternalObjectStorage {
     
     private final Set<Trigger> globalTriggers;
     private final Map<Class, Set<Trigger>> classTypeTriggers;

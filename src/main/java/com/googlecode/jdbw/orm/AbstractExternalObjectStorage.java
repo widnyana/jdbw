@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractObjectStorage implements ObjectStorage {
+public abstract class AbstractExternalObjectStorage implements ExternalObjectStorage {
         
     public <U, T extends Identifiable<U>> void register(Class<T> objectType) throws SQLException {
         register(objectType, null);

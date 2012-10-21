@@ -22,19 +22,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 public interface ObjectStorage {
-    
-    public static enum CachePolicy {
-        SHALLOW_GET,
-        SHALLOW_AND_DEEP_GET,
-        DEEP_GET
-    }
 
     <U, T extends Identifiable<U>> T get(Class<T> type, U key);
-    
-    <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy);
 
     <U, T extends Identifiable<U>> ArrayList<T> getAll(Class<T> type);
 
@@ -51,14 +42,6 @@ public interface ObjectStorage {
     <U, T extends Identifiable<U>> List<T> persist(Persistable<T>... persistables) throws SQLException;
 
     <U, T extends Identifiable<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException;
-
-    void refresh();
-
-    void refresh(Executor executor);
-
-    <U, T extends Identifiable<U>> void refresh(T... objects);
-
-    <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys);
 
     <U, T extends Identifiable<U>> void register(Class<T> objectType) throws SQLException;
     
