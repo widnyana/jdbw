@@ -23,8 +23,6 @@ import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.TableColumn;
 import com.googlecode.jdbw.orm.AutoTriggeredObjectStorage;
-import com.googlecode.jdbw.orm.ClassTableMapping;
-import com.googlecode.jdbw.orm.DefaultClassTableMapping;
 import com.googlecode.jdbw.orm.DefaultObjectInitializer;
 import com.googlecode.jdbw.orm.ObjectInitializer;
 import com.googlecode.jdbw.orm.Identifiable;
@@ -143,12 +141,12 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage {
     
     @Override
     public <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy) {
-        if(searchPolicy == CachePolicy.DEEP_GET) {
+        if(searchPolicy == CachePolicy.EXTERNAL_GET) {
             refresh(type, key);
         }
         T entity = cacheManager.getCache(type).get(key);
-        if(entity == null && searchPolicy == CachePolicy.SHALLOW_AND_DEEP_GET) {
-            return get(type, key, CachePolicy.DEEP_GET);
+        if(entity == null && searchPolicy == CachePolicy.LOCAL_THEN_EXTERNAL_GET) {
+            return get(type, key, CachePolicy.EXTERNAL_GET);
         }
         return entity;
     }

@@ -31,7 +31,7 @@ public abstract class AbstractExternalObjectStorage implements ExternalObjectSto
     
     @Override
     public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
-        return get(type, key, CachePolicy.DEEP_GET);
+        return get(type, key, CachePolicy.EXTERNAL_GET);
     }
     
     @Override

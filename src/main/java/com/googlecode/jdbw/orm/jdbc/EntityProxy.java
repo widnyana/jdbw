@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.orm.jdbc;
 
-import com.googlecode.jdbw.orm.ClassTableMapping;
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Persistable;
 import java.lang.reflect.InvocationHandler;
