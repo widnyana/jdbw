@@ -16,10 +16,10 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm.jdbc;
+package com.googlecode.jdbw.orm.old;
 
 import com.googlecode.jdbw.orm.Identifiable;
-import com.googlecode.jdbw.orm.jdbc.ClassTableMapping;
+import com.googlecode.jdbw.orm.old.ClassTableMapping;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
