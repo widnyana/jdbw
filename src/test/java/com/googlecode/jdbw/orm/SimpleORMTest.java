@@ -20,10 +20,10 @@ package com.googlecode.jdbw.orm;
 
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Persistable;
-import com.googlecode.jdbw.orm.DefaultEntityInitializer;
+import com.googlecode.jdbw.orm.DefaultObjectInitializer;
 import com.googlecode.jdbw.orm.Modifiable;
-import com.googlecode.jdbw.orm.impl.DatabaseObjectStorage;
-import com.googlecode.jdbw.orm.DefaultClassTableMapping;
+import com.googlecode.jdbw.orm.jdbc.DatabaseObjectStorage;
+import com.googlecode.jdbw.orm.jdbc.DefaultClassTableMapping;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
@@ -49,6 +49,9 @@ public class SimpleORMTest {
         Person setAge(int age);
         Date getBirthday();
         Person setBirthday(Date birthday);
+        
+        @Override
+        Person modify();
         
         @Override
         Persistable<Person> finish();
@@ -105,9 +108,9 @@ public class SimpleORMTest {
     public void testingLocalAndRemoteSearch() throws SQLException {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
-        assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
-        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.CHECK_DATABASE_IF_MISSING));
-        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
+        assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_GET));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_THEN_EXTERNAL_GET));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_GET));
         assertEquals((Integer)1, jorm.get(Person.class, 1).getId());
     }
     
@@ -115,9 +118,9 @@ public class SimpleORMTest {
     public void testingRefreshSearch() throws SQLException {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
-        assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
-        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.REFRESH_FIRST));
-        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.SearchPolicy.LOCAL_ONLY));
+        assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_GET));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.EXTERNAL_GET));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_GET));
         assertEquals((Integer)1, jorm.get(Person.class, 1).getId());
     }
     
@@ -141,7 +144,7 @@ public class SimpleORMTest {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         Person reinhard = jorm.persist(
-                            jorm.newEntity(Person.class)
+                            jorm.newObject(Person.class)
                                 .setName("Reinhard Mey")
                                 .setAge(69)
                                 .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
@@ -157,12 +160,12 @@ public class SimpleORMTest {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         List<Person> newPersons = jorm.persist(
-                    jorm.newEntity(Person.class)
+                    jorm.newObject(Person.class)
                             .setName("Reinhard Mey")
                             .setAge(69)
                             .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
                             .finish(),
-                    jorm.newEntity(Person.class)
+                    jorm.newObject(Person.class)
                             .setName("Evert Taube")
                             .setAge(85)
                             .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1890-03-12"))
@@ -196,6 +199,7 @@ public class SimpleORMTest {
             @Override public Person setName(String name) { throw new UnsupportedOperationException("Not supported yet."); }
             @Override public Person setAge(int age) { throw new UnsupportedOperationException("Not supported yet."); }
             @Override public Person setBirthday(Date birthday) { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Person modify() { throw new UnsupportedOperationException("Not supported yet."); }
             @Override public Persistable<Person> finish() { throw new UnsupportedOperationException("Not supported yet."); }
         }));
     }
@@ -281,7 +285,7 @@ public class SimpleORMTest {
     @Test
     public void usingEntityInitializerWorks() throws SQLException, ParseException { 
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
-        jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultEntityInitializer() {
+        jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultObjectInitializer() {
             @Override
             public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
                 if(entityType.equals(Person.class) && fieldName.equals("age")) {
@@ -291,7 +295,7 @@ public class SimpleORMTest {
             }
         });
         Person reinhard = jorm.persist(
-                            jorm.newEntity(Person.class)
+                            jorm.newObject(Person.class)
                                 .setName("Reinhard Mey")
                                 .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
                                 .finish());
