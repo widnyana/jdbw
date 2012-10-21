@@ -19,10 +19,10 @@
 package com.googlecode.jdbw.orm;
 
 public interface Trigger {
-    <U, T extends Identifiable<U>> void onCreated(T object);
-    <U, T extends Identifiable<U>> void onBeforeRefresh(T object);
-    <U, T extends Identifiable<U>> void onAfterRefresh(T object);
-    <U, T extends Identifiable<U>> void onBeforePersist(T object);
-    <U, T extends Identifiable<U>> void onAfterPersist(T object);
-    <U, T extends Identifiable<U>> void onDelete(T object);
+    <U, T extends Identifiable<U>> void onCreated(ObjectStorage objectStorage, T object);
+    <U, T extends Identifiable<U>> void onBeforeRefresh(ObjectStorage objectStorage, T object);
+    <U, T extends Identifiable<U>> void onAfterRefresh(ObjectStorage objectStorage, T object);
+    <U, T extends Identifiable<U>> void onBeforePersist(ObjectStorage objectStorage, T object);
+    <U, T extends Identifiable<U>> void onAfterPersist(ObjectStorage objectStorage, T object);
+    <U, T extends Identifiable<U>> void onDelete(ObjectStorage objectStorage, T object);
 }
