@@ -16,9 +16,12 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.jdbc;
 
-public interface Modifiable {
-    <T extends Modifiable> T modify();
-    <U, T extends Identifiable<U> & Modifiable> Persistable<U, T> finish();
+import com.googlecode.jdbw.orm.Identifiable;
+import java.lang.reflect.InvocationHandler;
+
+abstract class CommonProxyHandler<U, T extends Identifiable<U>> implements InvocationHandler {
+    abstract Class<T> getObjectType();
+    abstract U getKey();
 }

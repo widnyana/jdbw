@@ -18,13 +18,9 @@
  */
 package com.googlecode.jdbw.orm;
 
-import com.googlecode.jdbw.orm.Identifiable;
-import com.googlecode.jdbw.orm.Persistable;
-import com.googlecode.jdbw.orm.DefaultObjectInitializer;
-import com.googlecode.jdbw.orm.Modifiable;
-import com.googlecode.jdbw.orm.old.DatabaseObjectStorage;
-import com.googlecode.jdbw.orm.old.DefaultClassTableMapping;
 import com.googlecode.jdbw.DatabaseConnection;
+import com.googlecode.jdbw.orm.jdbc.DatabaseObjectStorage;
+import com.googlecode.jdbw.orm.jdbc.DefaultTableMapping;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.sql.SQLException;
@@ -54,7 +50,7 @@ public class SimpleORMTest {
         Person modify();
         
         @Override
-        Persistable<Person> finish();
+        Persistable<Integer, Person> finish();        
     }
     
     private final DatabaseConnection h2;
@@ -109,7 +105,7 @@ public class SimpleORMTest {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);
         assertNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_GET));
-        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_THEN_EXTERNAL_GET));
+        assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.EXTERNAL_GET));
         assertNotNull(jorm.get(Person.class, 1, DatabaseObjectStorage.CachePolicy.LOCAL_GET));
         assertEquals((Integer)1, jorm.get(Person.class, 1).getId());
     }
@@ -200,7 +196,7 @@ public class SimpleORMTest {
             @Override public Person setAge(int age) { throw new UnsupportedOperationException("Not supported yet."); }
             @Override public Person setBirthday(Date birthday) { throw new UnsupportedOperationException("Not supported yet."); }
             @Override public Person modify() { throw new UnsupportedOperationException("Not supported yet."); }
-            @Override public Persistable<Person> finish() { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Persistable<Integer, Person> finish() { throw new UnsupportedOperationException("Not supported yet."); }
         }));
     }
     
@@ -285,7 +281,7 @@ public class SimpleORMTest {
     @Test
     public void usingEntityInitializerWorks() throws SQLException, ParseException { 
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
-        jorm.register(Person.class, new DefaultClassTableMapping(), new DefaultObjectInitializer() {
+        jorm.register(Person.class, new DefaultObjectInitializer() {
             @Override
             public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
                 if(entityType.equals(Person.class) && fieldName.equals("age")) {
@@ -293,7 +289,7 @@ public class SimpleORMTest {
                 }
                 return super.getInitialValue(entityType, fieldName);
             }
-        });
+        }, new DefaultTableMapping());
         Person reinhard = jorm.persist(
                             jorm.newObject(Person.class)
                                 .setName("Reinhard Mey")

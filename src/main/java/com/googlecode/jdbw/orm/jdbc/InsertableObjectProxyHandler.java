@@ -16,18 +16,21 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm.old;
+package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
-import java.util.Collection;
-import java.util.Set;
+import com.googlecode.jdbw.orm.Modifiable;
+import java.util.Map;
 
-public interface DataCache<U, T extends Identifiable<U>> {
-    T get(U id);
-    boolean contains(U id);
-    void put(T object);
-    boolean remove(U id);
-    boolean removeAll(Collection<U> ids);
-    Set<U> allIds();
-    Collection<T> allValues();
+class InsertableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> extends ModifiableObjectProxyHandler<U, T> {
+
+    public InsertableObjectProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
+        super(fieldMapping, objectType, key, initialValues);
+    }
+    
+    static class Finalized<U, T extends Identifiable<U> & Modifiable> extends ModifiableObjectProxyHandler.Finalized<U, T> {
+        public Finalized(Class<T> objectType, U id, Object[] values) {
+            super(objectType, id, values);
+        }
+    }
 }

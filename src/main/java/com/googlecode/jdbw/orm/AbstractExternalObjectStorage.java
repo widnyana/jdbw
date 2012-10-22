@@ -20,32 +20,39 @@ package com.googlecode.jdbw.orm;
 
 import com.googlecode.jdbw.util.SelfExecutor;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractExternalObjectStorage implements ExternalObjectStorage {
         
+    @Override
     public <U, T extends Identifiable<U>> void register(Class<T> objectType) throws SQLException {
         register(objectType, null);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
+    public <U, T extends Identifiable<U>> T get(Class<T> type, U key) throws SQLException {
         return get(type, key, CachePolicy.EXTERNAL_GET);
+    }
+
+    @Override
+    public <U, T extends Identifiable<U>> List<T> getAll(Class<T> type) throws SQLException {
+        return getAll(type, CachePolicy.EXTERNAL_GET);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T newObject(Class<T> type) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type) throws SQLException {
         return newObject(type, (U)null);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T persist(Persistable<T> persistable) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> T persist(Persistable<U, T> persistable) throws SQLException {
         return persist(Arrays.asList(persistable)).get(0);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> List<T> persist(Persistable<T>... persistables) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> List<T> persist(Persistable<U, T>... persistables) throws SQLException {
         return persist(Arrays.asList(persistables));
     }
     

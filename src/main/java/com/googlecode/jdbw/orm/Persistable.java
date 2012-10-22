@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.orm;
 
-public interface Persistable<T extends Identifiable> {
-    
+public interface Persistable<U, T extends Identifiable<U> & Modifiable> {
+    U getId();
+    Class<T> getObjectType();
 }

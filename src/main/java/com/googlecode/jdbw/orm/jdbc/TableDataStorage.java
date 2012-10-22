@@ -16,25 +16,34 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm.old;
+package com.googlecode.jdbw.orm.jdbc;
 
+import com.googlecode.jdbw.orm.Identifiable;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class TableDataCache<U> {
+class TableDataStorage<U, T extends Identifiable<U>> {
+    private final Class<T> objectType;
     private final String tableName;
     private final List<String> fieldNames;
     private final List<Class> fieldTypes;
-    private final Map<U, Object[]> KeyToRowData;
+    private final Map<U, Object[]> keyToRowData;
+    private final Map<U, T> proxyObjectMap; 
 
-    public TableDataCache(
+    TableDataStorage(
+                Class<T> objectType,
                 String tableName, 
                 List<String> fieldNames, 
                 List<Class> fieldTypes) {
         
+        if(objectType == null) {
+            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null objectType");
+        }
         if(tableName == null) {
             throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null tableName");
         }
@@ -52,11 +61,61 @@ public class TableDataCache<U> {
                     + fieldTypes.size());
         }
         
+        this.objectType = objectType;
         this.tableName = tableName;
         this.fieldNames = Collections.unmodifiableList(new ArrayList<String>(fieldNames));
         this.fieldTypes = Collections.unmodifiableList(new ArrayList<Class>(fieldTypes));
-        this.KeyToRowData = new HashMap<U, Object[]>();
+        this.keyToRowData = new ConcurrentHashMap<U, Object[]>();
+        this.proxyObjectMap = new HashMap<U, T>();
     }
     
+    T getProxyObject(U key) {
+        if(!keyToRowData.containsKey(key)) {
+            return null;
+        }
+        synchronized(proxyObjectMap) {
+            if(!proxyObjectMap.containsKey(key)) {
+                ImmutableObjectProxyHandler<U, T> proxyHandler = 
+                        new ImmutableObjectProxyHandler<U, T>(this, key);
+
+                T proxyObject = (T)Proxy.newProxyInstance(
+                        ClassLoader.getSystemClassLoader(), 
+                        new Class[] { objectType }, 
+                        proxyHandler);
+
+                proxyObjectMap.put(key, proxyObject);
+            }
+            return proxyObjectMap.get(key);
+        }
+    }
     
+    List<T> getAllProxyObjects() {
+        synchronized(proxyObjectMap) {
+            return new ArrayList<T>(proxyObjectMap.values());
+        }
+    }
+
+    void renewAll(List<Object[]> rows) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    void renewSome(List<Object[]> rows) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    void renewSome(List<Object[]> rows, boolean afterUpdate) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    void addRow(Object[] row) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }   
+    
+    void remove(List<U> keysOfObjectsToRemove) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }     
+
+    public Class<T> getObjectType() {
+        return objectType;
+    }
 }

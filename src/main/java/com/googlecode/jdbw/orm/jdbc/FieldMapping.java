@@ -16,9 +16,17 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.jdbc;
 
-public interface Modifiable {
-    <T extends Modifiable> T modify();
-    <U, T extends Identifiable<U> & Modifiable> Persistable<U, T> finish();
+import com.googlecode.jdbw.orm.Identifiable;
+import java.util.List;
+import java.util.Map;
+
+public interface FieldMapping {
+    <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> objectType);
+    <U, T extends Identifiable<U>> List<Class> getFieldTypes(Class<T> objectType);
+    <U, T extends Identifiable<U>> Map<String, Object> getFieldValues(Class<T> objectType, T object);
+    <U, T extends Identifiable<U>> Object[] getFieldValuesNoId(Class<T> objectType, T object);
+    <U, T extends Identifiable<U>> Object[] getFieldValuesLeadingId(Class<T> objectType, T object);
+    <U, T extends Identifiable<U>> Object[] getFieldValuesTrailingId(Class<T> objectType, T object);
 }

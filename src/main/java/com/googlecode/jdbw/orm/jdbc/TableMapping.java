@@ -16,9 +16,16 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.orm;
+package com.googlecode.jdbw.orm.jdbc;
 
-public interface Modifiable {
-    <T extends Modifiable> T modify();
-    <U, T extends Identifiable<U> & Modifiable> Persistable<U, T> finish();
+import com.googlecode.jdbw.orm.Identifiable;
+import java.util.List;
+
+public interface TableMapping extends FieldMapping {
+    <U, T extends Identifiable<U>> String getTableName(Class<T> objectType);
+    <U, T extends Identifiable<U>> String getSelectAll(Class<T> objectType);
+    <U, T extends Identifiable<U>> String getSelectSome(Class<T> objectType, List<U> keys);
+    <U, T extends Identifiable<U>> String getInsert(Class<T> objectType);
+    <U, T extends Identifiable<U>> String getUpdate(Class<T> objectType);
+    <U, T extends Identifiable<U>> String getDelete(Class<T> objectType, int numberOfObjectsToDelete);
 }

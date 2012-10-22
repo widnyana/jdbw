@@ -19,29 +19,30 @@
 package com.googlecode.jdbw.orm;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public interface ObjectStorage {
 
-    <U, T extends Identifiable<U>> T get(Class<T> type, U key);
+    <U, T extends Identifiable<U>> T get(Class<T> type, U key) throws SQLException;
 
-    <U, T extends Identifiable<U>> ArrayList<T> getAll(Class<T> type);
+    <U, T extends Identifiable<U>> List<T> getAll(Class<T> type) throws SQLException;
 
-    <U, T extends Identifiable<U>> List<T> newObjects(final Class<T> type, int numberOfObjects) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> type, int numberOfObjects) throws SQLException;
 
-    <U, T extends Identifiable<U>> List<T> newObjects(final Class<T> type, U... ids) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> type, U... ids) throws SQLException;
+    
+    <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> type, Collection<U> ids) throws SQLException;
 
-    <U, T extends Identifiable<U>> T newObject(Class<T> type) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type) throws SQLException;
 
-    <U, T extends Identifiable<U>> T newObject(Class<T> type, U id) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type, U id) throws SQLException;
 
-    <U, T extends Identifiable<U>> T persist(Persistable<T> persistable) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> T persist(Persistable<U, T> persistable) throws SQLException;
 
-    <U, T extends Identifiable<U>> List<T> persist(Persistable<T>... persistables) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> List<T> persist(Persistable<U, T>... persistables) throws SQLException;
 
-    <U, T extends Identifiable<U>> List<T> persist(Collection<Persistable<T>> persistables) throws SQLException;
+    <U, T extends Identifiable<U> & Modifiable> List<T> persist(Collection<Persistable<U, T>> persistables) throws SQLException;
 
     <U, T extends Identifiable<U>> void register(Class<T> objectType) throws SQLException;
     
