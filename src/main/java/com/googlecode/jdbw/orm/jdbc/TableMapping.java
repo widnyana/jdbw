@@ -18,14 +18,16 @@
  */
 package com.googlecode.jdbw.orm.jdbc;
 
+import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.orm.Identifiable;
 import java.util.List;
 
 public interface TableMapping extends FieldMapping {
     <U, T extends Identifiable<U>> String getTableName(Class<T> objectType);
-    <U, T extends Identifiable<U>> String getSelectAll(Class<T> objectType);
-    <U, T extends Identifiable<U>> String getSelectSome(Class<T> objectType, List<U> keys);
-    <U, T extends Identifiable<U>> String getInsert(Class<T> objectType);
-    <U, T extends Identifiable<U>> String getUpdate(Class<T> objectType);
-    <U, T extends Identifiable<U>> String getDelete(Class<T> objectType, int numberOfObjectsToDelete);
+    <U, T extends Identifiable<U>> String getColumnName(Class<T> objectType, String fieldName);
+    <U, T extends Identifiable<U>> String getSelectAll(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping);
+    <U, T extends Identifiable<U>> String getSelectSome(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, List<U> keys);
+    <U, T extends Identifiable<U>> String getInsert(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping);
+    <U, T extends Identifiable<U>> String getUpdate(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping);
+    <U, T extends Identifiable<U>> String getDelete(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, int numberOfObjectsToDelete);
 }

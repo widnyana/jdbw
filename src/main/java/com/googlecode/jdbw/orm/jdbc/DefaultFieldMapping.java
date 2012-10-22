@@ -25,13 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class DefaultFieldMapping implements FieldMapping {
-
-    @Override
-    public <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> objectType) {
-        Set<String> fields = new TreeSet<String>();
+    
+    private <U, T extends Identifiable<U>> SortedMap<String, Class> getFieldNamesAndTypes(Class<T> objectType) {
+        SortedMap<String, Class> fields = new TreeMap<String, Class>();
         for(Method method: objectType.getMethods()) {
             if((method.getModifiers() & Modifier.STATIC) != 0)
                 continue;
@@ -53,15 +54,20 @@ public class DefaultFieldMapping implements FieldMapping {
             }
             
             if(fieldName != null) {
-                fields.add(fieldName);
+                fields.put(fieldName, method.getReturnType());
             }
         }
-        return new ArrayList<String>(fields);
+        return fields;
+    }
+    
+    @Override
+    public <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> objectType) {
+        return new ArrayList<String>(getFieldNamesAndTypes(objectType).keySet());
     }
 
     @Override
     public <U, T extends Identifiable<U>> List<Class> getFieldTypes(Class<T> objectType) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new ArrayList<Class>(getFieldNamesAndTypes(objectType).values());
     }
 
     @Override

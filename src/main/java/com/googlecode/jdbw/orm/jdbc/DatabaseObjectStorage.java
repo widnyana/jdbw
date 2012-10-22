@@ -165,7 +165,10 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             throw new IllegalArgumentException("Cannot refresh non-registered type " + objectType.getSimpleName());
         }
         
-        String sql = tableMappings.get(objectType).getSelectAll(objectType);
+        String sql = tableMappings.get(objectType).getSelectAll(
+                databaseConnection.getServerType().getSQLDialect(), 
+                objectType, 
+                tableMappings.get(objectType));
         List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
         databaseTableDataStorage.get(objectType).renewAll(rows);
     }
@@ -180,7 +183,11 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             throw new IllegalArgumentException("Cannot refresh non-registered type " + objectType.getSimpleName());
         }
         
-        String sql = tableMappings.get(objectType).getSelectSome(objectType, keys);
+        String sql = tableMappings.get(objectType).getSelectSome(
+                databaseConnection.getServerType().getSQLDialect(), 
+                objectType, 
+                tableMappings.get(objectType),
+                keys);
         List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
         databaseTableDataStorage.get(objectType).renewSome(rows);
     }
@@ -303,7 +310,10 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             return Collections.emptyList();
         }
         Class<T> objectType = persistables.get(0).getObjectType();
-        String sql = tableMappings.get(objectType).getInsert(objectType);
+        String sql = tableMappings.get(objectType).getInsert(
+                databaseConnection.getServerType().getSQLDialect(), 
+                objectType,
+                tableMappings.get(objectType));
         List<U> keys = new ArrayList<U>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
             Object[] values = persistable.getValues();
@@ -326,7 +336,10 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             return Collections.emptyList();
         }
         Class<T> objectType = persistables.get(0).getObjectType();
-        String sql = tableMappings.get(objectType).getInsert(objectType);
+        String sql = tableMappings.get(objectType).getInsert(
+                databaseConnection.getServerType().getSQLDialect(), 
+                objectType,
+                tableMappings.get(objectType));
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
@@ -346,7 +359,10 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             return Collections.emptyList();
         }
         Class<T> objectType = persistables.get(0).getObjectType();
-        String sql = tableMappings.get(objectType).getUpdate(objectType);
+        String sql = tableMappings.get(objectType).getUpdate(
+                databaseConnection.getServerType().getSQLDialect(), 
+                objectType,
+                tableMappings.get(objectType));
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(UpdatableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
@@ -385,7 +401,11 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         
         DatabaseTransaction databaseTransaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
         try {
-            String sql = tableMappings.get(objectType).getDelete(objectType, ids.size());
+            String sql = tableMappings.get(objectType).getDelete(
+                databaseConnection.getServerType().getSQLDialect(), 
+                objectType,
+                tableMappings.get(objectType), 
+                ids.size());
             Object[] parameters = new Object[ids.size()];
             for(int i = 0; i < ids.size(); i++) {
                 parameters[i] = ((List<U>)ids).get(i);

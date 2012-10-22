@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.orm.jdbc;
 
+import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.orm.Identifiable;
 import java.util.List;
 
@@ -25,31 +26,42 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
 
     @Override
     public <U, T extends Identifiable<U>> String getTableName(Class<T> objectType) {
+        return objectType.getSimpleName();
+    }
+
+    @Override
+    public <U, T extends Identifiable<U>> String getColumnName(Class<T> objectType, String fieldName) {
+        return fieldName;
+    }
+
+    @Override
+    public <U, T extends Identifiable<U>> String getSelectAll(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping) {
+        StringBuilder sb = new StringBuilder("SELECT ");
+        sb.append(dialect.escapeIdentifier("id"));
+        for(String fieldName: tableMapping.getFieldNames(objectType)) {
+            sb.append(", ").append(dialect.escapeIdentifier(tableMapping.getColumnName(objectType, fieldName)));
+        }
+        sb.append(" FROM ").append(dialect.escapeIdentifier(tableMapping.getTableName(objectType)));
+        return sb.toString();
+    }
+
+    @Override
+    public <U, T extends Identifiable<U>> String getSelectSome(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, List<U> keys) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getSelectAll(Class<T> objectType) {
+    public <U, T extends Identifiable<U>> String getInsert(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getSelectSome(Class<T> objectType, List<U> keys) {
+    public <U, T extends Identifiable<U>> String getUpdate(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getInsert(Class<T> objectType) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> String getUpdate(Class<T> objectType) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> String getDelete(Class<T> objectType, int numberOfObjectsToDelete) {
+    public <U, T extends Identifiable<U>> String getDelete(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, int numberOfObjectsToDelete) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

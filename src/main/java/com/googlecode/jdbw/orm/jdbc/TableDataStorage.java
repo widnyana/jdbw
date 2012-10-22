@@ -32,7 +32,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     private final String tableName;
     private final List<String> fieldNames;
     private final List<Class> fieldTypes;
-    private final Map<U, Object[]> keyToRowData;
+    private final ConcurrentHashMap<U, Object[]> keyToRowData;
     private final Map<U, T> proxyObjectMap; 
 
     TableDataStorage(
@@ -91,12 +91,29 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     
     List<T> getAllProxyObjects() {
         synchronized(proxyObjectMap) {
-            return new ArrayList<T>(proxyObjectMap.values());
+            if(proxyObjectMap.size() == keyToRowData.size()) {
+                return new ArrayList<T>(proxyObjectMap.values());
+            }
         }
+        List<T> proxies = new ArrayList<T>();
+        for(U key: keyToRowData.keySet()) {
+            proxies.add(getProxyObject(key));
+        }
+        return proxies;
     }
 
     void renewAll(List<Object[]> rows) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        for(Object[] row: rows) {
+            U key = (U)row[0];
+            if(!keyToRowData.containsKey(key)) {
+                Object[] onlyValues = new Object[row.length - 1];
+                System.arraycopy(row, 1, onlyValues, 0, onlyValues.length);
+                if(keyToRowData.putIfAbsent((U)row[0], onlyValues) == null) {
+                    continue;
+                }
+            }
+            System.arraycopy(row, 1, keyToRowData.get(key), 0, row.length - 1);
+        }
     }
 
     void renewSome(List<Object[]> rows) {
