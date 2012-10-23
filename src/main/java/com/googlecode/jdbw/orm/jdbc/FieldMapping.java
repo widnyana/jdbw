@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface FieldMapping {
+    <U, T extends Identifiable<U>> String getFieldName(Class<T> objectType, String methodName);
     <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> objectType);
     <U, T extends Identifiable<U>> List<Class> getFieldTypes(Class<T> objectType);
     <U, T extends Identifiable<U>> Map<String, Object> getFieldValues(Class<T> objectType, T object);

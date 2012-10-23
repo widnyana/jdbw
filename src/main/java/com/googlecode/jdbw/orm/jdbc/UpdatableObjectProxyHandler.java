@@ -26,6 +26,9 @@ class UpdatableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> ext
 
     public UpdatableObjectProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
         super(fieldMapping, objectType, key, initialValues);
+        if(key == null) {
+            throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null key");
+        }
     }
 
     @Override

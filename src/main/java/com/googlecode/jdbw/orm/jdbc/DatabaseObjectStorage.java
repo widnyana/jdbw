@@ -95,10 +95,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         }
         
         objectInitializers.add(objectType, initializer);
-        databaseTableDataStorage.add(objectType, 
-                tableMapping.getTableName(objectType), 
-                tableMapping.getFieldNames(objectType), 
-                tableMapping.getFieldTypes(objectType));
+        databaseTableDataStorage.add(objectType, tableMapping);
         tableMappings.add(objectType, tableMapping);
     }
     
@@ -188,7 +185,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
                 objectType, 
                 tableMappings.get(objectType),
                 keys);
-        List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
+        List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
         databaseTableDataStorage.get(objectType).renewSome(rows);
     }
 
@@ -411,8 +408,16 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
                 parameters[i] = ((List<U>)ids).get(i);
             }
             new SQLWorker(databaseTransaction).write(sql, parameters);
+            databaseTransaction.commit();
         }
         catch(SQLException e) {
+            try {
+                databaseTransaction.rollback();
+            }
+            catch(SQLException e2) {}
+            throw e;
+        }
+        catch(RuntimeException e) {
             try {
                 databaseTransaction.rollback();
             }

@@ -21,52 +21,36 @@ package com.googlecode.jdbw.orm.jdbc;
 import com.googlecode.jdbw.orm.Identifiable;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 class TableDataStorage<U, T extends Identifiable<U>> {
     private final Class<T> objectType;
-    private final String tableName;
-    private final List<String> fieldNames;
-    private final List<Class> fieldTypes;
+    private final FieldMapping fieldMapping;
     private final ConcurrentHashMap<U, Object[]> keyToRowData;
-    private final Map<U, T> proxyObjectMap; 
+    private final Map<U, T> proxyObjectMap;
+    private final Map<String, Integer> fieldNameToIndexMap;
 
-    TableDataStorage(
-                Class<T> objectType,
-                String tableName, 
-                List<String> fieldNames, 
-                List<Class> fieldTypes) {
-        
+    TableDataStorage(Class<T> objectType, FieldMapping fieldMapping) {        
         if(objectType == null) {
             throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null objectType");
         }
-        if(tableName == null) {
-            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null tableName");
-        }
-        if(fieldNames == null || fieldNames.contains(null)) {
-            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null fieldNames "
-                    + "(or list has a null element)");
-        }
-        if(fieldTypes == null || fieldTypes.contains(null)) {
-            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null fieldTypes "
-                    + "(or list has a null element)");
-        }
-        if(fieldNames.size() != fieldTypes.size()) {
-            throw new IllegalArgumentException("Illegal calling TableDataCache(...), "
-                    + "fieldNames has " + fieldNames.size() + " elements but fieldTypes has " 
-                    + fieldTypes.size());
-        }
-        
+        if(fieldMapping == null) {
+            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null fieldMapping");
+        }        
         this.objectType = objectType;
-        this.tableName = tableName;
-        this.fieldNames = Collections.unmodifiableList(new ArrayList<String>(fieldNames));
-        this.fieldTypes = Collections.unmodifiableList(new ArrayList<Class>(fieldTypes));
+        this.fieldMapping = fieldMapping;
         this.keyToRowData = new ConcurrentHashMap<U, Object[]>();
         this.proxyObjectMap = new HashMap<U, T>();
+        this.fieldNameToIndexMap = new HashMap<String, Integer>(fieldMapping.getFieldNames(objectType).size());
+        int index = 0;
+        for(String fieldName: fieldMapping.getFieldNames(objectType)) {
+            fieldNameToIndexMap.put(fieldName, index++);
+        }
     }
     
     T getProxyObject(U key) {
@@ -103,6 +87,18 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     }
 
     void renewAll(List<Object[]> rows) {
+        Set<U> keys = new HashSet<U>();
+        for(Object[] row: rows) {
+            keys.add((U)row[0]);
+        }
+        renewSome(rows);
+        keyToRowData.keySet().retainAll(keys);
+        synchronized(proxyObjectMap) {
+            proxyObjectMap.keySet().retainAll(keys);
+        }
+    }
+
+    void renewSome(List<Object[]> rows) {
         for(Object[] row: rows) {
             U key = (U)row[0];
             if(!keyToRowData.containsKey(key)) {
@@ -116,10 +112,6 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         }
     }
 
-    void renewSome(List<Object[]> rows) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     void renewSome(List<Object[]> rows, boolean afterUpdate) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
@@ -129,9 +121,25 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     }   
     
     void remove(List<U> keysOfObjectsToRemove) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        keyToRowData.keySet().removeAll(keysOfObjectsToRemove);
+        synchronized(proxyObjectMap) {
+            proxyObjectMap.keySet().removeAll(keysOfObjectsToRemove);
+        }
     }     
 
+    Object getValue(U key, String methodName) {
+        Object[] data = keyToRowData.get(key);
+        if(data == null) {
+            throw new RuntimeException("Object " + objectType.getSimpleName() + ":" + key + " was deleted");
+        }
+        String fieldName = fieldMapping.getFieldName(objectType, methodName);
+        if(!fieldNameToIndexMap.containsKey(fieldName)) {
+            throw new RuntimeException("Unexpectedly didn't know about field " + objectType.getSimpleName() +
+                    "." + fieldName);
+        }
+        return data[fieldNameToIndexMap.get(fieldName)];
+    }
+    
     public Class<T> getObjectType() {
         return objectType;
     }

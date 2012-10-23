@@ -43,14 +43,14 @@ public class DefaultFieldMapping implements FieldMapping {
                     continue;
                 }
                 //Found a field!
-                fieldName = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
+                fieldName = getFieldName(objectType, method.getName());
             }
             else if(method.getName().startsWith("is")) {
                 if(method.getName().length() <= 2) {
                     continue;
                 }
                 //Found a field!
-                fieldName = Character.toLowerCase(method.getName().charAt(2)) + method.getName().substring(3);
+                fieldName = getFieldName(objectType, method.getName());
             }
             
             if(fieldName != null) {
@@ -58,6 +58,17 @@ public class DefaultFieldMapping implements FieldMapping {
             }
         }
         return fields;
+    }
+
+    @Override
+    public <U, T extends Identifiable<U>> String getFieldName(Class<T> objectType, String methodName) {
+        if(methodName.startsWith("get") || methodName.startsWith("set")) {
+            return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+        }
+        else if(methodName.startsWith("is")) {
+            return Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
+        }
+        throw new IllegalArgumentException("Cannot detect field name for " + methodName + ", unknown format");
     }
     
     @Override

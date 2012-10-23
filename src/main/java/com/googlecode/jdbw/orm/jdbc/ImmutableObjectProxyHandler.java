@@ -33,7 +33,23 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
     
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if("getId".equals(method.getName())) {
+            return getKey();
+        }
+        else if(method.getName().startsWith("get") || method.getName().startsWith("is")) {
+            return dataStorage.getValue(key, method.getName());
+        }
+        else if(method.getName().equals("equals") && 
+                method.getParameterTypes().length == 1 && 
+                method.getParameterTypes()[0] == Object.class) {
+            return testForEquals(args[0]);
+        }
+        else if(method.getName().startsWith("set")) {
+            throw new UnsupportedOperationException("Illegal call to set method on immutable object");
+        }
+        else {
+            throw new UnsupportedOperationException("JDBW ORM doesn't support calling " + method.getName() + " yet");
+        }
     }
 
     @Override
@@ -44,5 +60,14 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
     @Override
     U getKey() {
         return key;
+    }
+
+    private boolean testForEquals(Object arg) {
+        if(arg != null && dataStorage.getObjectType().isAssignableFrom(arg.getClass())) {
+            return getKey().equals(((T)arg).getId());
+        }
+        else {
+            return false;
+        }
     }
 }

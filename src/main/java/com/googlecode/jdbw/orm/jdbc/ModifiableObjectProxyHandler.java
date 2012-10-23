@@ -40,9 +40,6 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
         if(objectType == null) {
             throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null objectType");
         }
-        if(key == null) {
-            throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null key");
-        }
         this.fieldMapping = fieldMapping;
         this.values = new HashMap<String, Object>(initialValues);
         this.objectType = objectType;

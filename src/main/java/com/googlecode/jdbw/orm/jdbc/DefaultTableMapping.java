@@ -47,7 +47,18 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
 
     @Override
     public <U, T extends Identifiable<U>> String getSelectSome(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, List<U> keys) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(keys.isEmpty()) {
+            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectSome(...) with no keys");
+        }
+        StringBuilder sb = new StringBuilder(getSelectAll(dialect, objectType, tableMapping));
+        sb.append(" WHERE ");
+        sb.append(dialect.escapeIdentifier("id"));
+        sb.append(" IN (?");
+        for(int i = 1; i < keys.size(); i++) {
+            sb.append(", ?");
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
     @Override
@@ -62,7 +73,16 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
 
     @Override
     public <U, T extends Identifiable<U>> String getDelete(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, int numberOfObjectsToDelete) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(numberOfObjectsToDelete <= 0) {
+            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getDelete(...) with numberOfObjectsToDelete <= 0");
+        }
+        StringBuilder sb = new StringBuilder("DELETE FROM ");
+        sb.append(dialect.escapeIdentifier(tableMapping.getTableName(objectType)));
+        sb.append(" WHERE ").append(dialect.escapeIdentifier("id")).append(" IN (?");
+        for(int i = 1; i < numberOfObjectsToDelete; i++) {
+            sb.append(", ?");
+        }
+        return sb.append(")").toString();
     }
     
 }
