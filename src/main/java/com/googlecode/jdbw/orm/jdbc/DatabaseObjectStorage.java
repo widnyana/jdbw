@@ -261,12 +261,17 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             keys.addAll(update(transaction, toUpdate));
             transaction.commit();
         }
-        catch(SQLException e) {
+        catch(Exception e) {
             try {
                 transaction.rollback();
             }
             catch(SQLException e2) {}
-            throw e;
+            if(e instanceof SQLException)
+                throw (SQLException)e;
+            else if(e instanceof RuntimeException)
+                throw (RuntimeException)e;
+            else
+                throw new RuntimeException(e);
         }
         
         for(U key: keys) {
