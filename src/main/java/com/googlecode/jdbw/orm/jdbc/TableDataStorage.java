@@ -20,6 +20,8 @@ package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,24 +29,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 class TableDataStorage<U, T extends Identifiable<U>> {
+    private final Class<U> keyType;
     private final Class<T> objectType;
     private final FieldMapping fieldMapping;
+    private final List<Class> fieldTypes;
     private final ConcurrentHashMap<U, Object[]> keyToRowData;
     private final Map<U, T> proxyObjectMap;
     private final Map<String, Integer> fieldNameToIndexMap;
 
-    TableDataStorage(Class<T> objectType, FieldMapping fieldMapping) {        
+    TableDataStorage(Class<U> keyType, Class<T> objectType, FieldMapping fieldMapping) {        
+        if(keyType == null) {
+            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null keyType");
+        }
         if(objectType == null) {
             throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null objectType");
         }
         if(fieldMapping == null) {
             throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null fieldMapping");
         }        
+        this.keyType = keyType;
         this.objectType = objectType;
         this.fieldMapping = fieldMapping;
+        this.fieldTypes = fieldMapping.getFieldTypes(objectType);
         this.keyToRowData = new ConcurrentHashMap<U, Object[]>();
         this.proxyObjectMap = new HashMap<U, T>();
         this.fieldNameToIndexMap = new HashMap<String, Integer>(fieldMapping.getFieldNames(objectType).size());
@@ -113,13 +123,19 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         addOrUpdateRow(row, true);
     }
     
-    void addOrUpdateRow(Object[] row, boolean idInFront) {
+    void addOrUpdateRow(Object[] row, boolean idInFront) {       
         U key;
         if(idInFront) {
-            key = (U)row[0];
+            key = (U)correctDatatype(row[0], keyType);
+            for(int i = 1; i < row.length; i++) {
+                row[i] = correctDatatype(row[i], fieldTypes.get(i - 1));
+            }
         }
         else {
-            key = (U)row[row.length - 1];
+            key = (U)correctDatatype(row[row.length - 1], keyType);
+            for(int i = 0; i < row.length - 1; i++) {
+                row[i] = correctDatatype(row[i], fieldTypes.get(i));
+            }
         }
         if(!keyToRowData.containsKey(key)) {
             Object[] onlyValues = new Object[row.length - 1];
@@ -128,12 +144,17 @@ class TableDataStorage<U, T extends Identifiable<U>> {
             }
             else {
                 System.arraycopy(row, 0, onlyValues, 0, onlyValues.length);
-            }
-            if(keyToRowData.putIfAbsent((U)row[0], onlyValues) == null) {
+            }            
+            if(keyToRowData.putIfAbsent(key, onlyValues) == null) {
                 return;
             }
         }
-        System.arraycopy(row, 1, keyToRowData.get(key), 0, row.length - 1);
+        if(idInFront) {
+            System.arraycopy(row, 1, keyToRowData.get(key), 0, row.length - 1);
+        }
+        else {
+            System.arraycopy(row, 0, keyToRowData.get(key), 0, row.length - 1);
+        }       
     }
 
     void updateRows(List<Object[]> rows) {
@@ -162,5 +183,54 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     
     public Class<T> getObjectType() {
         return objectType;
+    }
+
+    private Object correctDatatype(Object value, Class type) {
+        if(value == null) {
+            return null;
+        }
+        else if(value.getClass() == type) {
+            return value;
+        }
+        else if(type.isAssignableFrom(value.getClass())) {
+            return value;
+        }
+        else if(value instanceof String && type == UUID.class) {
+            return UUID.fromString((String)value);
+        }
+        else if(type == Integer.class && 
+                (value instanceof Short || value instanceof Long)) {
+            return new Integer(value.toString());
+        }
+        else if(type == Integer.class && value instanceof BigInteger) {
+            return ((BigInteger)value).intValue();
+        }
+        else if(type == Long.class && 
+                (value instanceof Short || value instanceof Integer)) {
+            return new Long(value.toString());
+        }
+        else if(type == Long.class && value instanceof BigInteger) {
+            return ((BigInteger)value).longValue();
+        }
+        else if(type == BigInteger.class && 
+                (value instanceof Integer || value instanceof Long)) {
+            return new BigInteger(value.toString());
+        }
+        else if(type == Double.class && value instanceof Float) {
+            return ((Float)value).doubleValue();
+        }
+        else if(type == Float.class && value instanceof Double) {
+            return ((Double)value).floatValue();
+        }
+        else if(type == BigDecimal.class && value instanceof Double) {
+            return new BigDecimal((Double)value);
+        }
+        else if(type == BigDecimal.class && value instanceof Float) {
+            return new BigDecimal((Float)value);
+        }
+        else {
+            throw new IllegalArgumentException("TableDataStorage doesn't know how to convert " +
+                    value.getClass().getName() + " to " + type.getName());
+        }
     }
 }

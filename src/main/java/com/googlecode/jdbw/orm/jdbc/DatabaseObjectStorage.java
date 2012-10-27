@@ -94,8 +94,14 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             return;
         }
         
+        Class<U> idType = getIdentifiableIdType(objectType);
+        if(idType == null) {
+            throw new IllegalArgumentException("Cannot register " + objectType.getSimpleName() + 
+                    " because the id type cannot be resolved");
+        }
+        
         objectInitializers.add(objectType, initializer);
-        databaseTableDataStorage.add(objectType, tableMapping);
+        databaseTableDataStorage.add(objectType, idType, tableMapping);
         tableMappings.add(objectType, tableMapping);
     }
     
