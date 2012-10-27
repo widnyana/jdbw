@@ -25,9 +25,9 @@ import java.util.List;
 public interface TableMapping extends FieldMapping {
     <U, T extends Identifiable<U>> String getTableName(Class<T> objectType);
     <U, T extends Identifiable<U>> String getColumnName(Class<T> objectType, String fieldName);
-    <U, T extends Identifiable<U>> String getSelectAll(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping);
-    <U, T extends Identifiable<U>> String getSelectSome(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, List<U> keys);
-    <U, T extends Identifiable<U>> String getInsert(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping);
-    <U, T extends Identifiable<U>> String getUpdate(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping);
-    <U, T extends Identifiable<U>> String getDelete(SQLDialect dialect, Class<T> objectType, TableMapping tableMapping, int numberOfObjectsToDelete);
+    <U, T extends Identifiable<U>> String getSelectAll(SQLDialect dialect, Class<T> objectType);
+    <U, T extends Identifiable<U>> String getSelectSome(SQLDialect dialect, Class<T> objectType, List<U> keys);
+    <U, T extends Identifiable<U>> String getInsert(SQLDialect dialect, Class<T> objectType);
+    <U, T extends Identifiable<U>> String getUpdate(SQLDialect dialect, Class<T> objectType);
+    <U, T extends Identifiable<U>> String getDelete(SQLDialect dialect, Class<T> objectType, int numberOfObjectsToDelete);
 }

@@ -164,8 +164,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         
         String sql = tableMappings.get(objectType).getSelectAll(
                 databaseConnection.getServerType().getSQLDialect(), 
-                objectType, 
-                tableMappings.get(objectType));
+                objectType);
         List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
         databaseTableDataStorage.get(objectType).renewAll(rows);
     }
@@ -183,7 +182,6 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         String sql = tableMappings.get(objectType).getSelectSome(
                 databaseConnection.getServerType().getSQLDialect(), 
                 objectType, 
-                tableMappings.get(objectType),
                 keys);
         List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
         databaseTableDataStorage.get(objectType).renewSome(rows);
@@ -314,8 +312,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         Class<T> objectType = persistables.get(0).getObjectType();
         String sql = tableMappings.get(objectType).getInsert(
                 databaseConnection.getServerType().getSQLDialect(), 
-                objectType,
-                tableMappings.get(objectType));
+                objectType);
         List<U> keys = new ArrayList<U>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
             Object[] values = persistable.getValues();
@@ -340,8 +337,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         Class<T> objectType = persistables.get(0).getObjectType();
         String sql = tableMappings.get(objectType).getInsert(
                 databaseConnection.getServerType().getSQLDialect(), 
-                objectType,
-                tableMappings.get(objectType));
+                objectType);
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
@@ -363,8 +359,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         Class<T> objectType = persistables.get(0).getObjectType();
         String sql = tableMappings.get(objectType).getUpdate(
                 databaseConnection.getServerType().getSQLDialect(), 
-                objectType,
-                tableMappings.get(objectType));
+                objectType);
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(UpdatableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
@@ -406,7 +401,6 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             String sql = tableMappings.get(objectType).getDelete(
                 databaseConnection.getServerType().getSQLDialect(), 
                 objectType,
-                tableMappings.get(objectType), 
                 ids.size());
             Object[] parameters = new Object[ids.size()];
             for(int i = 0; i < ids.size(); i++) {
