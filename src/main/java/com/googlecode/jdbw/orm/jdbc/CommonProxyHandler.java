@@ -24,4 +24,25 @@ import java.lang.reflect.InvocationHandler;
 abstract class CommonProxyHandler<U, T extends Identifiable<U>> implements InvocationHandler {
     abstract Class<T> getObjectType();
     abstract U getKey();
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        if(!getObjectType().isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        return getKey().equals(((T) obj).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getKey().toString() + ":" + getObjectType().getSimpleName();
+    }
 }

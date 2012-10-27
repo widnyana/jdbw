@@ -39,10 +39,16 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
         else if(method.getName().startsWith("get") || method.getName().startsWith("is")) {
             return dataStorage.getValue(key, method.getName());
         }
+        else if(method.getName().equals("toString") && method.getParameterTypes().length == 0) {
+            return toString();
+        }
+        else if(method.getName().equals("hashCode") && method.getParameterTypes().length == 0) {
+            return hashCode();
+        }
         else if(method.getName().equals("equals") && 
-                method.getParameterTypes().length == 1 && 
+                method.getParameterTypes().length == 1 &&
                 method.getParameterTypes()[0] == Object.class) {
-            return testForEquals(args[0]);
+            return equals(args[0]);
         }
         else if(method.getName().startsWith("set")) {
             throw new UnsupportedOperationException("Illegal call to set method on immutable object");
@@ -60,14 +66,5 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
     @Override
     U getKey() {
         return key;
-    }
-
-    private boolean testForEquals(Object arg) {
-        if(arg != null && dataStorage.getObjectType().isAssignableFrom(arg.getClass())) {
-            return getKey().equals(((T)arg).getId());
-        }
-        else {
-            return false;
-        }
     }
 }

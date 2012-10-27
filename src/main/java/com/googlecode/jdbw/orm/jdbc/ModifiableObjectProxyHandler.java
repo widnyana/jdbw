@@ -97,27 +97,6 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
         }
         values.put(fieldName, value);
     }
-
-    @Override
-    public int hashCode() {
-        return getKey().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == null) {
-            return false;
-        }
-        if(!objectType.isAssignableFrom(obj.getClass())) {
-            return false;
-        }
-        return getKey().equals(((T)obj).getId());
-    }
-
-    @Override
-    public String toString() {
-        return getKey().toString() + ":" + objectType.getSimpleName();
-    }
     
     protected Object[] copyValuesToArray(boolean idFirst) {
         List<String> fieldNames = fieldMapping.getFieldNames(objectType);
