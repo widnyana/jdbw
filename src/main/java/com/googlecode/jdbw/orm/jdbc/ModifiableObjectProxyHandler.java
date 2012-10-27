@@ -23,6 +23,7 @@ import com.googlecode.jdbw.orm.Modifiable;
 import com.googlecode.jdbw.orm.Persistable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> extends CommonProxyHandler<U, T> {
@@ -49,7 +50,35 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if((method.getName().startsWith("get") && method.getName().length() > 3) ||
+                (method.getName().startsWith("is") && method.getName().length() > 2)) {
+            return values.get(fieldMapping.getFieldName(objectType, method.getName()));
+        }
+        else if(method.getName().startsWith("set") && method.getName().length() > 3 && 
+                method.getParameterTypes().length == 1) {
+            setValue(fieldMapping.getFieldName(objectType, method.getName()), args[0]);
+            return proxy;
+        }
+        else if(method.getName().equals("finish") && method.getParameterTypes().length == 0) {
+            return makeFinalizedVersion();
+        }
+        else if(method.getName().equals("modify") && method.getParameterTypes().length == 0) {
+            return makeCopyOfThis(fieldMapping, objectType, values);
+        }
+        else if(method.getName().equals("toString") && method.getParameterTypes().length == 0) {
+            return toString();
+        }
+        else if(method.getName().equals("hashCode") && method.getParameterTypes().length == 0) {
+            return hashCode();
+        }
+        else if(method.getName().equals("equals") && 
+                method.getParameterTypes().length == 1 &&
+                method.getParameterTypes()[0] == Object.class) {
+            return equals(args[0]);
+        }
+        else {
+            throw new UnsupportedOperationException("Unsupported method call: " + method.toString());
+        }
     }
 
     @Override
@@ -68,6 +97,48 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
         }
         values.put(fieldName, value);
     }
+
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        if(!objectType.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        return getKey().equals(((T)obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return getKey().toString() + ":" + objectType.getSimpleName();
+    }
+    
+    protected Object[] copyValuesToArray(boolean idFirst) {
+        List<String> fieldNames = fieldMapping.getFieldNames(objectType);
+        Object[] array = new Object[fieldNames.size() + 1];
+        int firstIndex = 0;
+        if(idFirst) {
+            array[0] = getKey();
+            firstIndex = 1;
+        }
+        for(int i = 0; i < fieldNames.size(); i++) {
+            array[i + firstIndex] = values.get(fieldNames.get(i));
+        }
+        if(!idFirst) {
+            array[array.length - 1] = getKey();
+        }
+        return array;
+    }
+
+    protected abstract Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values);
+
+    protected abstract <V extends Finalized<U, T>> V makeFinalizedVersion();
     
     abstract static class Finalized<U, T extends Identifiable<U> & Modifiable> implements Persistable<U, T> {
         

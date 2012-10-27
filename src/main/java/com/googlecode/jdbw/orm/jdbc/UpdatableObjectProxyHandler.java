@@ -32,11 +32,26 @@ class UpdatableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> ext
     }
 
     @Override
+    protected Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values) {
+        return new UpdatableObjectProxyHandler<U, T>(fieldMapping, objectType, getKey(), values);
+    }
+
+    @Override
     protected void setValue(String fieldName, Object value) {
         if("id".equals(fieldName)) {
             throw new IllegalArgumentException("Cannot re-assign the id");
         }
         super.setValue(fieldName, value);
+    }
+
+    @Override
+    public String toString() {
+        return "Updatable{" + super.toString() + "}";
+    }
+
+    @Override
+    protected Finalized makeFinalizedVersion() {
+        return new Finalized(getObjectType(), getKey(), copyValuesToArray(true));
     }
     
     static class Finalized<U, T extends Identifiable<U> & Modifiable> extends ModifiableObjectProxyHandler.Finalized<U, T> {

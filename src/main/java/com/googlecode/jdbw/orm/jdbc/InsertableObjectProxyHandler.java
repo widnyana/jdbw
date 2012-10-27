@@ -27,6 +27,21 @@ class InsertableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> ex
     public InsertableObjectProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
         super(fieldMapping, objectType, key, initialValues);
     }
+
+    @Override
+    protected Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values) {
+        return new InsertableObjectProxyHandler<U, T>(fieldMapping, objectType, getKey(), values);
+    }
+
+    @Override
+    public String toString() {
+        return "Insertable{" + super.toString() + "}";
+    }
+
+    @Override
+    protected Finalized makeFinalizedVersion() {
+        return new Finalized(getObjectType(), getKey(), copyValuesToArray(true));
+    }
     
     static class Finalized<U, T extends Identifiable<U> & Modifiable> extends ModifiableObjectProxyHandler.Finalized<U, T> {
         public Finalized(Class<T> objectType, U id, Object[] values) {
