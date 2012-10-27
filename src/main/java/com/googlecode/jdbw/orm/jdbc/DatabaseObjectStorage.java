@@ -401,7 +401,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             return;
         }
         
-        DatabaseTransaction databaseTransaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
+        DatabaseTransaction transaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
         try {
             String sql = tableMappings.get(objectType).getDelete(
                 databaseConnection.getServerType().getSQLDialect(), 
@@ -412,22 +412,20 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             for(int i = 0; i < ids.size(); i++) {
                 parameters[i] = ((List<U>)ids).get(i);
             }
-            new SQLWorker(databaseTransaction).write(sql, parameters);
-            databaseTransaction.commit();
+            new SQLWorker(transaction).write(sql, parameters);
+            transaction.commit();
         }
-        catch(SQLException e) {
+        catch(Exception e) {
             try {
-                databaseTransaction.rollback();
+                transaction.rollback();
             }
             catch(SQLException e2) {}
-            throw e;
-        }
-        catch(RuntimeException e) {
-            try {
-                databaseTransaction.rollback();
-            }
-            catch(SQLException e2) {}
-            throw e;
+            if(e instanceof SQLException)
+                throw (SQLException)e;
+            else if(e instanceof RuntimeException)
+                throw (RuntimeException)e;
+            else
+                throw new RuntimeException(e);
         }
         
         databaseTableDataStorage.get(objectType).remove((List<U>)ids);
