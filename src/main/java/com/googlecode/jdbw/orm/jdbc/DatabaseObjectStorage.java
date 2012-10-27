@@ -166,7 +166,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
                 databaseConnection.getServerType().getSQLDialect(), 
                 objectType);
         List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
-        databaseTableDataStorage.get(objectType).renewAll(rows);
+        databaseTableDataStorage.get(objectType).setRows(rows);
     }
     
     @Override
@@ -184,7 +184,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
                 objectType, 
                 keys);
         List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
-        databaseTableDataStorage.get(objectType).renewSome(rows);
+        databaseTableDataStorage.get(objectType).addOrUpdateRows(rows);
     }
 
     @Override
@@ -320,7 +320,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             
             if(newId != null) {
                 values[0] = newId;
-                databaseTableDataStorage.get(objectType).addRow(values);
+                databaseTableDataStorage.get(objectType).addOrUpdateRow(values);
                 keys.add(newId);
             }
         }
@@ -345,7 +345,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             keys.add(persistable.getId());
         }
         executor.batchWrite(new BatchUpdateHandlerAdapter(), sql, batchParameters);
-        databaseTableDataStorage.get(objectType).renewSome(batchParameters);
+        databaseTableDataStorage.get(objectType).addOrUpdateRows(batchParameters);
         return keys;
     }
     
@@ -367,7 +367,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             keys.add(persistable.getId());
         }
         executor.batchWrite(new BatchUpdateHandlerAdapter(), sql, batchParameters);
-        databaseTableDataStorage.get(objectType).renewSome(batchParameters, true);
+        databaseTableDataStorage.get(objectType).updateRows(batchParameters);
         return keys;
     }
 

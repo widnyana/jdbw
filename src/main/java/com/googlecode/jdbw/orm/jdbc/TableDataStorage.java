@@ -21,6 +21,7 @@ package com.googlecode.jdbw.orm.jdbc;
 import com.googlecode.jdbw.orm.Identifiable;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,39 +87,58 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         return proxies;
     }
 
-    void renewAll(List<Object[]> rows) {
+    void setRows(List<Object[]> rows) {
         Set<U> keys = new HashSet<U>();
         for(Object[] row: rows) {
             keys.add((U)row[0]);
         }
-        renewSome(rows);
+        addOrUpdateRows(rows, true);
         keyToRowData.keySet().retainAll(keys);
         synchronized(proxyObjectMap) {
             proxyObjectMap.keySet().retainAll(keys);
         }
     }
 
-    void renewSome(List<Object[]> rows) {
-        for(Object[] row: rows) {
-            U key = (U)row[0];
-            if(!keyToRowData.containsKey(key)) {
-                Object[] onlyValues = new Object[row.length - 1];
-                System.arraycopy(row, 1, onlyValues, 0, onlyValues.length);
-                if(keyToRowData.putIfAbsent((U)row[0], onlyValues) == null) {
-                    continue;
-                }
-            }
-            System.arraycopy(row, 1, keyToRowData.get(key), 0, row.length - 1);
-        }
-    }
-
-    void renewSome(List<Object[]> rows, boolean afterUpdate) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    void addOrUpdateRows(List<Object[]> rows) {
+        addOrUpdateRows(rows, true);
     }
     
-    void addRow(Object[] row) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }   
+    private void addOrUpdateRows(List<Object[]> rows, boolean idInFront) {
+        for(Object[] row: rows) {
+            addOrUpdateRow(row);
+        }
+    }
+    
+    void addOrUpdateRow(Object[] row) {
+        addOrUpdateRow(row, true);
+    }
+    
+    void addOrUpdateRow(Object[] row, boolean idInFront) {
+        U key;
+        if(idInFront) {
+            key = (U)row[0];
+        }
+        else {
+            key = (U)row[row.length - 1];
+        }
+        if(!keyToRowData.containsKey(key)) {
+            Object[] onlyValues = new Object[row.length - 1];
+            if(idInFront) {
+                System.arraycopy(row, 1, onlyValues, 0, onlyValues.length);
+            }
+            else {
+                System.arraycopy(row, 0, onlyValues, 0, onlyValues.length);
+            }
+            if(keyToRowData.putIfAbsent((U)row[0], onlyValues) == null) {
+                return;
+            }
+        }
+        System.arraycopy(row, 1, keyToRowData.get(key), 0, row.length - 1);
+    }
+
+    void updateRows(List<Object[]> rows) {
+        addOrUpdateRows(rows, false);
+    }
     
     void remove(List<U> keysOfObjectsToRemove) {
         keyToRowData.keySet().removeAll(keysOfObjectsToRemove);
