@@ -326,7 +326,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             
             if(newId != null) {
                 values[0] = newId;
-                databaseTableDataStorage.get(objectType).addOrUpdateRow(values);
+                newId = databaseTableDataStorage.get(objectType).addOrUpdateRow(values);    //Id may be converted to the correct format
                 keys.add(newId);
             }
         }

@@ -23,7 +23,6 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -119,11 +118,11 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         }
     }
     
-    void addOrUpdateRow(Object[] row) {
-        addOrUpdateRow(row, true);
+    U addOrUpdateRow(Object[] row) {
+        return addOrUpdateRow(row, true);
     }
     
-    void addOrUpdateRow(Object[] row, boolean idInFront) {       
+    private U addOrUpdateRow(Object[] row, boolean idInFront) {       
         U key;
         if(idInFront) {
             key = (U)correctDatatype(row[0], keyType);
@@ -146,7 +145,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
                 System.arraycopy(row, 0, onlyValues, 0, onlyValues.length);
             }            
             if(keyToRowData.putIfAbsent(key, onlyValues) == null) {
-                return;
+                return key;
             }
         }
         if(idInFront) {
@@ -154,7 +153,8 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         }
         else {
             System.arraycopy(row, 0, keyToRowData.get(key), 0, row.length - 1);
-        }       
+        }     
+        return key;
     }
 
     void updateRows(List<Object[]> rows) {
