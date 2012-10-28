@@ -198,12 +198,26 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         else if(value instanceof String && type == UUID.class) {
             return UUID.fromString((String)value);
         }
+        else if(type == int.class && value instanceof Integer) {
+            return value;
+        }
+        else if(type == int.class &&
+                (value instanceof Short || value instanceof Long)) {
+            return new Integer(value.toString());
+        }
         else if(type == Integer.class && 
                 (value instanceof Short || value instanceof Long)) {
             return new Integer(value.toString());
         }
         else if(type == Integer.class && value instanceof BigInteger) {
             return ((BigInteger)value).intValue();
+        }
+        else if(type == long.class && value instanceof Long) {
+            return value;
+        }
+        else if(type == long.class &&
+                (value instanceof Short || value instanceof Integer)) {
+            return new Long(value.toString());
         }
         else if(type == Long.class && 
                 (value instanceof Short || value instanceof Integer)) {
@@ -216,8 +230,20 @@ class TableDataStorage<U, T extends Identifiable<U>> {
                 (value instanceof Integer || value instanceof Long)) {
             return new BigInteger(value.toString());
         }
+        else if(type == double.class && value instanceof Double) {
+            return value;
+        }
+        else if(type == double.class && value instanceof Float) {
+            return new Double(((Float)value).doubleValue());
+        }
         else if(type == Double.class && value instanceof Float) {
             return ((Float)value).doubleValue();
+        }
+        else if(type == float.class && value instanceof Float) {
+            return value;
+        }
+        else if(type == float.class && value instanceof Double) {
+            return new Float(((Double)value).floatValue());
         }
         else if(type == Float.class && value instanceof Double) {
             return ((Double)value).floatValue();
