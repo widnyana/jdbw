@@ -19,6 +19,7 @@
 
 package com.googlecode.jdbw.server.sybase;
 
+import com.googlecode.jdbw.metadata.Catalog;
 import com.googlecode.jdbw.metadata.DefaultServerMetaData;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.Schema;
@@ -45,6 +46,11 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
 
     SybaseASEMetaDataResolver(DataSource dataSource) {
         super(dataSource);
+    }
+    
+    @Override
+    protected ResultSet getSchemaMetadata(Connection pooledConnection, Catalog catalog, String schemaName) throws SQLException {
+        return pooledConnection.getMetaData().getSchemas();
     }
 
     @Override
