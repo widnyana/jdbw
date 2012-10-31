@@ -106,10 +106,14 @@ public class DefaultServerMetaData implements ServerMetaData {
                 while(resultSet.next()) {
                     //Some database venders doesn't send the second column!
                     if(resultSetMetaData.getColumnCount() < 2) {
-                        return createSchema(catalog, resultSet.getString(1));
+                        if(resultSet.getString(1) != null && resultSet.getString(1).equals(schemaName)) {
+                            return createSchema(catalog, resultSet.getString(1));
+                        }
                     }
                     else if(resultSet.getString(2) == null || resultSet.getString(2).equals(catalog.getName())) {
-                        return createSchema(catalog, resultSet.getString(1));
+                        if(resultSet.getString(1) != null && resultSet.getString(1).equals(schemaName)) {
+                            return createSchema(catalog, resultSet.getString(1));
+                        }
                     }
                 }
                 return null;
