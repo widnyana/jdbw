@@ -24,6 +24,7 @@ import com.googlecode.jdbw.metadata.DefaultServerMetaData;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.Schema;
 import com.googlecode.jdbw.metadata.Table;
+import com.googlecode.jdbw.metadata.TableColumn;
 import com.googlecode.jdbw.util.MockResultSet;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.sql.Connection;
@@ -51,6 +52,31 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
     @Override
     protected ResultSet getSchemaMetadata(Connection pooledConnection, Catalog catalog, String schemaName) throws SQLException {
         return pooledConnection.getMetaData().getSchemas();
+    }
+
+    @Override
+    public List<TableColumn> getColumns(Table table) throws SQLException {
+        Connection pooledConnection = dataSource.getConnection();
+        try {
+            List<TableColumn> result = new ArrayList<TableColumn>();
+            ResultSet resultSet = getTableColumnMetadata(pooledConnection, table);
+            while(resultSet.next()) {
+                result.add(
+                        createTableColumn(
+                            table,
+                            resultSet.getInt("ORDINAL_POSITION"),
+                            resultSet.getString("COLUMN_NAME"),
+                            resultSet.getInt("DATA_TYPE"),
+                            resultSet.getString("TYPE_NAME"),
+                            resultSet.getInt("COLUMN_SIZE"),
+                            resultSet.getInt("DECIMAL_DIGITS"),
+                            resultSet.getInt("NULLABLE"),
+                            null));
+            }
+            return result;
+        } finally {
+            pooledConnection.close();
+        }
     }
 
     @Override
