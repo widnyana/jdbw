@@ -83,10 +83,10 @@ public class SQLWorker
      * set object.
      * @throws SQLException If any database error occurred
      */
-    public List<String[]> queryAsStrings(String string, Object... parameters) throws SQLException
+    public List<String[]> queryAsStrings(String SQL, Object... parameters) throws SQLException
     {
         List<String[]> result = new ArrayList<String[]>();
-        for(Object[] row: query(string, parameters)) {
+        for(Object[] row: query(SQL, parameters)) {
             String[] stringRow = new String[row.length];
             for(int i = 0; i < row.length; i++)
                 if(row[i] == null)
@@ -175,9 +175,9 @@ public class SQLWorker
      * in the result set
      * @throws SQLException If any database error occurred
      */
-    public String[] topAsString(String string, Object... parameters) throws SQLException
+    public String[] topAsString(String SQL, Object... parameters) throws SQLException
     {
-        final Object []rowAsObjects = top(string, parameters);
+        final Object []rowAsObjects = top(SQL, parameters);
         final String []rowAsStrings = new String[rowAsObjects.length];
         for(int i = 0; i < rowAsObjects.length; i++)
             rowAsStrings[i] = rowAsObjects[i] != null ? rowAsObjects[i].toString() : null;

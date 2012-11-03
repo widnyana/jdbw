@@ -60,7 +60,7 @@ public interface SQLDialect {
     /**
      * Formats a java Date into the preferred date time string format for this database
      * server type, probably YYYY-MM-DD HH:MM:SS.ZZZ
-     * @param date Date to format
+     * @param timestamp Date to format
      * @return Date formatted as a string
      */
     String formatDateTime(Date timestamp);
