@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +36,13 @@ import java.util.Map;
  */
 public class MockResultSet implements ResultSet { 
     
+    private final Map<String, Integer> nameMap;
     private final List<Object[]> rows;
     private int pointer;
 
     public MockResultSet() {
         this.rows = new ArrayList<Object[]>();
+        this.nameMap = new HashMap<String, Integer>();
         this.pointer = -1;
     }
     
