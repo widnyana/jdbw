@@ -46,6 +46,16 @@ public class MockResultSet implements ResultSet {
         this.pointer = -1;
     }
     
+    public MockResultSet(String[] columnNames) {
+        this();
+        for(int i = 0; i < columnNames.length; i++) {
+            if(columnNames[i] == null) {
+                throw new IllegalArgumentException();
+            }
+            nameMap.put(columnNames[i], i);
+        }
+    }
+    
     public MockResultSet(Object[] row) {
         this();
         this.rows.add(row);
@@ -54,6 +64,15 @@ public class MockResultSet implements ResultSet {
     public MockResultSet(Collection<Object[]> rows) {
         this();
         this.rows.addAll(rows);
+    }
+    
+    public MockResultSet(String[] columnNames, Collection<Object[]> rows) {
+        this(columnNames);
+        this.rows.addAll(rows);
+    }
+    
+    public void addRow(Object[] row) {
+        this.rows.add(row);
     }
     
     @Override
@@ -77,67 +96,67 @@ public class MockResultSet implements ResultSet {
 
     @Override
     public String getString(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (String)getObject(columnIndex);
     }
 
     @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Boolean)getObject(columnIndex);
     }
 
     @Override
     public byte getByte(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Byte)getObject(columnIndex);
     }
 
     @Override
     public short getShort(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Short)getObject(columnIndex);
     }
 
     @Override
     public int getInt(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Integer)getObject(columnIndex);
     }
 
     @Override
     public long getLong(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Long)getObject(columnIndex);
     }
 
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Float)getObject(columnIndex);
     }
 
     @Override
     public double getDouble(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Double)getObject(columnIndex);
     }
 
     @Override
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (BigDecimal)getObject(columnIndex);
     }
 
     @Override
     public byte[] getBytes(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (byte[])getObject(columnIndex);
     }
 
     @Override
     public Date getDate(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Date)getObject(columnIndex);
     }
 
     @Override
     public Time getTime(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Time)getObject(columnIndex);
     }
 
     @Override
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Timestamp)getObject(columnIndex);
     }
 
     @Override
@@ -157,67 +176,67 @@ public class MockResultSet implements ResultSet {
 
     @Override
     public String getString(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (String)getObject(columnLabel);
     }
 
     @Override
     public boolean getBoolean(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Boolean)getObject(columnLabel);
     }
 
     @Override
     public byte getByte(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Byte)getObject(columnLabel);
     }
 
     @Override
     public short getShort(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Short)getObject(columnLabel);
     }
 
     @Override
     public int getInt(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Integer)getObject(columnLabel);
     }
 
     @Override
     public long getLong(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Long)getObject(columnLabel);
     }
 
     @Override
     public float getFloat(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Float)getObject(columnLabel);
     }
 
     @Override
     public double getDouble(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Double)getObject(columnLabel);
     }
 
     @Override
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (BigDecimal)getObject(columnLabel);
     }
 
     @Override
     public byte[] getBytes(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (byte[])getObject(columnLabel);
     }
 
     @Override
     public Date getDate(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Date)getObject(columnLabel);
     }
 
     @Override
     public Time getTime(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Time)getObject(columnLabel);
     }
 
     @Override
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (Timestamp)getObject(columnLabel);
     }
 
     @Override
@@ -257,17 +276,17 @@ public class MockResultSet implements ResultSet {
 
     @Override
     public Object getObject(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return rows.get(pointer)[columnIndex-1];
     }
 
     @Override
     public Object getObject(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getObject(nameMap.get(columnLabel) + 1);
     }
 
     @Override
     public int findColumn(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return nameMap.get(columnLabel);
     }
 
     @Override
