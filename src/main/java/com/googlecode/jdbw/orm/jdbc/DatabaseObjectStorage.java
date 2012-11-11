@@ -22,11 +22,11 @@ import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseTransaction;
 import com.googlecode.jdbw.SQLExecutor;
 import com.googlecode.jdbw.TransactionIsolation;
-import com.googlecode.jdbw.orm.AutoTriggeredObjectStorage;
-import com.googlecode.jdbw.orm.DefaultObjectInitializer;
+import com.googlecode.jdbw.orm.AbstractTriggeredExternalObjectStorage;
+import com.googlecode.jdbw.orm.AutoIdAssignableObjectStorage;
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Modifiable;
-import com.googlecode.jdbw.orm.ObjectInitializer;
+import com.googlecode.jdbw.orm.ObjectStorageException;
 import com.googlecode.jdbw.orm.Persistable;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.SQLWorker;
@@ -42,49 +42,36 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
+public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorage implements AutoIdAssignableObjectStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseObjectStorage.class);
 
     private final DatabaseConnection databaseConnection;
     
     private final TableMappings tableMappings;
     private final DatabaseTableDataStorage databaseTableDataStorage;
-    private final ObjectInitializers objectInitializers;
 
     public DatabaseObjectStorage(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
         this.databaseTableDataStorage = new DatabaseTableDataStorage();
-        this.objectInitializers = new ObjectInitializers();
         this.tableMappings = new TableMappings();
     }
     
     @Override
     public <U, T extends Identifiable<U>> void register(
-            Class<T> objectType, 
-            ObjectInitializer initializer) throws SQLException {
+            Class<T> objectType) {
         
-        if(initializer == null) {
-            initializer = new DefaultObjectInitializer();
-        }
-        register(objectType, initializer, new DefaultTableMapping());
+        register(objectType, new DefaultTableMapping());
     }
     
     public <U, T extends Identifiable<U>> void register(
             Class<T> objectType, 
-            ObjectInitializer initializer, 
-            TableMapping tableMapping) throws SQLException {
+            TableMapping tableMapping) {
         
         if(objectType == null) {
             throw new IllegalArgumentException("Cannot call register(...) with null objectType");
-        }
-        if(initializer == null) {
-            throw new IllegalArgumentException("Cannot register " + objectType.getSimpleName() + 
-                    " with a null object initializer");
         }
         if(tableMapping == null) {
             throw new IllegalArgumentException("Cannot register " + objectType.getSimpleName() + 
@@ -100,13 +87,12 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
                     " because the id type cannot be resolved");
         }
         
-        objectInitializers.add(objectType, initializer);
         databaseTableDataStorage.add(objectType, idType, tableMapping);
         tableMappings.add(objectType, tableMapping);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy) throws SQLException {
+    public <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy) {
         if(searchPolicy == CachePolicy.EXTERNAL_GET) {
             refresh(type, key);
         }
@@ -114,7 +100,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     }
 
     @Override
-    public <U, T extends Identifiable<U>> List<T> getAll(Class<T> type, CachePolicy searchPolicy) throws SQLException {
+    public <U, T extends Identifiable<U>> List<T> getAll(Class<T> type, CachePolicy searchPolicy) {
         if(searchPolicy == CachePolicy.EXTERNAL_GET) {
             refresh(type);
         }
@@ -122,33 +108,20 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     }
 
     @Override
-    public void refresh(Executor executor) {
+    public void refresh() {
         List<Class<? extends Identifiable>> registeredObjectTypes = databaseTableDataStorage.getAllObjectTypes();
-        final CountDownLatch countDownLatch = new CountDownLatch(registeredObjectTypes.size());
         for(final Class objectType: registeredObjectTypes) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        refresh(objectType);
-                    }
-                    catch(Throwable e) {
-                        LOGGER.error("Error refreshing " + objectType.getSimpleName(), e);
-                    }
-                    finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            });
+            try {
+                refresh(objectType);
+            }
+            catch(Throwable e) {
+                LOGGER.error("Error refreshing " + objectType.getSimpleName(), e);
+            }
         }
-        try {
-            countDownLatch.await();
-        }
-        catch(InterruptedException e) {}
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void refresh(T... objects) throws SQLException {
+    public <U, T extends Identifiable<U>> void refresh(T... objects) {
         List<T> nonNullObjects = removeNullElementsFromCollection(Arrays.asList(objects));
         if(nonNullObjects.isEmpty())
             return;
@@ -163,7 +136,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void refresh(Class<T> objectType) throws SQLException {
+    public <U, T extends Identifiable<U>> void refresh(Class<T> objectType) {
         if(!isRegistered(objectType)) {
             throw new IllegalArgumentException("Cannot refresh non-registered type " + objectType.getSimpleName());
         }
@@ -171,16 +144,23 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         String sql = tableMappings.get(objectType).getSelectAll(
                 databaseConnection.getServerType().getSQLDialect(), 
                 objectType);
-        List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
+        
+        List<Object[]> rows;
+        try {
+             rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql);
+        }
+        catch(SQLException e) {
+            throw new ObjectStorageException("Database error when refreshing " + objectType.getSimpleName(), e);
+        }
         databaseTableDataStorage.get(objectType).setRows(rows);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys) throws SQLException {
+    public <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys) {
         refresh(objectType, Arrays.asList(keys));
     }
     
-    private <U, T extends Identifiable<U>> void refresh(Class<T> objectType, List<U> keys) throws SQLException {
+    private <U, T extends Identifiable<U>> void refresh(Class<T> objectType, List<U> keys) {
         if(!isRegistered(objectType)) {
             throw new IllegalArgumentException("Cannot refresh non-registered type " + objectType.getSimpleName());
         }
@@ -189,17 +169,28 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
                 databaseConnection.getServerType().getSQLDialect(), 
                 objectType, 
                 keys);
-        List<Object[]> rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
+        List<Object[]> rows;
+        try {
+            rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
+        }
+        catch(SQLException e) {
+            throw new ObjectStorageException("Database error when refreshing " + keys.size() + " " + objectType.getSimpleName(), e);
+        }
         databaseTableDataStorage.get(objectType).addOrUpdateRows(rows);
     }
 
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type, U id) throws SQLException {
+    public <U, T extends Object & Identifiable<U> & Modifiable> T newObject(Class<T> type) {
+        return newObject(type, null);
+    }
+    
+    @Override
+    public <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type, U id) {
         return newObjects(type, Arrays.asList(id)).get(0);
     }
-
+    
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(Class<T> type, int numberOfObjects) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(Class<T> type, int numberOfObjects) {
         if(numberOfObjects < 0) {
             throw new IllegalArgumentException("Cannot call DatabaseObjectStorage.newObjects(...) with < 0 objects to create");
         }
@@ -214,12 +205,12 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     }
 
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(Class<T> type, U... ids) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(Class<T> type, U... ids) {
         return newObjects(type, Arrays.asList(ids));
     }
     
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> objectType, Collection<U> ids) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> objectType, Collection<U> ids) {
         if(ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
@@ -242,7 +233,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     }
 
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> persist(Collection<Persistable<U, T>> persistables) throws SQLException {
+    public <U, T extends Identifiable<U> & Modifiable> List<T> persist(Collection<Persistable<U, T>> persistables) {
         if(persistables == null ||persistables.isEmpty()) {
             return Collections.emptyList();
         }
@@ -259,23 +250,29 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         }
         List<T> result = new ArrayList<T>();
         List<U> keys = new ArrayList<U>();
-        DatabaseTransaction transaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
+        DatabaseTransaction transaction = null;
         try {
+            transaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
             keys.addAll(insert(transaction, toInsert));
             keys.addAll(update(transaction, toUpdate));
             transaction.commit();
         }
         catch(Exception e) {
             try {
-                transaction.rollback();
+                if(transaction != null) {
+                    transaction.rollback();
+                }
             }
             catch(SQLException e2) {}
             if(e instanceof SQLException)
-                throw (SQLException)e;
+                throw new ObjectStorageException("Database error when persisting " + persistables.size() + " objects", e);
+            else if(e instanceof ObjectStorageException) {
+                throw (ObjectStorageException)e;
+            }
             else if(e instanceof RuntimeException)
                 throw (RuntimeException)e;
             else
-                throw new RuntimeException(e);
+                throw new ObjectStorageException("Unknown error when persisting " + persistables.size() + " objects", e);
         }
         
         for(U key: keys) {
@@ -286,7 +283,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> insert(
             SQLExecutor executor, 
-            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) throws SQLException {
+            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) {
         
         List<InsertableObjectProxyHandler.Finalized<U, T>> insertionsWithAutoGeneratedIds 
                 = new ArrayList<InsertableObjectProxyHandler.Finalized<U, T>>();
@@ -310,7 +307,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> insertAutoGeneratedIdRows(
             SQLExecutor executor,
-            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) throws SQLException {
+            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) {
         
         if(persistables == null || persistables.isEmpty()) {
             return Collections.emptyList();
@@ -322,7 +319,13 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         List<U> keys = new ArrayList<U>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
             Object[] values = persistable.getValues();
-            U newId = (U)new SQLWorker(executor).insert(sql, values);
+            U newId = null;
+            try {
+                newId = (U)new SQLWorker(executor).insert(sql, values);
+            }
+            catch(SQLException e) {
+                throw new ObjectStorageException("Database error when inserting " + objectType.getSimpleName(), e);
+            }
             
             if(newId != null) {
                 values[0] = newId;
@@ -335,7 +338,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> insertNormalRows(
             SQLExecutor executor,
-            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) throws SQLException {
+            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) {
         
         if(persistables == null || persistables.isEmpty()) {
             return Collections.emptyList();
@@ -350,14 +353,19 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             batchParameters.add(persistable.getValues());
             keys.add(persistable.getId());
         }
-        executor.batchWrite(new BatchUpdateHandlerAdapter(), sql, batchParameters);
+        try {
+            executor.batchWrite(new BatchUpdateHandlerAdapter(), sql, batchParameters);
+        }
+        catch(SQLException e) {
+            throw new ObjectStorageException("Database error when inserting " + persistables.size() + " " + objectType.getSimpleName(), e);
+        }
         databaseTableDataStorage.get(objectType).addOrUpdateRows(batchParameters);
         return keys;
     }
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> update(
             SQLExecutor executor, 
-            List<UpdatableObjectProxyHandler.Finalized<U, T>> persistables) throws SQLException {
+            List<UpdatableObjectProxyHandler.Finalized<U, T>> persistables) {
         
         if(persistables == null || persistables.isEmpty()) {
             return Collections.emptyList();
@@ -372,13 +380,18 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             batchParameters.add(persistable.getValues());
             keys.add(persistable.getId());
         }
-        executor.batchWrite(new BatchUpdateHandlerAdapter(), sql, batchParameters);
+        try {
+            executor.batchWrite(new BatchUpdateHandlerAdapter(), sql, batchParameters);
+        }
+        catch(SQLException e) {
+            throw new ObjectStorageException("Database error when updating " + persistables.size() + " " + objectType.getSimpleName(), e);
+        }
         databaseTableDataStorage.get(objectType).updateRows(batchParameters);
         return keys;
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void delete(Collection<T> objects) throws SQLException {
+    public <U, T extends Identifiable<U>> void delete(Collection<T> objects) {
         objects = removeNullElementsFromCollection(objects);
         if(objects == null || objects.isEmpty()) {
             return;
@@ -393,7 +406,7 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void delete(Class<T> objectType, Collection<U> ids) throws SQLException {
+    public <U, T extends Identifiable<U>> void delete(Class<T> objectType, Collection<U> ids) {
         if(objectType == null) {
             throw new IllegalArgumentException("Cannot call delete(...) with null objectType");
         }
@@ -402,8 +415,9 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
             return;
         }
         
-        DatabaseTransaction transaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
+        DatabaseTransaction transaction = null;
         try {
+            transaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
             String sql = tableMappings.get(objectType).getDelete(
                 databaseConnection.getServerType().getSQLDialect(), 
                 objectType,
@@ -417,15 +431,19 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
         }
         catch(Exception e) {
             try {
-                transaction.rollback();
+                if(transaction != null) {
+                    transaction.rollback();
+                }
             }
             catch(SQLException e2) {}
             if(e instanceof SQLException)
-                throw (SQLException)e;
+                throw new ObjectStorageException("Database error when deleting " + ids.size() + " " + objectType.getSimpleName(), e);
+            else if(e instanceof ObjectStorageException)
+                throw (ObjectStorageException)e;
             else if(e instanceof RuntimeException)
                 throw (RuntimeException)e;
             else
-                throw new RuntimeException(e);
+                throw new ObjectStorageException("Unknown error when deleting " + ids.size() + " " + objectType.getSimpleName(), e);
         }
         
         databaseTableDataStorage.get(objectType).remove((List<U>)ids);
@@ -477,10 +495,9 @@ public class DatabaseObjectStorage extends AutoTriggeredObjectStorage{
     
     private <U, T extends Identifiable<U>> Map<String, Object> getObjectInitializationData(Class<T> objectType) {
         TableMapping tableMapping = tableMappings.get(objectType);
-        ObjectInitializer objectInitializer = objectInitializers.get(objectType);
         Map<String, Object> initData = new HashMap<String, Object>();
         for(String fieldName: tableMapping.getFieldNames(objectType)) {
-            initData.put(fieldName, objectInitializer.getInitialValue(objectType, fieldName));
+            initData.put(fieldName, null);
         }
         return initData;
     }

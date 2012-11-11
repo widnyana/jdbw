@@ -18,27 +18,13 @@
  */
 package com.googlecode.jdbw.orm;
 
-import java.util.List;
-
-public abstract class AbstractExternalObjectStorage extends AbstractObjectStorage implements ExternalObjectStorage {
-         
-    private final CachePolicy defaultCachePolicy;
-
-    public AbstractExternalObjectStorage() {
-        this(CachePolicy.EXTERNAL_GET);
-    }
-
-    public AbstractExternalObjectStorage(CachePolicy defaultCachePolicy) {
-        this.defaultCachePolicy = defaultCachePolicy;
-    }
+public interface TriggerableObjectStore extends ObjectStorage {
     
-    @Override
-    public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
-        return get(type, key, defaultCachePolicy);
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> List<T> getAll(Class<T> type) {
-        return getAll(type, defaultCachePolicy);
-    }
+    <U, T extends Identifiable<U>> void registerTrigger(Class<T> objectType, Trigger trigger);
+    
+    <U, T extends Identifiable<U>> void removeTrigger(Class<T> objectType, Trigger trigger);
+    
+    void registerGlobalTrigger(Trigger trigger);
+    
+    void removeGlobalTrigger(Trigger trigger);
 }

@@ -18,9 +18,7 @@
  */
 package com.googlecode.jdbw.orm;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 public interface ExternalObjectStorage extends ObjectStorage {
     
@@ -29,17 +27,15 @@ public interface ExternalObjectStorage extends ObjectStorage {
         EXTERNAL_GET
     }
         
-    <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy) throws SQLException;
+    <U, T extends Identifiable<U>> T get(Class<T> type, U key, CachePolicy searchPolicy);
     
-    <U, T extends Identifiable<U>> List<T> getAll(Class<T> type, CachePolicy searchPolicy) throws SQLException;
+    <U, T extends Identifiable<U>> List<T> getAll(Class<T> type, CachePolicy searchPolicy);
     
-    void refresh() throws SQLException;
+    void refresh();
 
-    void refresh(Executor executor);
+    <U, T extends Identifiable<U>> void refresh(T... objects);
 
-    <U, T extends Identifiable<U>> void refresh(T... objects) throws SQLException;
-
-    <U, T extends Identifiable<U>> void refresh(Class<T> entityType) throws SQLException;
+    <U, T extends Identifiable<U>> void refresh(Class<T> entityType);
     
-    <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys) throws SQLException;
+    <U, T extends Identifiable<U>> void refresh(Class<T> objectType, U... keys);
 }

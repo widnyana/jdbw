@@ -18,27 +18,10 @@
  */
 package com.googlecode.jdbw.orm;
 
-import java.util.List;
+public class ObjectStorageException extends RuntimeException {
 
-public abstract class AbstractExternalObjectStorage extends AbstractObjectStorage implements ExternalObjectStorage {
-         
-    private final CachePolicy defaultCachePolicy;
-
-    public AbstractExternalObjectStorage() {
-        this(CachePolicy.EXTERNAL_GET);
-    }
-
-    public AbstractExternalObjectStorage(CachePolicy defaultCachePolicy) {
-        this.defaultCachePolicy = defaultCachePolicy;
+    public ObjectStorageException(String message, Throwable cause) {
+        super(message, cause);
     }
     
-    @Override
-    public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
-        return get(type, key, defaultCachePolicy);
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> List<T> getAll(Class<T> type) {
-        return getAll(type, defaultCachePolicy);
-    }
 }

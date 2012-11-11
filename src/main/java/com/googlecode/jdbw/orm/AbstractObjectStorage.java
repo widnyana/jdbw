@@ -18,27 +18,28 @@
  */
 package com.googlecode.jdbw.orm;
 
+import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractExternalObjectStorage extends AbstractObjectStorage implements ExternalObjectStorage {
-         
-    private final CachePolicy defaultCachePolicy;
-
-    public AbstractExternalObjectStorage() {
-        this(CachePolicy.EXTERNAL_GET);
-    }
-
-    public AbstractExternalObjectStorage(CachePolicy defaultCachePolicy) {
-        this.defaultCachePolicy = defaultCachePolicy;
+public abstract class AbstractObjectStorage implements ObjectStorage {
+    
+    @Override
+    public <U, T extends Identifiable<U> & Modifiable> T persist(Persistable<U, T> persistable) {
+        return persist(Arrays.asList(persistable)).get(0);
     }
     
     @Override
-    public <U, T extends Identifiable<U>> T get(Class<T> type, U key) {
-        return get(type, key, defaultCachePolicy);
+    public <U, T extends Identifiable<U> & Modifiable> List<T> persist(Persistable<U, T>... persistables) {
+        return persist(Arrays.asList(persistables));
     }
-
+    
     @Override
-    public <U, T extends Identifiable<U>> List<T> getAll(Class<T> type) {
-        return getAll(type, defaultCachePolicy);
+    public <U, T extends Identifiable<U>> void delete(T... objects) {
+        delete(Arrays.asList(objects));
+    }
+    
+    @Override
+    public <U, T extends Identifiable<U>> void delete(Class<T> objectType, U... ids) {
+        delete(objectType, Arrays.asList(ids));
     }
 }

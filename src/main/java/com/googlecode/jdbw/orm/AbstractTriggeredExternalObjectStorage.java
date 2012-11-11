@@ -24,12 +24,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AutoTriggeredObjectStorage extends AbstractExternalObjectStorage {
+public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExternalObjectStorage implements TriggerableObjectStore {
     
     private final Set<Trigger> globalTriggers;
     private final Map<Class, Set<Trigger>> classTypeTriggers;
 
-    public AutoTriggeredObjectStorage() {
+    public AbstractTriggeredExternalObjectStorage() {
+        this(CachePolicy.EXTERNAL_GET);
+    }
+
+    public AbstractTriggeredExternalObjectStorage(CachePolicy defaultCachePolicy) {
+        super(defaultCachePolicy);
         globalTriggers = new HashSet<Trigger>();
         classTypeTriggers = new HashMap<Class, Set<Trigger>>();
     }

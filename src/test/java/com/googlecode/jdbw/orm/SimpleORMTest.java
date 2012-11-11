@@ -278,30 +278,6 @@ public class SimpleORMTest {
         assertEquals(1, jorm.getAll(Person.class).size());
     }
     
-    @Test
-    public void usingEntityInitializerWorks() throws SQLException, ParseException { 
-        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
-        jorm.register(Person.class, new DefaultObjectInitializer() {
-            @Override
-            public <U, T extends Identifiable<U>> Object getInitialValue(Class<T> entityType, String fieldName) {
-                if(entityType.equals(Person.class) && fieldName.equals("age")) {
-                    return 17;
-                }
-                return super.getInitialValue(entityType, fieldName);
-            }
-        }, new DefaultTableMapping());
-        Person reinhard = jorm.persist(
-                            jorm.newObject(Person.class)
-                                .setName("Reinhard Mey")
-                                .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
-                                .finish());
-        assertEquals(17, reinhard.getAge());
-        assertEquals(17, jorm.get(Person.class, 4).getAge());
-        jorm.refresh();
-        assertEquals(17, reinhard.getAge());
-        assertEquals(17, jorm.get(Person.class, 4).getAge());
-    }
-    
     private static class PersonIdComparator implements Comparator<Person> {
         @Override
         public int compare(Person o1, Person o2) {
