@@ -513,7 +513,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
                 key,
                 initialValues);
         Class<V> builderInterface = (Class<V>)builderMap.get(objectType);
-        return (V)Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] {builderInterface}, handler);
+        return (V)Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] {builderInterface, objectType}, handler);
     }
     
     private <U, T extends Identifiable<U>> Map<String, Object> getObjectInitializationData(Class<T> objectType) {

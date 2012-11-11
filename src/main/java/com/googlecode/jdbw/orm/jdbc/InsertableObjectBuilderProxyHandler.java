@@ -20,17 +20,13 @@ package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Modifiable;
+import java.lang.reflect.Proxy;
 import java.util.Map;
 
 class InsertableObjectBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> extends AbstractBuilderProxyHandler<U, T> {
 
     public InsertableObjectBuilderProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
         super(fieldMapping, objectType, key, initialValues);
-    }
-
-    @Override
-    protected Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values) {
-        return new InsertableObjectBuilderProxyHandler<U, T>(fieldMapping, objectType, getKey(), values);
     }
 
     @Override

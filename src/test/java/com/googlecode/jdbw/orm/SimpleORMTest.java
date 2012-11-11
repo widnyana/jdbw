@@ -171,6 +171,30 @@ public class SimpleORMTest {
     }
     
     @Test
+    public void canReuseTheBuilder() throws ParseException, SQLException {
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
+        jorm.register(Person.class);
+        Person.Builder builder = jorm.newObject(Person.class);
+        List<Person> newPersons = jorm.persist(
+                builder
+                    .setName("Reinhard Mey")
+                    .setAge(69)
+                    .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
+                    .build(), 
+                builder
+                    .setName("Evert Taube")
+                    .setAge(85)
+                    .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1890-03-12"))
+                    .build());
+        jorm.refresh();
+        assertNotNull(jorm.get(Person.class, 4));
+        assertEquals(newPersons.get(0), jorm.get(Person.class, 4));
+        assertNotNull(jorm.get(Person.class, 5));
+        assertEquals(newPersons.get(1), jorm.get(Person.class, 5));
+        assertEquals("Elvis Presley", jorm.get(Person.class, 1).getName());
+    }
+    
+    @Test
     public void testingEquality() throws SQLException {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);

@@ -63,7 +63,7 @@ abstract class AbstractBuilderProxyHandler<U, T extends Identifiable<U> & Modifi
             return makeFinalizedVersion();
         }
         else if(method.getName().equals("modify") && method.getParameterTypes().length == 0) {
-            return makeCopyOfThis(fieldMapping, objectType, values);
+            return proxy;
         }
         else if(method.getName().equals("toString") && method.getParameterTypes().length == 0) {
             return toString();
@@ -114,8 +114,6 @@ abstract class AbstractBuilderProxyHandler<U, T extends Identifiable<U> & Modifi
         }
         return array;
     }
-
-    protected abstract Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values);
 
     protected abstract <V extends Finalized<U, T>> V makeFinalizedVersion();
     

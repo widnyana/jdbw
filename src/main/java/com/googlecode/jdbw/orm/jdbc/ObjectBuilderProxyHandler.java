@@ -32,11 +32,6 @@ class ObjectBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> exten
     }
 
     @Override
-    protected Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values) {
-        return new ObjectBuilderProxyHandler<U, T>(fieldMapping, objectType, getKey(), values);
-    }
-
-    @Override
     protected void setValue(String fieldName, Object value) {
         if("id".equals(fieldName)) {
             throw new IllegalArgumentException("Cannot re-assign the id");
