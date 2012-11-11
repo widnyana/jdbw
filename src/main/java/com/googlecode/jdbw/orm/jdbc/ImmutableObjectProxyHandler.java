@@ -23,12 +23,16 @@ import java.lang.reflect.Method;
 
 class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonProxyHandler<U, T> {
 
-    private final TableDataStorage<U, T> dataStorage;
+    private final FieldMapping<U, T> fieldMapping;
     private final U key;
+    private final Object[] values;
 
-    ImmutableObjectProxyHandler(TableDataStorage<U, T> dataStorage, U key) {
-        this.dataStorage = dataStorage;
+    public ImmutableObjectProxyHandler(FieldMapping<U, T> fieldMapping, U key, Object[] values, boolean skipFirstElement) {
+        this.fieldMapping = fieldMapping;
         this.key = key;
+        int dataLength = skipFirstElement ? values.length - 1 : values.length;
+        this.values = new Object[dataLength];
+        System.arraycopy(values, skipFirstElement ? 1 : 0, this.values, 0, dataLength);
     }
     
     @Override
@@ -37,7 +41,7 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
             return getKey();
         }
         else if(method.getName().startsWith("get") || method.getName().startsWith("is")) {
-            return dataStorage.getValue(key, method.getName());
+            return values[fieldMapping.getFieldIndex(method.getName())];
         }
         else if(method.getName().equals("toString") && method.getParameterTypes().length == 0) {
             return toString();
@@ -60,7 +64,7 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
 
     @Override
     Class<T> getObjectType() {
-        return dataStorage.getObjectType();
+        return fieldMapping.getObjectType();
     }    
 
     @Override

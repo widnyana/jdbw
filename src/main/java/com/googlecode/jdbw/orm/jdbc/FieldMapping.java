@@ -20,14 +20,11 @@ package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
 import java.util.List;
-import java.util.Map;
 
-public interface FieldMapping {
-    <U, T extends Identifiable<U>> String getFieldName(Class<T> objectType, String methodName);
-    <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> objectType);
-    <U, T extends Identifiable<U>> List<Class> getFieldTypes(Class<T> objectType);
-    <U, T extends Identifiable<U>> Map<String, Object> getFieldValues(Class<T> objectType, T object);
-    <U, T extends Identifiable<U>> Object[] getFieldValuesNoId(Class<T> objectType, T object);
-    <U, T extends Identifiable<U>> Object[] getFieldValuesLeadingId(Class<T> objectType, T object);
-    <U, T extends Identifiable<U>> Object[] getFieldValuesTrailingId(Class<T> objectType, T object);
+public interface FieldMapping<U, T extends Identifiable<U>> {
+    Class<T> getObjectType();
+    String getFieldName(String methodName);
+    List<String> getFieldNames();
+    List<Class> getFieldTypes();
+    int getFieldIndex(String methodName);
 }

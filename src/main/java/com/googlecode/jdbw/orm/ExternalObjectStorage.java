@@ -33,6 +33,8 @@ public interface ExternalObjectStorage extends ObjectStorage {
     
     void refresh();
 
+    <U, T extends Identifiable<U>> T refresh(T object);
+    
     <U, T extends Identifiable<U>> void refresh(T... objects);
 
     <U, T extends Identifiable<U>> void refresh(Class<T> entityType);

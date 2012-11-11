@@ -131,7 +131,7 @@ public class SimpleORMTest {
         int ageThisYear = Calendar.getInstance().get(Calendar.YEAR) - 1941;
         new SQLWorker(h2.createAutoExecutor()).write("UPDATE \"Person\" SET \"age\" = ? WHERE \"id\" = ?", ageThisYear, 3);
         assertEquals(43, kyoChan.getAge());
-        jorm.refresh(Person.class, 3);
+        kyoChan = jorm.refresh(kyoChan);
         assertEquals(ageThisYear, kyoChan.getAge());
     }
     

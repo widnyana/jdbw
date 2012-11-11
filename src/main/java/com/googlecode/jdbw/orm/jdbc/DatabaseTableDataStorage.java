@@ -38,10 +38,10 @@ class DatabaseTableDataStorage {
         }
     }
     
-    <U, T extends Identifiable<U>> void add(Class<T> objectType, Class<U> idType, FieldMapping fieldMapping) {
+    <U, T extends Identifiable<U>> void add(FieldMapping fieldMapping, Class<U> idType) {
         synchronized(tables) {
-            if(!tables.containsKey(objectType)) {
-                tables.put(objectType, new TableDataStorage<U, T>(idType, objectType, fieldMapping));
+            if(!tables.containsKey(fieldMapping.getObjectType())) {
+                tables.put(fieldMapping.getObjectType(), new TableDataStorage<U, T>(idType, fieldMapping));
             }
         }
     }

@@ -23,77 +23,37 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 class TableDataStorage<U, T extends Identifiable<U>> {
     private final Class<U> keyType;
-    private final Class<T> objectType;
     private final FieldMapping fieldMapping;
     private final List<Class> fieldTypes;
-    private final ConcurrentHashMap<U, Object[]> keyToRowData;
-    private final Map<U, T> proxyObjectMap;
-    private final Map<String, Integer> fieldNameToIndexMap;
+    private final ConcurrentHashMap<U, T> proxyObjectMap;
 
-    TableDataStorage(Class<U> keyType, Class<T> objectType, FieldMapping fieldMapping) {        
+    TableDataStorage(Class<U> keyType, FieldMapping fieldMapping) {        
         if(keyType == null) {
             throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null keyType");
-        }
-        if(objectType == null) {
-            throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null objectType");
         }
         if(fieldMapping == null) {
             throw new IllegalArgumentException("Illegal calling TableDataCache(...) with null fieldMapping");
         }        
         this.keyType = keyType;
-        this.objectType = objectType;
         this.fieldMapping = fieldMapping;
-        this.fieldTypes = fieldMapping.getFieldTypes(objectType);
-        this.keyToRowData = new ConcurrentHashMap<U, Object[]>();
-        this.proxyObjectMap = new HashMap<U, T>();
-        this.fieldNameToIndexMap = new HashMap<String, Integer>(fieldMapping.getFieldNames(objectType).size());
-        int index = 0;
-        for(String fieldName: fieldMapping.getFieldNames(objectType)) {
-            fieldNameToIndexMap.put(fieldName, index++);
-        }
+        this.fieldTypes = fieldMapping.getFieldTypes();
+        this.proxyObjectMap = new ConcurrentHashMap<U, T>();
     }
     
     T getProxyObject(U key) {
-        if(!keyToRowData.containsKey(key)) {
-            return null;
-        }
-        synchronized(proxyObjectMap) {
-            if(!proxyObjectMap.containsKey(key)) {
-                ImmutableObjectProxyHandler<U, T> proxyHandler = 
-                        new ImmutableObjectProxyHandler<U, T>(this, key);
-
-                T proxyObject = (T)Proxy.newProxyInstance(
-                        ClassLoader.getSystemClassLoader(), 
-                        new Class[] { objectType }, 
-                        proxyHandler);
-
-                proxyObjectMap.put(key, proxyObject);
-            }
-            return proxyObjectMap.get(key);
-        }
+        return proxyObjectMap.get(key);
     }
     
     List<T> getAllProxyObjects() {
-        synchronized(proxyObjectMap) {
-            if(proxyObjectMap.size() == keyToRowData.size()) {
-                return new ArrayList<T>(proxyObjectMap.values());
-            }
-        }
-        List<T> proxies = new ArrayList<T>();
-        for(U key: keyToRowData.keySet()) {
-            proxies.add(getProxyObject(key));
-        }
-        return proxies;
+        return new ArrayList<T>(proxyObjectMap.values());
     }
 
     void setRows(List<Object[]> rows) {
@@ -102,10 +62,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
             keys.add((U)row[0]);
         }
         addOrUpdateRows(rows, true);
-        keyToRowData.keySet().retainAll(keys);
-        synchronized(proxyObjectMap) {
-            proxyObjectMap.keySet().retainAll(keys);
-        }
+        proxyObjectMap.keySet().retainAll(keys);
     }
 
     void addOrUpdateRows(List<Object[]> rows) {
@@ -114,7 +71,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     
     private void addOrUpdateRows(List<Object[]> rows, boolean idInFront) {
         for(Object[] row: rows) {
-            addOrUpdateRow(row);
+            addOrUpdateRow(row, idInFront);
         }
     }
     
@@ -136,24 +93,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
                 row[i] = correctDatatype(row[i], fieldTypes.get(i));
             }
         }
-        if(!keyToRowData.containsKey(key)) {
-            Object[] onlyValues = new Object[row.length - 1];
-            if(idInFront) {
-                System.arraycopy(row, 1, onlyValues, 0, onlyValues.length);
-            }
-            else {
-                System.arraycopy(row, 0, onlyValues, 0, onlyValues.length);
-            }            
-            if(keyToRowData.putIfAbsent(key, onlyValues) == null) {
-                return key;
-            }
-        }
-        if(idInFront) {
-            System.arraycopy(row, 1, keyToRowData.get(key), 0, row.length - 1);
-        }
-        else {
-            System.arraycopy(row, 0, keyToRowData.get(key), 0, row.length - 1);
-        }     
+        proxyObjectMap.put(key, newProxyObject(key, row, true));
         return key;
     }
 
@@ -162,27 +102,20 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     }
     
     void remove(List<U> keysOfObjectsToRemove) {
-        keyToRowData.keySet().removeAll(keysOfObjectsToRemove);
-        synchronized(proxyObjectMap) {
-            proxyObjectMap.keySet().removeAll(keysOfObjectsToRemove);
-        }
-    }     
-
-    Object getValue(U key, String methodName) {
-        Object[] data = keyToRowData.get(key);
-        if(data == null) {
-            throw new RuntimeException("Object " + objectType.getSimpleName() + ":" + key + " was deleted");
-        }
-        String fieldName = fieldMapping.getFieldName(objectType, methodName);
-        if(!fieldNameToIndexMap.containsKey(fieldName)) {
-            throw new RuntimeException("Unexpectedly didn't know about field " + objectType.getSimpleName() +
-                    "." + fieldName);
-        }
-        return data[fieldNameToIndexMap.get(fieldName)];
+        proxyObjectMap.keySet().removeAll(keysOfObjectsToRemove);
     }
     
     public Class<T> getObjectType() {
-        return objectType;
+        return fieldMapping.getObjectType();
+    }
+
+    private T newProxyObject(U key, Object[] data, boolean skipFirstElement) throws IllegalArgumentException {
+        ImmutableObjectProxyHandler<U, T> proxyHandler = new ImmutableObjectProxyHandler<U, T>(fieldMapping, key, data, skipFirstElement);
+        T proxyObject = (T)Proxy.newProxyInstance(
+                ClassLoader.getSystemClassLoader(), 
+                new Class[] { getObjectType() }, 
+                proxyHandler);
+        return proxyObject;
     }
 
     private Object correctDatatype(Object value, Class type) {

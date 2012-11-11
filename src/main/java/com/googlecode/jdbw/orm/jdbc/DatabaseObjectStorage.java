@@ -63,32 +63,31 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     public <U, T extends Identifiable<U>> void register(
             Class<T> objectType) {
         
-        register(objectType, new DefaultTableMapping());
-    }
-    
-    public <U, T extends Identifiable<U>> void register(
-            Class<T> objectType, 
-            TableMapping tableMapping) {
-        
         if(objectType == null) {
             throw new IllegalArgumentException("Cannot call register(...) with null objectType");
         }
+        
+        register(new DefaultTableMapping<U, T>(objectType));
+    }
+    
+    public <U, T extends Identifiable<U>> void register(
+            TableMapping<U, T> tableMapping) {
+        
         if(tableMapping == null) {
-            throw new IllegalArgumentException("Cannot register " + objectType.getSimpleName() + 
-                    " with a null table mapping");
+            throw new IllegalArgumentException("Cannot register with a null table mapping");
         }
-        if(isRegistered(objectType)) {
+        if(isRegistered(tableMapping.getObjectType())) {
             return;
         }
         
-        Class<U> idType = getIdentifiableIdType(objectType);
+        Class<U> idType = getIdentifiableIdType(tableMapping.getObjectType());
         if(idType == null) {
-            throw new IllegalArgumentException("Cannot register " + objectType.getSimpleName() + 
+            throw new IllegalArgumentException("Cannot register " + tableMapping.getObjectType().getSimpleName() + 
                     " because the id type cannot be resolved");
         }
         
-        databaseTableDataStorage.add(objectType, idType, tableMapping);
-        tableMappings.add(objectType, tableMapping);
+        databaseTableDataStorage.add(tableMapping, idType);
+        tableMappings.add(tableMapping);
     }
     
     @Override
@@ -121,6 +120,13 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     }
 
     @Override
+    public <U, T extends Identifiable<U>> T refresh(T object) {
+        Class<T> objectType = getObjectType(object);
+        refresh(objectType, object.getId());
+        return get(objectType, object.getId());
+    }
+
+    @Override
     public <U, T extends Identifiable<U>> void refresh(T... objects) {
         List<T> nonNullObjects = removeNullElementsFromCollection(Arrays.asList(objects));
         if(nonNullObjects.isEmpty())
@@ -141,9 +147,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             throw new IllegalArgumentException("Cannot refresh non-registered type " + objectType.getSimpleName());
         }
         
-        String sql = tableMappings.get(objectType).getSelectAll(
-                databaseConnection.getServerType().getSQLDialect(), 
-                objectType);
+        String sql = tableMappings.get(objectType).getSelectAll(databaseConnection.getServerType().getSQLDialect());
         
         List<Object[]> rows;
         try {
@@ -166,8 +170,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         }
         
         String sql = tableMappings.get(objectType).getSelectSome(
-                databaseConnection.getServerType().getSQLDialect(), 
-                objectType, 
+                databaseConnection.getServerType().getSQLDialect(),
                 keys);
         List<Object[]> rows;
         try {
@@ -313,9 +316,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             return Collections.emptyList();
         }
         Class<T> objectType = persistables.get(0).getObjectType();
-        String sql = tableMappings.get(objectType).getInsert(
-                databaseConnection.getServerType().getSQLDialect(), 
-                objectType);
+        String sql = tableMappings.get(objectType).getInsert(databaseConnection.getServerType().getSQLDialect());
         List<U> keys = new ArrayList<U>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
             Object[] values = persistable.getValues();
@@ -344,9 +345,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             return Collections.emptyList();
         }
         Class<T> objectType = persistables.get(0).getObjectType();
-        String sql = tableMappings.get(objectType).getInsert(
-                databaseConnection.getServerType().getSQLDialect(), 
-                objectType);
+        String sql = tableMappings.get(objectType).getInsert(databaseConnection.getServerType().getSQLDialect());
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
@@ -371,9 +370,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             return Collections.emptyList();
         }
         Class<T> objectType = persistables.get(0).getObjectType();
-        String sql = tableMappings.get(objectType).getUpdate(
-                databaseConnection.getServerType().getSQLDialect(), 
-                objectType);
+        String sql = tableMappings.get(objectType).getUpdate(databaseConnection.getServerType().getSQLDialect());
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(UpdatableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
@@ -419,8 +416,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         try {
             transaction = databaseConnection.beginTransaction(TransactionIsolation.READ_UNCOMMITTED);
             String sql = tableMappings.get(objectType).getDelete(
-                databaseConnection.getServerType().getSQLDialect(), 
-                objectType,
+                databaseConnection.getServerType().getSQLDialect(),
                 ids.size());
             Object[] parameters = new Object[ids.size()];
             for(int i = 0; i < ids.size(); i++) {
@@ -494,9 +490,9 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     }
     
     private <U, T extends Identifiable<U>> Map<String, Object> getObjectInitializationData(Class<T> objectType) {
-        TableMapping tableMapping = tableMappings.get(objectType);
+        TableMapping<U, T> tableMapping = tableMappings.get(objectType);
         Map<String, Object> initData = new HashMap<String, Object>();
-        for(String fieldName: tableMapping.getFieldNames(objectType)) {
+        for(String fieldName: tableMapping.getFieldNames()) {
             initData.put(fieldName, null);
         }
         return initData;

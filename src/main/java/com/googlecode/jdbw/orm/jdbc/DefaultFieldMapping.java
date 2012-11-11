@@ -22,17 +22,27 @@ import com.googlecode.jdbw.orm.Identifiable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
-public class DefaultFieldMapping implements FieldMapping {
+public class DefaultFieldMapping<U, T extends Identifiable<U>> implements FieldMapping<U, T> {
     
-    private <U, T extends Identifiable<U>> SortedMap<String, Class> getFieldNamesAndTypes(Class<T> objectType) {
-        SortedMap<String, Class> fields = new TreeMap<String, Class>();
+    private final Class<T> objectType;
+    private final Map<String, Integer> fieldIndexMap;
+    private final SortedMap<String, Class> fieldTypeMap;
+
+    public DefaultFieldMapping(Class<T> objectType) {
+        this.objectType = objectType;
+        this.fieldIndexMap = new HashMap<String, Integer>();
+        this.fieldTypeMap = new TreeMap<String, Class>();
+        
+        resolveFields();
+    }
+    
+    private void resolveFields() {
         for(Method method: objectType.getMethods()) {
             if((method.getModifiers() & Modifier.STATIC) != 0)
                 continue;
@@ -43,25 +53,34 @@ public class DefaultFieldMapping implements FieldMapping {
                     continue;
                 }
                 //Found a field!
-                fieldName = getFieldName(objectType, method.getName());
+                fieldName = getFieldName(method.getName());
             }
             else if(method.getName().startsWith("is")) {
                 if(method.getName().length() <= 2) {
                     continue;
                 }
                 //Found a field!
-                fieldName = getFieldName(objectType, method.getName());
+                fieldName = getFieldName(method.getName());
             }
             
             if(fieldName != null) {
-                fields.put(fieldName, method.getReturnType());
+                fieldTypeMap.put(fieldName, method.getReturnType());
             }
         }
-        return fields;
+        
+        int index = 0;
+        for(String fieldName: fieldTypeMap.keySet()) {
+            fieldIndexMap.put(fieldName, index++);
+        }
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getFieldName(Class<T> objectType, String methodName) {
+    public Class<T> getObjectType() {
+        return objectType;
+    }
+
+    @Override
+    public String getFieldName(String methodName) {
         if(methodName.startsWith("get") || methodName.startsWith("set")) {
             return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
         }
@@ -70,35 +89,19 @@ public class DefaultFieldMapping implements FieldMapping {
         }
         throw new IllegalArgumentException("Cannot detect field name for " + methodName + ", unknown format");
     }
+
+    @Override
+    public int getFieldIndex(String methodName) {
+        return fieldIndexMap.get(getFieldName(methodName));
+    }
     
     @Override
-    public <U, T extends Identifiable<U>> List<String> getFieldNames(Class<T> objectType) {
-        return new ArrayList<String>(getFieldNamesAndTypes(objectType).keySet());
+    public List<String> getFieldNames() {
+        return new ArrayList<String>(fieldTypeMap.keySet());
     }
 
     @Override
-    public <U, T extends Identifiable<U>> List<Class> getFieldTypes(Class<T> objectType) {
-        return new ArrayList<Class>(getFieldNamesAndTypes(objectType).values());
+    public List<Class> getFieldTypes() {
+        return new ArrayList<Class>(fieldTypeMap.values());
     }
-
-    @Override
-    public <U, T extends Identifiable<U>> Map<String, Object> getFieldValues(Class<T> objectType, T object) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> Object[] getFieldValuesNoId(Class<T> objectType, T object) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> Object[] getFieldValuesLeadingId(Class<T> objectType, T object) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <U, T extends Identifiable<U>> Object[] getFieldValuesTrailingId(Class<T> objectType, T object) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

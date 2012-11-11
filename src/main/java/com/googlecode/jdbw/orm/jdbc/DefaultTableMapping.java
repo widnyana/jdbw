@@ -23,41 +23,42 @@ import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.server.DefaultSQLDialect;
 import java.util.List;
 
-public class DefaultTableMapping extends DefaultFieldMapping implements TableMapping {
+public class DefaultTableMapping<U, T extends Identifiable<U>> extends DefaultFieldMapping<U, T> implements TableMapping<U, T> {
 
+    public DefaultTableMapping(Class<T> objectType) {
+        super(objectType);
+    }
+    
     @Override
-    public <U, T extends Identifiable<U>> String getTableName(Class<T> objectType) {
-        return objectType.getSimpleName();
+    public String getTableName() {
+        return getObjectType().getSimpleName();
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getColumnName(Class<T> objectType, String fieldName) {
+    public String getColumnName(String fieldName) {
         return fieldName;
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getSelectAll(SQLDialect dialect, Class<T> objectType) {
+    public String getSelectAll(SQLDialect dialect) {
         StringBuilder sb = new StringBuilder("SELECT ");
         sb.append(dialect.escapeIdentifier("id"));
-        for(String fieldName: getFieldNames(objectType)) {
-            sb.append(", ").append(dialect.escapeIdentifier(getColumnName(objectType, fieldName)));
+        for(String fieldName: getFieldNames()) {
+            sb.append(", ").append(dialect.escapeIdentifier(getColumnName(fieldName)));
         }
-        sb.append(" FROM ").append(dialect.escapeIdentifier(getTableName(objectType)));
+        sb.append(" FROM ").append(dialect.escapeIdentifier(getTableName()));
         return sb.toString();
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getSelectSome(SQLDialect dialect, Class<T> objectType, List<U> keys) {
+    public String getSelectSome(SQLDialect dialect, List<U> keys) {
         if(dialect == null) {
             dialect = new DefaultSQLDialect();
-        }
-        if(objectType == null) {
-            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectSome(...) with null objectType");
         }
         if(keys.isEmpty()) {
             throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectSome(...) with no keys");
         }
-        StringBuilder sb = new StringBuilder(getSelectAll(dialect, objectType));
+        StringBuilder sb = new StringBuilder(getSelectAll(dialect));
         sb.append(" WHERE ");
         sb.append(dialect.escapeIdentifier("id"));
         sb.append(" IN (?");
@@ -69,22 +70,19 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getInsert(SQLDialect dialect, Class<T> objectType) {
+    public String getInsert(SQLDialect dialect) {
         if(dialect == null) {
             dialect = new DefaultSQLDialect();
         }
-        if(objectType == null) {
-            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getInsert(...) with null objectType");
-        }
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
-        sb.append(dialect.escapeIdentifier(getTableName(objectType)));
+        sb.append(dialect.escapeIdentifier(getTableName()));
         sb.append(" (").append(dialect.escapeIdentifier("id"));
-        for(String fieldName: getFieldNames(objectType)) {
+        for(String fieldName: getFieldNames()) {
             sb.append(", ").append(dialect.escapeIdentifier(fieldName));
         }
         sb.append(") VALUES(?");
-        for(String fieldName: getFieldNames(objectType)) {
+        for(String fieldName: getFieldNames()) {
             sb.append(", ?");
         }
         sb.append(")");
@@ -92,18 +90,15 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getUpdate(SQLDialect dialect, Class<T> objectType) {
+    public String getUpdate(SQLDialect dialect) {
         if(dialect == null) {
             dialect = new DefaultSQLDialect();
         }
-        if(objectType == null) {
-            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getUpdate(...) with null objectType");
-        }
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
-        sb.append(dialect.escapeIdentifier(getTableName(objectType)));
+        sb.append(dialect.escapeIdentifier(getTableName()));
         sb.append(" SET ");
-        for(String fieldName: getFieldNames(objectType)) {
+        for(String fieldName: getFieldNames()) {
             sb.append(dialect.escapeIdentifier(fieldName)).append(" = ?, ");
         }
         sb.delete(sb.length() - 2, sb.length());
@@ -113,12 +108,12 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
     }
 
     @Override
-    public <U, T extends Identifiable<U>> String getDelete(SQLDialect dialect, Class<T> objectType, int numberOfObjectsToDelete) {
+    public String getDelete(SQLDialect dialect, int numberOfObjectsToDelete) {
         if(numberOfObjectsToDelete <= 0) {
             throw new IllegalArgumentException("Cannot call DefaultTableMapping.getDelete(...) with numberOfObjectsToDelete <= 0");
         }
         StringBuilder sb = new StringBuilder("DELETE FROM ");
-        sb.append(dialect.escapeIdentifier(getTableName(objectType)));
+        sb.append(dialect.escapeIdentifier(getTableName()));
         sb.append(" WHERE ").append(dialect.escapeIdentifier("id")).append(" IN (?");
         for(int i = 1; i < numberOfObjectsToDelete; i++) {
             sb.append(", ?");

@@ -29,16 +29,16 @@ class TableMappings {
         mappings = new HashMap<Class, TableMapping>();
     }
     
-    <U, T extends Identifiable<U>> TableMapping get(Class<T> objectType) {
+    <U, T extends Identifiable<U>> TableMapping<U, T> get(Class<T> objectType) {
         synchronized(mappings) {
             return mappings.get(objectType);
         }
     }
     
-    <U, T extends Identifiable<U>> boolean add(Class<T> objectType, TableMapping mapping) {
+    <U, T extends Identifiable<U>> boolean add(TableMapping<U, T> mapping) {
         synchronized(mappings) {
-            if(!mappings.containsKey(objectType)) {
-                mappings.put(objectType, mapping);
+            if(!mappings.containsKey(mapping.getObjectType())) {
+                mappings.put(mapping.getObjectType(), mapping);
                 return true;
             }
             else {

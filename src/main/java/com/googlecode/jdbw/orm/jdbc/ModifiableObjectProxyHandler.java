@@ -52,11 +52,11 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if((method.getName().startsWith("get") && method.getName().length() > 3) ||
                 (method.getName().startsWith("is") && method.getName().length() > 2)) {
-            return values.get(fieldMapping.getFieldName(objectType, method.getName()));
+            return values.get(fieldMapping.getFieldName(method.getName()));
         }
         else if(method.getName().startsWith("set") && method.getName().length() > 3 && 
                 method.getParameterTypes().length == 1) {
-            setValue(fieldMapping.getFieldName(objectType, method.getName()), args[0]);
+            setValue(fieldMapping.getFieldName(method.getName()), args[0]);
             return proxy;
         }
         else if(method.getName().equals("finish") && method.getParameterTypes().length == 0) {
@@ -99,7 +99,7 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
     }
     
     protected Object[] copyValuesToArray(boolean idFirst) {
-        List<String> fieldNames = fieldMapping.getFieldNames(objectType);
+        List<String> fieldNames = fieldMapping.getFieldNames();
         Object[] array = new Object[fieldNames.size() + 1];
         int firstIndex = 0;
         if(idFirst) {
