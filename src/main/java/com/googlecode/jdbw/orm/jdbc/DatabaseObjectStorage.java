@@ -26,6 +26,7 @@ import com.googlecode.jdbw.orm.AbstractTriggeredExternalObjectStorage;
 import com.googlecode.jdbw.orm.AutoIdAssignableObjectStorage;
 import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Modifiable;
+import com.googlecode.jdbw.orm.ObjectBuilder;
 import com.googlecode.jdbw.orm.ObjectStorageException;
 import com.googlecode.jdbw.orm.Persistable;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
@@ -34,6 +35,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +53,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
 
     private final DatabaseConnection databaseConnection;
     
+    private final Map<Class, Class<? extends ObjectBuilder>> builderMap; 
     private final TableMappings tableMappings;
     private final DatabaseTableDataStorage databaseTableDataStorage;
 
@@ -57,6 +61,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         this.databaseConnection = databaseConnection;
         this.databaseTableDataStorage = new DatabaseTableDataStorage();
         this.tableMappings = new TableMappings();
+        this.builderMap = new ConcurrentHashMap<Class, Class<? extends ObjectBuilder>>();
     }
     
     @Override
@@ -86,6 +91,10 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
                     " because the id type cannot be resolved");
         }
         
+        Class buildClass = getBuilderClass(tableMapping.getObjectType());
+        if(buildClass != null) {
+            builderMap.put(tableMapping.getObjectType(), buildClass);
+        }        
         databaseTableDataStorage.add(tableMapping, idType);
         tableMappings.add(tableMapping);
     }
@@ -183,17 +192,17 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     }
 
     @Override
-    public <U, T extends Object & Identifiable<U> & Modifiable> T newObject(Class<T> type) {
+    public <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> V newObject(Class<T> type) {
         return newObject(type, null);
     }
     
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type, U id) {
+    public <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> V newObject(Class<T> type, U id) {
         return newObjects(type, Arrays.asList(id)).get(0);
     }
     
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(Class<T> type, int numberOfObjects) {
+    public <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> List<V> newObjects(Class<T> type, int numberOfObjects) {
         if(numberOfObjects < 0) {
             throw new IllegalArgumentException("Cannot call DatabaseObjectStorage.newObjects(...) with < 0 objects to create");
         }
@@ -208,29 +217,32 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     }
 
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(Class<T> type, U... ids) {
+    public <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> List<V> newObjects(Class<T> type, U... ids) {
         return newObjects(type, Arrays.asList(ids));
     }
     
     @Override
-    public <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> objectType, Collection<U> ids) {
+    public <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> List<V> newObjects(final Class<T> objectType, Collection<U> ids) {
         if(ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
         if(!isRegistered(objectType)) {
             throw new IllegalArgumentException("Cannot create new objects of unregistered type " + objectType.getSimpleName());
         }
+        if(!builderMap.containsKey(objectType)) {
+            throw new IllegalArgumentException("Cannot create new objects of non-modifiable type " + objectType.getSimpleName());
+        }
         
         Map<String, Object> objectInitData = getObjectInitializationData(objectType);
-        List<T> newObjects = new ArrayList<T>();
+        List<V> newObjects = new ArrayList<V>();
         for(U id: ids) {
             if(id != null && !getIdentifiableIdType(objectType).isAssignableFrom(id.getClass())) {
                 throw new IllegalArgumentException("Error creating new object of type " + objectType.getSimpleName() + 
                         "; expected id type " + getIdentifiableIdType(objectType).getSimpleName() + 
                         " but supplied (or auto-generated) id type was a " + id.getClass().getName());
             }
-            T entity = newInsertableObjectProxy(objectType, id, objectInitData);
-            newObjects.add(entity);
+            V builder = newInsertableBuilderProxy(objectType, id, objectInitData);
+            newObjects.add(builder);
         }
         return newObjects;
     }
@@ -241,14 +253,14 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             return Collections.emptyList();
         }
         Class<T> type = persistables.iterator().next().getObjectType();
-        List<InsertableObjectProxyHandler.Finalized<U, T>> toInsert = new ArrayList<InsertableObjectProxyHandler.Finalized<U, T>>();
-        List<UpdatableObjectProxyHandler.Finalized<U, T>> toUpdate = new ArrayList<UpdatableObjectProxyHandler.Finalized<U, T>>();        
+        List<InsertableObjectBuilderProxyHandler.Finalized<U, T>> toInsert = new ArrayList<InsertableObjectBuilderProxyHandler.Finalized<U, T>>();
+        List<ObjectBuilderProxyHandler.Finalized<U, T>> toUpdate = new ArrayList<ObjectBuilderProxyHandler.Finalized<U, T>>();        
         for(Persistable<U, T> persistable: persistables) {
-            if(persistable instanceof InsertableObjectProxyHandler.Finalized) {
-                toInsert.add((InsertableObjectProxyHandler.Finalized)persistable);
+            if(persistable instanceof InsertableObjectBuilderProxyHandler.Finalized) {
+                toInsert.add((InsertableObjectBuilderProxyHandler.Finalized)persistable);
             }
-            else if(persistable instanceof UpdatableObjectProxyHandler.Finalized) {
-                toUpdate.add((UpdatableObjectProxyHandler.Finalized)persistable);
+            else if(persistable instanceof ObjectBuilderProxyHandler.Finalized) {
+                toUpdate.add((ObjectBuilderProxyHandler.Finalized)persistable);
             }
         }
         List<T> result = new ArrayList<T>();
@@ -286,14 +298,14 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> insert(
             SQLExecutor executor, 
-            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) {
+            List<InsertableObjectBuilderProxyHandler.Finalized<U, T>> persistables) {
         
-        List<InsertableObjectProxyHandler.Finalized<U, T>> insertionsWithAutoGeneratedIds 
-                = new ArrayList<InsertableObjectProxyHandler.Finalized<U, T>>();
-        List<InsertableObjectProxyHandler.Finalized<U, T>> insertionsWithoutAutoGeneratedIds 
-                = new ArrayList<InsertableObjectProxyHandler.Finalized<U, T>>();
+        List<InsertableObjectBuilderProxyHandler.Finalized<U, T>> insertionsWithAutoGeneratedIds 
+                = new ArrayList<InsertableObjectBuilderProxyHandler.Finalized<U, T>>();
+        List<InsertableObjectBuilderProxyHandler.Finalized<U, T>> insertionsWithoutAutoGeneratedIds 
+                = new ArrayList<InsertableObjectBuilderProxyHandler.Finalized<U, T>>();
         
-        for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
+        for(InsertableObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
             if(persistable.getId() == null) {
                 insertionsWithAutoGeneratedIds.add(persistable);
             }
@@ -310,7 +322,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> insertAutoGeneratedIdRows(
             SQLExecutor executor,
-            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) {
+            List<InsertableObjectBuilderProxyHandler.Finalized<U, T>> persistables) {
         
         if(persistables == null || persistables.isEmpty()) {
             return Collections.emptyList();
@@ -318,7 +330,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         Class<T> objectType = persistables.get(0).getObjectType();
         String sql = tableMappings.get(objectType).getInsert(databaseConnection.getServerType().getSQLDialect());
         List<U> keys = new ArrayList<U>();
-        for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
+        for(InsertableObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
             Object[] values = persistable.getValues();
             U newId = null;
             try {
@@ -339,7 +351,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> insertNormalRows(
             SQLExecutor executor,
-            List<InsertableObjectProxyHandler.Finalized<U, T>> persistables) {
+            List<InsertableObjectBuilderProxyHandler.Finalized<U, T>> persistables) {
         
         if(persistables == null || persistables.isEmpty()) {
             return Collections.emptyList();
@@ -348,7 +360,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         String sql = tableMappings.get(objectType).getInsert(databaseConnection.getServerType().getSQLDialect());
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
-        for(InsertableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
+        for(InsertableObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
             batchParameters.add(persistable.getValues());
             keys.add(persistable.getId());
         }
@@ -364,7 +376,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     
     private <U, T extends Identifiable<U> & Modifiable> List<U> update(
             SQLExecutor executor, 
-            List<UpdatableObjectProxyHandler.Finalized<U, T>> persistables) {
+            List<ObjectBuilderProxyHandler.Finalized<U, T>> persistables) {
         
         if(persistables == null || persistables.isEmpty()) {
             return Collections.emptyList();
@@ -373,7 +385,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         String sql = tableMappings.get(objectType).getUpdate(databaseConnection.getServerType().getSQLDialect());
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
-        for(UpdatableObjectProxyHandler.Finalized<U, T> persistable: persistables) {
+        for(ObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
             batchParameters.add(persistable.getValues());
             keys.add(persistable.getId());
         }
@@ -466,6 +478,20 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         }
         return null;
     }
+
+    private Class getBuilderClass(Class<? extends Identifiable> objectType) {
+        for(Type type: objectType.getGenericInterfaces()) {
+            if(type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType)type;
+                if(parameterizedType.getRawType() == Modifiable.class) {
+                    if(ObjectBuilder.class.isAssignableFrom((Class)parameterizedType.getActualTypeArguments()[0])) {
+                        return (Class)parameterizedType.getActualTypeArguments()[0];
+                    }
+                }                
+            }
+        }
+        return null;
+    }
     
     private <U, T extends Identifiable<U>> Class<T> getObjectType(T proxyObject) {
         InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxyObject);
@@ -476,17 +502,18 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         return ((CommonProxyHandler)invocationHandler).getObjectType();
     }
     
-    private <U, T extends Identifiable<U> & Modifiable> T newInsertableObjectProxy(
+    private <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> V newInsertableBuilderProxy(
             Class<T> objectType,
             U key,
             Map<String, Object> initialValues) {
         
-        InsertableObjectProxyHandler<U, T> handler = new InsertableObjectProxyHandler<U, T>(
+        InsertableObjectBuilderProxyHandler<U, T> handler = new InsertableObjectBuilderProxyHandler<U, T>(
                 tableMappings.get(objectType), 
                 objectType, 
                 key,
                 initialValues);
-        return (T)Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] {objectType}, handler);
+        Class<V> builderInterface = (Class<V>)builderMap.get(objectType);
+        return (V)Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] {builderInterface}, handler);
     }
     
     private <U, T extends Identifiable<U>> Map<String, Object> getObjectInitializationData(Class<T> objectType) {

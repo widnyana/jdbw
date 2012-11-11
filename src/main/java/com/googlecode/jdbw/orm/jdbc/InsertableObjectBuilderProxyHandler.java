@@ -22,31 +22,20 @@ import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Modifiable;
 import java.util.Map;
 
-class UpdatableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> extends ModifiableObjectProxyHandler<U, T> {
+class InsertableObjectBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> extends AbstractBuilderProxyHandler<U, T> {
 
-    public UpdatableObjectProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
+    public InsertableObjectBuilderProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
         super(fieldMapping, objectType, key, initialValues);
-        if(key == null) {
-            throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null key");
-        }
     }
 
     @Override
     protected Object makeCopyOfThis(FieldMapping fieldMapping, Class<T> objectType, Map<String, Object> values) {
-        return new UpdatableObjectProxyHandler<U, T>(fieldMapping, objectType, getKey(), values);
-    }
-
-    @Override
-    protected void setValue(String fieldName, Object value) {
-        if("id".equals(fieldName)) {
-            throw new IllegalArgumentException("Cannot re-assign the id");
-        }
-        super.setValue(fieldName, value);
+        return new InsertableObjectBuilderProxyHandler<U, T>(fieldMapping, objectType, getKey(), values);
     }
 
     @Override
     public String toString() {
-        return "Updatable{" + super.toString() + "}";
+        return "Insertable{" + super.toString() + "}";
     }
 
     @Override
@@ -54,9 +43,9 @@ class UpdatableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> ext
         return new Finalized(getObjectType(), getKey(), copyValuesToArray(true));
     }
     
-    static class Finalized<U, T extends Identifiable<U> & Modifiable> extends ModifiableObjectProxyHandler.Finalized<U, T> {
+    static class Finalized<U, T extends Identifiable<U> & Modifiable> extends AbstractBuilderProxyHandler.Finalized<U, T> {
         public Finalized(Class<T> objectType, U id, Object[] values) {
             super(objectType, id, values);
         }
-    }    
+    }
 }

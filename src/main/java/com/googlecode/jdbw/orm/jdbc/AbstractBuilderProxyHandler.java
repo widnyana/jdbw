@@ -26,13 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modifiable> extends CommonProxyHandler<U, T> {
+abstract class AbstractBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> extends CommonProxyHandler<U, T> {
     
     private final FieldMapping fieldMapping;
     private final Class<T> objectType;
     private final Map<String, Object> values;
 
-    public ModifiableObjectProxyHandler(
+    public AbstractBuilderProxyHandler(
                 FieldMapping fieldMapping, 
                 Class<T> objectType, 
                 U key,
@@ -59,7 +59,7 @@ abstract class ModifiableObjectProxyHandler<U, T extends Identifiable<U> & Modif
             setValue(fieldMapping.getFieldName(method.getName()), args[0]);
             return proxy;
         }
-        else if(method.getName().equals("finish") && method.getParameterTypes().length == 0) {
+        else if(method.getName().equals("build") && method.getParameterTypes().length == 0) {
             return makeFinalizedVersion();
         }
         else if(method.getName().equals("modify") && method.getParameterTypes().length == 0) {

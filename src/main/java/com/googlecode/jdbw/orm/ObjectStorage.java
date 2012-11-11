@@ -27,11 +27,11 @@ public interface ObjectStorage {
 
     <U, T extends Identifiable<U>> List<T> getAll(Class<T> type);
 
-    <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> type, U... ids);
+    <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> List<V> newObjects(final Class<T> type, U... ids);
     
-    <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> type, Collection<U> ids);
+    <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> List<V> newObjects(final Class<T> type, Collection<U> ids);
 
-    <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type, U id);
+    <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> V newObject(Class<T> type, U id);
 
     <U, T extends Identifiable<U> & Modifiable> T persist(Persistable<U, T> persistable);
 

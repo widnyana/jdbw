@@ -20,7 +20,6 @@ package com.googlecode.jdbw.orm;
 
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.orm.jdbc.DatabaseObjectStorage;
-import com.googlecode.jdbw.orm.jdbc.DefaultTableMapping;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.sql.SQLException;
@@ -38,19 +37,16 @@ import org.junit.Test;
 
 public class SimpleORMTest {
     
-    private static interface Person extends Identifiable<Integer>, Modifiable {
+    private static interface Person extends Identifiable<Integer>, Modifiable<Person.Builder> {
         String getName();
-        Person setName(String name);
         int getAge();
-        Person setAge(int age);
-        Date getBirthday();
-        Person setBirthday(Date birthday);
+        Date getBirthday();      
         
-        @Override
-        Person modify();
-        
-        @Override
-        Persistable<Integer, Person> finish();        
+        static interface Builder extends ObjectBuilder<Integer, Person>, Person {
+            Builder setName(String name);
+            Builder setAge(int age);
+            Builder setBirthday(Date birthday);
+        }
     }
     
     private final DatabaseConnection h2;
@@ -144,7 +140,7 @@ public class SimpleORMTest {
                                 .setName("Reinhard Mey")
                                 .setAge(69)
                                 .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
-                                .finish());
+                                .build());
         jorm.refresh();
         assertNotNull(jorm.get(Person.class, 4));
         assertEquals(reinhard, jorm.get(Person.class, 4));
@@ -160,12 +156,12 @@ public class SimpleORMTest {
                             .setName("Reinhard Mey")
                             .setAge(69)
                             .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1942-12-21"))
-                            .finish(),
+                            .build(),
                     jorm.newObject(Person.class)
                             .setName("Evert Taube")
                             .setAge(85)
                             .setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse("1890-03-12"))
-                            .finish());
+                            .build());
         jorm.refresh();
         assertNotNull(jorm.get(Person.class, 4));
         assertEquals(newPersons.get(0), jorm.get(Person.class, 4));
@@ -192,11 +188,7 @@ public class SimpleORMTest {
             
             @Override public int getAge() { throw new UnsupportedOperationException("Not supported yet."); }
             @Override public Date getBirthday() { throw new UnsupportedOperationException("Not supported yet."); }
-            @Override public Person setName(String name) { throw new UnsupportedOperationException("Not supported yet."); }
-            @Override public Person setAge(int age) { throw new UnsupportedOperationException("Not supported yet."); }
-            @Override public Person setBirthday(Date birthday) { throw new UnsupportedOperationException("Not supported yet."); }
-            @Override public Person modify() { throw new UnsupportedOperationException("Not supported yet."); }
-            @Override public Persistable<Integer, Person> finish() { throw new UnsupportedOperationException("Not supported yet."); }
+            @Override public Builder modify() { throw new UnsupportedOperationException("Not supported yet."); }
         }));
     }
     

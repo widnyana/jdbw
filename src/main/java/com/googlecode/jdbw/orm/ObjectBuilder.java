@@ -18,6 +18,6 @@
  */
 package com.googlecode.jdbw.orm;
 
-public interface Modifiable<T extends ObjectBuilder> {
-    T modify();
+public interface ObjectBuilder<U, T extends Identifiable<U> & Modifiable> {
+    Persistable<U, T> build();
 }

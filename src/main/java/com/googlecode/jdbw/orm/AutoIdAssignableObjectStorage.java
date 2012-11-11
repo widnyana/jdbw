@@ -22,7 +22,7 @@ import java.util.List;
 
 public interface AutoIdAssignableObjectStorage {
     
-    <U, T extends Identifiable<U> & Modifiable> T newObject(Class<T> type);
+    <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> V newObject(Class<T> type);
     
-    <U, T extends Identifiable<U> & Modifiable> List<T> newObjects(final Class<T> type, int numberOfObjects);
+    <U, V extends ObjectBuilder, T extends Identifiable<U> & Modifiable<V>> List<V> newObjects(final Class<T> type, int numberOfObjects);
 }
