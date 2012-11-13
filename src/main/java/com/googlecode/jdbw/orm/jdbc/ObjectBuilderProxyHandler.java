@@ -46,7 +46,7 @@ class ObjectBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> exten
 
     @Override
     protected Finalized makeFinalizedVersion() {
-        return new Finalized(getObjectType(), getKey(), copyValuesToArray(true));
+        return new Finalized(getObjectType(), getKey(), copyValuesToArray(false));
     }
     
     static class Finalized<U, T extends Identifiable<U> & Modifiable> extends AbstractBuilderProxyHandler.Finalized<U, T> {
