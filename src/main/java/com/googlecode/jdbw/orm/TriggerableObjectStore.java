@@ -20,11 +20,11 @@ package com.googlecode.jdbw.orm;
 
 public interface TriggerableObjectStore extends ObjectStorage {
     
-    <U, T extends Identifiable<U>> void registerTrigger(Class<T> objectType, Trigger trigger);
+    <T extends Identifiable> void registerObjectTrigger(Class<T> objectType, ObjectTrigger<T> trigger);
     
-    <U, T extends Identifiable<U>> void removeTrigger(Class<T> objectType, Trigger trigger);
+    <T extends Identifiable> void removeObjectTrigger(Class<T> objectType, ObjectTrigger<T> trigger);
     
-    void registerGlobalTrigger(Trigger trigger);
+    void registerGlobalTrigger(GlobalTrigger trigger);
     
-    void removeGlobalTrigger(Trigger trigger);
+    void removeGlobalTrigger(GlobalTrigger trigger);
 }

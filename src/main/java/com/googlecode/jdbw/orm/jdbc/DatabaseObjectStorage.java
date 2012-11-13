@@ -241,6 +241,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
                         "; expected id type " + getIdentifiableIdType(objectType).getSimpleName() + 
                         " but supplied (or auto-generated) id type was a " + id.getClass().getName());
             }
+            fireGlobalTriggersBeforeCreate(objectType, id, objectInitData);
             V builder = newInsertableBuilderProxy(objectType, id, objectInitData);
             newObjects.add(builder);
         }

@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.orm;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,8 +25,8 @@ import java.util.Set;
 
 public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExternalObjectStorage implements TriggerableObjectStore {
     
-    private final Set<Trigger> globalTriggers;
-    private final Map<Class, Set<Trigger>> classTypeTriggers;
+    private final Set<GlobalTrigger> globalTriggers;
+    private final Map<Class, Set<ObjectTrigger>> classTypeTriggers;
 
     public AbstractTriggeredExternalObjectStorage() {
         this(CachePolicy.EXTERNAL_GET);
@@ -35,12 +34,12 @@ public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExt
 
     public AbstractTriggeredExternalObjectStorage(CachePolicy defaultCachePolicy) {
         super(defaultCachePolicy);
-        globalTriggers = new HashSet<Trigger>();
-        classTypeTriggers = new HashMap<Class, Set<Trigger>>();
+        globalTriggers = new HashSet<GlobalTrigger>();
+        classTypeTriggers = new HashMap<Class, Set<ObjectTrigger>>();
     }
 
     @Override
-    public void registerGlobalTrigger(Trigger trigger) {
+    public void registerGlobalTrigger(GlobalTrigger trigger) {
         if(trigger == null) {
             throw new IllegalArgumentException("Illegal call to registerGlobalTrigger(...) with null trigger");
         }
@@ -50,7 +49,7 @@ public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExt
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void registerTrigger(Class<T> objectType, Trigger trigger) {
+    public <T extends Identifiable> void registerObjectTrigger(Class<T> objectType, ObjectTrigger<T> trigger) {
         if(objectType == null) {
             throw new IllegalArgumentException("Illegal call to registerTrigger(...) with null objectType");
         }
@@ -59,14 +58,14 @@ public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExt
         }
         synchronized(classTypeTriggers) {
             if(!classTypeTriggers.containsKey(objectType)) {
-                classTypeTriggers.put(objectType, new HashSet<Trigger>());
+                classTypeTriggers.put(objectType, new HashSet<ObjectTrigger>());
             }
             classTypeTriggers.get(objectType).add(trigger);
         }
     }
 
     @Override
-    public void removeGlobalTrigger(Trigger trigger) {
+    public void removeGlobalTrigger(GlobalTrigger trigger) {
         if(trigger == null) {
             throw new IllegalArgumentException("Illegal call to removeGlobalTrigger(...) with null trigger");
         }
@@ -76,7 +75,7 @@ public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExt
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void removeTrigger(Class<T> objectType, Trigger trigger) {
+    public <T extends Identifiable> void removeObjectTrigger(Class<T> objectType, ObjectTrigger<T> trigger) {
         if(objectType == null) {
             throw new IllegalArgumentException("Illegal call to removeTrigger(...) with null objectType");
         }
@@ -91,19 +90,11 @@ public abstract class AbstractTriggeredExternalObjectStorage extends AbstractExt
         }
     }
     
-    protected <U, T extends Identifiable<U>> Set<Trigger> getTriggersForClass(Class<T> objectType) {
-        if(objectType == null) {
-            throw new IllegalArgumentException("Illegal call to getTriggersForClass(...) with null objectType");
-        }
-        Set<Trigger> triggers = new HashSet<Trigger>();
+    protected <U, T extends Identifiable<U>> void fireGlobalTriggersBeforeCreate(Class<T> objectType, U key, Map<String, Object> initialValues) {
         synchronized(globalTriggers) {
-            triggers.addAll(globalTriggers);
-        }
-        synchronized(classTypeTriggers) {
-            if(classTypeTriggers.containsKey(objectType)) {
-                triggers.addAll(classTypeTriggers.get(objectType));
+            for(GlobalTrigger globalTrigger: globalTriggers) {
+                globalTrigger.onCreated(this, objectType, key, initialValues);
             }
         }
-        return Collections.unmodifiableSet(triggers);
     }
 }

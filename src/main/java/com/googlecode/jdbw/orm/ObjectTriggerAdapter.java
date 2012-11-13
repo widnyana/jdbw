@@ -18,29 +18,29 @@
  */
 package com.googlecode.jdbw.orm;
 
-public class TriggerAdapter implements Trigger {
+public class ObjectTriggerAdapter<T extends Identifiable> implements ObjectTrigger<T> {
     @Override
-    public <U, T extends Identifiable<U>> void onCreated(ObjectStorage objectStorage, T object) {
+    public void onCreated(ObjectStorage objectStorage, T object) {
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void onBeforeRefresh(ObjectStorage objectStorage, T object) {
+    public void onBeforeRefresh(ObjectStorage objectStorage, T object) {
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void onAfterRefresh(ObjectStorage objectStorage, T object) {
+    public void onAfterRefresh(ObjectStorage objectStorage, T object) {
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void onBeforePersist(ObjectStorage objectStorage, T object) {
+    public void onBeforePersist(ObjectStorage objectStorage, T object) {
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void onAfterPersist(ObjectStorage objectStorage, T object) {
+    public void onAfterPersist(ObjectStorage objectStorage, T object) {
     }
 
     @Override
-    public <U, T extends Identifiable<U>> void onDelete(ObjectStorage objectStorage, T object) {
+    public void onDelete(ObjectStorage objectStorage, T object) {
     }
     
 }
