@@ -19,7 +19,9 @@
 package com.googlecode.jdbw.server.h2;
 
 import com.googlecode.jdbw.SQLDialect;
+import com.googlecode.jdbw.metadata.ServerMetaData;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
+import javax.sql.DataSource;
 
 /**
  *
@@ -34,6 +36,11 @@ public class H2ServerTypes {
         @Override
         public SQLDialect getSQLDialect() {
             return new H2SQLDialect();
+        }
+
+        @Override
+        public ServerMetaData createMetaDataResolver(DataSource dataSource) {
+            return new H2MetaDataResolver(dataSource);
         }
     }
     
