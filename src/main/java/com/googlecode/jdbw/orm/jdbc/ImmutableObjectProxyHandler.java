@@ -22,6 +22,7 @@ import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.orm.Modifiable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.Map;
 
 class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonProxyHandler<U, T> {
@@ -77,6 +78,10 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
     }
 
     private Map<String, Object> getValuesAsMap() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        Map<String, Object> map = new HashMap<String, Object>();
+        for(String fieldName: fieldMapping.getFieldNames()) {
+            map.put(fieldName, values[fieldMapping.getFieldIndex(fieldName)]);
+        }
+        return map;
     }
 }
