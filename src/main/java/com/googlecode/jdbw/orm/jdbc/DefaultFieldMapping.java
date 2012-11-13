@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class DefaultFieldMapping<U, T extends Identifiable<U>> implements FieldMapping<U, T> {
+public class DefaultFieldMapping<T extends Identifiable> implements FieldMapping<T> {
     
     private final Class<T> objectType;
     private final Map<String, Integer> fieldIndexMap;

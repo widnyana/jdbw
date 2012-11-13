@@ -21,7 +21,7 @@ package com.googlecode.jdbw.orm.jdbc;
 import com.googlecode.jdbw.orm.Identifiable;
 import java.util.List;
 
-public interface FieldMapping<U, T extends Identifiable<U>> {
+public interface FieldMapping<T extends Identifiable> {
     Class<T> getObjectType();
     String getFieldName(String methodName);
     List<String> getFieldNames();

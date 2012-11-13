@@ -23,7 +23,7 @@ import com.googlecode.jdbw.orm.Identifiable;
 import com.googlecode.jdbw.server.DefaultSQLDialect;
 import java.util.List;
 
-public class DefaultTableMapping<U, T extends Identifiable<U>> extends DefaultFieldMapping<U, T> implements TableMapping<U, T> {
+public class DefaultTableMapping<T extends Identifiable> extends DefaultFieldMapping<T> implements TableMapping<T> {
 
     public DefaultTableMapping(Class<T> objectType) {
         super(objectType);
@@ -51,18 +51,18 @@ public class DefaultTableMapping<U, T extends Identifiable<U>> extends DefaultFi
     }
 
     @Override
-    public String getSelectSome(SQLDialect dialect, List<U> keys) {
+    public String getSelectSome(SQLDialect dialect, int numberOfObjects) {
         if(dialect == null) {
             dialect = new DefaultSQLDialect();
         }
-        if(keys.isEmpty()) {
-            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectSome(...) with no keys");
+        if(numberOfObjects <= 0) {
+            throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectSome(...) with numberOfObjects <= 0");
         }
         StringBuilder sb = new StringBuilder(getSelectAll(dialect));
         sb.append(" WHERE ");
         sb.append(dialect.escapeIdentifier("id"));
         sb.append(" IN (?");
-        for(int i = 1; i < keys.size(); i++) {
+        for(int i = 1; i < numberOfObjects; i++) {
             sb.append(", ?");
         }
         sb.append(")");

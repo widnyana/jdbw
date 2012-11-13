@@ -65,18 +65,18 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
     }
     
     @Override
-    public <U, T extends Identifiable<U>> void register(
+    public <T extends Identifiable> void register(
             Class<T> objectType) {
         
         if(objectType == null) {
             throw new IllegalArgumentException("Cannot call register(...) with null objectType");
         }
         
-        register(new DefaultTableMapping<U, T>(objectType));
+        register(new DefaultTableMapping<T>(objectType));
     }
     
-    public <U, T extends Identifiable<U>> void register(
-            TableMapping<U, T> tableMapping) {
+    public <T extends Identifiable> void register(
+            TableMapping<T> tableMapping) {
         
         if(tableMapping == null) {
             throw new IllegalArgumentException("Cannot register with a null table mapping");
@@ -85,7 +85,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             return;
         }
         
-        Class<U> idType = getIdentifiableIdType(tableMapping.getObjectType());
+        Class idType = getIdentifiableIdType(tableMapping.getObjectType());
         if(idType == null) {
             throw new IllegalArgumentException("Cannot register " + tableMapping.getObjectType().getSimpleName() + 
                     " because the id type cannot be resolved");
@@ -180,7 +180,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         
         String sql = tableMappings.get(objectType).getSelectSome(
                 databaseConnection.getServerType().getSQLDialect(),
-                keys);
+                keys.size());
         List<Object[]> rows;
         try {
             rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
@@ -517,8 +517,8 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         return (V)Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] {builderInterface, objectType}, handler);
     }
     
-    private <U, T extends Identifiable<U>> Map<String, Object> getObjectInitializationData(Class<T> objectType) {
-        TableMapping<U, T> tableMapping = tableMappings.get(objectType);
+    private <T extends Identifiable> Map<String, Object> getObjectInitializationData(Class<T> objectType) {
+        TableMapping<T> tableMapping = tableMappings.get(objectType);
         Map<String, Object> initData = new HashMap<String, Object>();
         for(String fieldName: tableMapping.getFieldNames()) {
             initData.put(fieldName, null);

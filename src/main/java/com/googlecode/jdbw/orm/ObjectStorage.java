@@ -39,7 +39,7 @@ public interface ObjectStorage {
 
     <U, T extends Identifiable<U> & Modifiable> List<T> persist(Collection<Persistable<U, T>> persistables);
 
-    <U, T extends Identifiable<U>> void register(Class<T> objectType);
+    <T extends Identifiable> void register(Class<T> objectType);
     
     <U, T extends Identifiable<U>> void delete(T... objects);
 

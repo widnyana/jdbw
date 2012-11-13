@@ -23,11 +23,11 @@ import java.lang.reflect.Method;
 
 class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonProxyHandler<U, T> {
 
-    private final FieldMapping<U, T> fieldMapping;
+    private final FieldMapping<T> fieldMapping;
     private final U key;
     private final Object[] values;
 
-    public ImmutableObjectProxyHandler(FieldMapping<U, T> fieldMapping, U key, Object[] values, boolean skipFirstElement) {
+    public ImmutableObjectProxyHandler(FieldMapping<T> fieldMapping, U key, Object[] values, boolean skipFirstElement) {
         this.fieldMapping = fieldMapping;
         this.key = key;
         int dataLength = skipFirstElement ? values.length - 1 : values.length;

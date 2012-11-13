@@ -20,13 +20,12 @@ package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.orm.Identifiable;
-import java.util.List;
 
-public interface TableMapping<U, T extends Identifiable<U>> extends FieldMapping<U, T> {
+public interface TableMapping<T extends Identifiable> extends FieldMapping<T> {
     String getTableName();
     String getColumnName(String fieldName);
     String getSelectAll(SQLDialect dialect);
-    String getSelectSome(SQLDialect dialect, List<U> keys);
+    String getSelectSome(SQLDialect dialect, int numberOfObjects);
     String getInsert(SQLDialect dialect);
     String getUpdate(SQLDialect dialect);
     String getDelete(SQLDialect dialect, int numberOfObjectsToDelete);
