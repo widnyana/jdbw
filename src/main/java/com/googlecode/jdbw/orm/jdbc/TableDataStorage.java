@@ -61,11 +61,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
     }
 
     void setRows(List<Object[]> rows) {
-        Set<U> keys = new HashSet<U>();
-        for(Object[] row: rows) {
-            keys.add((U)row[0]);
-        }
-        addOrUpdateRows(rows, true);
+        Set<U> keys = addOrUpdateRows(rows, true);
         proxyObjectMap.keySet().retainAll(keys);
     }
 
@@ -73,10 +69,12 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         addOrUpdateRows(rows, true);
     }
     
-    private void addOrUpdateRows(List<Object[]> rows, boolean idInFront) {
+    private Set<U> addOrUpdateRows(List<Object[]> rows, boolean idInFront) {
+        Set<U> keys = new HashSet<U>();        
         for(Object[] row: rows) {
-            addOrUpdateRow(row, idInFront);
+            keys.add(addOrUpdateRow(row, idInFront));
         }
+        return keys;
     }
     
     U addOrUpdateRow(Object[] row) {
