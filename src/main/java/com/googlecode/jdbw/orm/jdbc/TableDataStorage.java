@@ -22,7 +22,11 @@ import com.googlecode.jdbw.orm.Identifiable;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -186,6 +190,16 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         }
         else if(type == BigDecimal.class && value instanceof Float) {
             return new BigDecimal((Float)value);
+        }
+        else if(Date.class.isAssignableFrom(type) && value instanceof BigDecimal) {
+            DateFormat decimalDateFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+            try {
+                return decimalDateFormat.parse(((BigDecimal)value).toPlainString());
+            }
+            catch(ParseException e) {
+                throw new IllegalArgumentException("TableDataStorage doesn't know how to parse "
+                        + "BigDecimal value " + ((BigDecimal)value).toPlainString() + " to a Date");
+            }
         }
         else {
             throw new IllegalArgumentException("TableDataStorage doesn't know how to convert " +
