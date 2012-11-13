@@ -34,7 +34,7 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
     public ImmutableObjectProxyHandler(FieldMapping<T> fieldMapping, U key, Object[] values, boolean skipFirstElement) {
         this.fieldMapping = fieldMapping;
         this.key = key;
-        int dataLength = skipFirstElement ? values.length - 1 : values.length;
+        int dataLength = fieldMapping.getFieldNames().size();
         this.values = new Object[dataLength];
         System.arraycopy(values, skipFirstElement ? 1 : 0, this.values, 0, dataLength);
     }
@@ -45,7 +45,7 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
             return getKey();
         }
         else if(method.getName().startsWith("get") || method.getName().startsWith("is")) {
-            return values[fieldMapping.getFieldIndex(method.getName())];
+            return values[fieldMapping.getFieldIndex(method)];
         }
         else if(method.getName().equals("toString") && method.getParameterTypes().length == 0) {
             return toString();

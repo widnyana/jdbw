@@ -93,7 +93,7 @@ class TableDataStorage<U, T extends Identifiable<U>> {
                 row[i] = correctDatatype(row[i], fieldTypes.get(i));
             }
         }
-        proxyObjectMap.put(key, newProxyObject(key, row, true));
+        proxyObjectMap.put(key, newProxyObject(key, row, idInFront));
         return key;
     }
 

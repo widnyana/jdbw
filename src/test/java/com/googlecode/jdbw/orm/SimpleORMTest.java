@@ -171,6 +171,24 @@ public class SimpleORMTest {
     }
     
     @Test
+    public void canEditExistingRows() {
+        DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
+        jorm.register(Person.class);
+        
+        Person kyoChan = jorm.get(Person.class, 3);
+        assertNotNull(kyoChan);
+        assertEquals(43, kyoChan.getAge());
+        
+        int ageThisYear = Calendar.getInstance().get(Calendar.YEAR) - 1941;
+        jorm.persist(kyoChan.modify().setAge(ageThisYear).build());
+        kyoChan = jorm.get(Person.class, kyoChan.getId(), ExternalObjectStorage.CachePolicy.LOCAL_GET);
+        assertEquals(ageThisYear, kyoChan.getAge());
+        
+        kyoChan = jorm.get(Person.class, kyoChan.getId(), ExternalObjectStorage.CachePolicy.EXTERNAL_GET);
+        assertEquals(ageThisYear, kyoChan.getAge());
+    }
+    
+    @Test
     public void canReuseTheBuilder() throws ParseException, SQLException {
         DatabaseObjectStorage jorm = new DatabaseObjectStorage(h2);
         jorm.register(Person.class);

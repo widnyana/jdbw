@@ -120,8 +120,13 @@ public class DefaultFieldMapping<T extends Identifiable> implements FieldMapping
     }
 
     @Override
-    public int getFieldIndex(String methodName) {
-        return fieldIndexMap.get(getFieldName(methodName));
+    public int getFieldIndex(String fieldName) {
+        return fieldIndexMap.get(fieldName);
+    }
+
+    @Override
+    public int getFieldIndex(Method method) {
+        return getFieldIndex(getFieldName(method.getName()));
     }
     
     @Override

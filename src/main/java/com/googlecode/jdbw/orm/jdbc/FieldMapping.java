@@ -19,6 +19,7 @@
 package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public interface FieldMapping<T extends Identifiable> {
@@ -27,5 +28,6 @@ public interface FieldMapping<T extends Identifiable> {
     String getFieldName(String methodName);
     List<String> getFieldNames();
     List<Class> getFieldTypes();
-    int getFieldIndex(String methodName);
+    int getFieldIndex(String fieldName);
+    int getFieldIndex(Method method);
 }
