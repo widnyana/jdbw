@@ -167,6 +167,9 @@ class TableDataStorage<U, T extends Identifiable<U>> {
                 (value instanceof Integer || value instanceof Long)) {
             return new BigInteger(value.toString());
         }
+        else if(type == boolean.class && value instanceof Boolean) {
+            return ((Boolean)value).booleanValue();
+        }
         else if(type == double.class && value instanceof Double) {
             return value;
         }
