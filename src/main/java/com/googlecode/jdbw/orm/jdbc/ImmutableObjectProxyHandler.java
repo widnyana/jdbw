@@ -54,9 +54,6 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
                 method.getParameterTypes()[0] == Object.class) {
             return equals(args[0]);
         }
-        else if(method.getName().startsWith("set")) {
-            throw new UnsupportedOperationException("Illegal call to set method on immutable object");
-        }
         else {
             throw new UnsupportedOperationException("JDBW ORM doesn't support calling " + method.getName() + " yet");
         }
