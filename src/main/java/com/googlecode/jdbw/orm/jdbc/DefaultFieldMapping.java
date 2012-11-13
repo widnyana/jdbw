@@ -19,8 +19,13 @@
 package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
+import com.googlecode.jdbw.orm.Modifiable;
+import com.googlecode.jdbw.orm.ObjectBuilder;
+import com.googlecode.jdbw.orm.ObjectStorageException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +36,7 @@ import java.util.TreeMap;
 public class DefaultFieldMapping<T extends Identifiable> implements FieldMapping<T> {
     
     private final Class<T> objectType;
+    private final Class builderInterface;
     private final Map<String, Integer> fieldIndexMap;
     private final SortedMap<String, Class> fieldTypeMap;
 
@@ -38,8 +44,26 @@ public class DefaultFieldMapping<T extends Identifiable> implements FieldMapping
         this.objectType = objectType;
         this.fieldIndexMap = new HashMap<String, Integer>();
         this.fieldTypeMap = new TreeMap<String, Class>();
+        this.builderInterface = resolveBuilder();
         
         resolveFields();
+    }
+    
+    private Class resolveBuilder() {
+        if(!Modifiable.class.isAssignableFrom(objectType)) {
+            return null;
+        }
+        for(Type type: objectType.getGenericInterfaces()) {
+            if(type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType)type;
+                if(parameterizedType.getRawType() == Modifiable.class) {
+                    if(ObjectBuilder.class.isAssignableFrom((Class)parameterizedType.getActualTypeArguments()[0])) {
+                        return (Class)parameterizedType.getActualTypeArguments()[0];
+                    }
+                }                
+            }
+        }
+        throw new ObjectStorageException("Unknown builder class for " + objectType.getSimpleName(), new Exception());
     }
     
     private void resolveFields() {
@@ -77,6 +101,11 @@ public class DefaultFieldMapping<T extends Identifiable> implements FieldMapping
     @Override
     public Class<T> getObjectType() {
         return objectType;
+    }
+
+    @Override
+    public Class getBuilderInterface() {
+        return builderInterface;
     }
 
     @Override

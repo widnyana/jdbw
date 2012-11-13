@@ -29,21 +29,18 @@ import java.util.Map;
 abstract class AbstractBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> extends CommonProxyHandler<U, T> {
     
     private final FieldMapping fieldMapping;
-    private final Class<T> objectType;
     private final Map<String, Object> values;
 
     public AbstractBuilderProxyHandler(
                 FieldMapping fieldMapping, 
-                Class<T> objectType, 
                 U key,
                 Map<String, Object> initialValues) {
         
-        if(objectType == null) {
-            throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null objectType");
+        if(fieldMapping == null) {
+            throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null fieldMapping");
         }
         this.fieldMapping = fieldMapping;
         this.values = new HashMap<String, Object>(initialValues);
-        this.objectType = objectType;
         
         values.put("id", key);
     }
@@ -83,7 +80,7 @@ abstract class AbstractBuilderProxyHandler<U, T extends Identifiable<U> & Modifi
 
     @Override
     Class<T> getObjectType() {
-        return objectType;
+        return fieldMapping.getObjectType();
     }
 
     @Override

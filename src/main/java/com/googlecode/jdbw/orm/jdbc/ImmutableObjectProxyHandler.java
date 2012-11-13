@@ -19,7 +19,10 @@
 package com.googlecode.jdbw.orm.jdbc;
 
 import com.googlecode.jdbw.orm.Identifiable;
+import com.googlecode.jdbw.orm.Modifiable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Map;
 
 class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonProxyHandler<U, T> {
 
@@ -54,6 +57,10 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
                 method.getParameterTypes()[0] == Object.class) {
             return equals(args[0]);
         }
+        else if("modify".equals(method.getName()) && Modifiable.class.isAssignableFrom(fieldMapping.getObjectType())) {
+            ObjectBuilderProxyHandler builderProxyHandler = new ObjectBuilderProxyHandler(fieldMapping, key, getValuesAsMap());
+            return Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { fieldMapping.getBuilderInterface() }, builderProxyHandler);
+        }
         else {
             throw new UnsupportedOperationException("JDBW ORM doesn't support calling " + method.getName() + " yet");
         }
@@ -67,5 +74,9 @@ class ImmutableObjectProxyHandler<U, T extends Identifiable<U>> extends CommonPr
     @Override
     U getKey() {
         return key;
+    }
+
+    private Map<String, Object> getValuesAsMap() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

@@ -35,7 +35,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +43,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +51,6 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
 
     private final DatabaseConnection databaseConnection;
     
-    private final Map<Class, Class<? extends ObjectBuilder>> builderMap; 
     private final TableMappings tableMappings;
     private final DatabaseTableDataStorage databaseTableDataStorage;
 
@@ -61,7 +58,6 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         this.databaseConnection = databaseConnection;
         this.databaseTableDataStorage = new DatabaseTableDataStorage();
         this.tableMappings = new TableMappings();
-        this.builderMap = new ConcurrentHashMap<Class, Class<? extends ObjectBuilder>>();
     }
     
     @Override
@@ -90,11 +86,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             throw new IllegalArgumentException("Cannot register " + tableMapping.getObjectType().getSimpleName() + 
                     " because the id type cannot be resolved");
         }
-        
-        Class buildClass = getBuilderClass(tableMapping.getObjectType());
-        if(buildClass != null) {
-            builderMap.put(tableMapping.getObjectType(), buildClass);
-        }        
+             
         databaseTableDataStorage.add(tableMapping, idType);
         tableMappings.add(tableMapping);
     }
@@ -229,7 +221,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         if(!isRegistered(objectType)) {
             throw new IllegalArgumentException("Cannot create new objects of unregistered type " + objectType.getSimpleName());
         }
-        if(!builderMap.containsKey(objectType)) {
+        if(!Modifiable.class.isAssignableFrom(objectType)) {
             throw new IllegalArgumentException("Cannot create new objects of non-modifiable type " + objectType.getSimpleName());
         }
         
@@ -508,12 +500,12 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             U key,
             Map<String, Object> initialValues) {
         
+        TableMapping<T> tableMapping = tableMappings.get(objectType);
         InsertableObjectBuilderProxyHandler<U, T> handler = new InsertableObjectBuilderProxyHandler<U, T>(
-                tableMappings.get(objectType), 
-                objectType, 
+                tableMapping,
                 key,
                 initialValues);
-        Class<V> builderInterface = (Class<V>)builderMap.get(objectType);
+        Class<V> builderInterface = (Class<V>)tableMapping.getBuilderInterface();
         return (V)Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] {builderInterface, objectType}, handler);
     }
     

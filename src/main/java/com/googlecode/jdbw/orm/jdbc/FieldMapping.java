@@ -23,6 +23,7 @@ import java.util.List;
 
 public interface FieldMapping<T extends Identifiable> {
     Class<T> getObjectType();
+    Class getBuilderInterface(); //TODO: make this Class<? extends ObjectBuilder<T>> when the ObjectBuilder gets rid of <U>
     String getFieldName(String methodName);
     List<String> getFieldNames();
     List<Class> getFieldTypes();

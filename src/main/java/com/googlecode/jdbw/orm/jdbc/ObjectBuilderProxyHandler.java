@@ -24,8 +24,8 @@ import java.util.Map;
 
 class ObjectBuilderProxyHandler<U, T extends Identifiable<U> & Modifiable> extends AbstractBuilderProxyHandler<U, T> {
 
-    public ObjectBuilderProxyHandler(FieldMapping fieldMapping, Class<T> objectType, U key, Map<String, Object> initialValues) {
-        super(fieldMapping, objectType, key, initialValues);
+    public ObjectBuilderProxyHandler(FieldMapping fieldMapping, U key, Map<String, Object> initialValues) {
+        super(fieldMapping, key, initialValues);
         if(key == null) {
             throw new IllegalArgumentException("Cannot create ModifiableObjectProxyHandler with null key");
         }
