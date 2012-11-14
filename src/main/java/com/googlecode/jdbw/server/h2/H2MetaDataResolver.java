@@ -34,6 +34,15 @@ public class H2MetaDataResolver extends DefaultServerMetaData {
     H2MetaDataResolver(DataSource dataSource) {
         super(dataSource);
     }
+
+    @Override
+    public Catalog getCatalog(String catalogName) throws SQLException {
+        for(Catalog catalog: getCatalogs()) {
+            if(catalog.getName().equals(catalogName.toUpperCase()))
+                return catalog;
+        }
+        return null;
+    }
     
     @Override
     protected ResultSet getSchemaMetadata(Connection pooledConnection, Catalog catalog, String schemaName) throws SQLException {
