@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -426,6 +427,11 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             Object[] parameters = new Object[ids.size()];
             for(int i = 0; i < ids.size(); i++) {
                 parameters[i] = ((List<U>)ids).get(i);
+                
+                //TODO: Fix this properly, we should know each column and what datatype it has
+                if(parameters[i] != null && parameters[i] instanceof UUID) {
+                    parameters[i] = parameters[i].toString();
+                }
             }
             new SQLWorker(transaction).write(sql, parameters);
             transaction.commit();
