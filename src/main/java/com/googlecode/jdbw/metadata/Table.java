@@ -163,7 +163,7 @@ public class Table implements Comparable<Table> {
      * than the number of columns in the table
      */
     public TableColumn getColumn(int columnIndex) throws SQLException {
-        return metaDataResolver.getColumns(this).get(columnIndex);
+        return getColumns().get(columnIndex);
     }
 
     /**
