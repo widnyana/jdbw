@@ -144,7 +144,7 @@ public class Table implements Comparable<Table> {
      * the database
      */
     public TableColumn getColumn(String columnName) throws SQLException {
-        for(TableColumn column: metaDataResolver.getColumns(this)) {
+        for(TableColumn column: getColumns()) {
             if(column.getName().equals(columnName)) {
                 return column;
             }
