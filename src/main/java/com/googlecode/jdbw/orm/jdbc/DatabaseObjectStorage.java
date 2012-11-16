@@ -326,6 +326,7 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         List<U> keys = new ArrayList<U>();
         for(InsertableObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
             Object[] values = persistable.getValues();
+            correctParameters(values);
             U newId = null;
             try {
                 newId = (U)new SQLWorker(executor).insert(sql, values);
@@ -355,7 +356,9 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(InsertableObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
-            batchParameters.add(persistable.getValues());
+            Object[] values = persistable.getValues();
+            correctParameters(values);
+            batchParameters.add(values);
             keys.add(persistable.getId());
         }
         try {
@@ -380,7 +383,9 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
         List<U> keys = new ArrayList<U>();
         List<Object[]> batchParameters = new ArrayList<Object[]>();
         for(ObjectBuilderProxyHandler.Finalized<U, T> persistable: persistables) {
-            batchParameters.add(persistable.getValues());
+            Object[] values = persistable.getValues();
+            correctParameters(values);
+            batchParameters.add(values);
             keys.add(persistable.getId());
         }
         try {
@@ -427,12 +432,8 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             Object[] parameters = new Object[ids.size()];
             for(int i = 0; i < ids.size(); i++) {
                 parameters[i] = ((List<U>)ids).get(i);
-                
-                //TODO: Fix this properly, we should know each column and what datatype it has
-                if(parameters[i] != null && parameters[i] instanceof UUID) {
-                    parameters[i] = parameters[i].toString();
-                }
             }
+            correctParameters(parameters);
             new SQLWorker(transaction).write(sql, parameters);
             transaction.commit();
         }
@@ -535,5 +536,14 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
             }
         }
         return list;
+    }
+
+    //TODO: Fix this properly, we can't just assume that UUIDs can't be written out
+    private void correctParameters(Object[] values) {
+        for(int i = 0; i < values.length; i++) {
+            if(values[i] != null && values[i] instanceof UUID) {
+                values[i] = values[i].toString();
+            }
+        }
     }
 }
