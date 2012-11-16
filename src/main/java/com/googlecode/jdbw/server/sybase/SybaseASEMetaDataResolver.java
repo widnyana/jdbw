@@ -172,7 +172,7 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
                                 table, 
                                 indexName,
                                 clusteredIndexes.contains(indexName) ? DatabaseMetaData.tableIndexClustered : 0,
-                                resultSet.getBoolean("NON_UNIQUE"),
+                                !resultSet.getBoolean("NON_UNIQUE"),
                                 tableColumns.get(columnName)));
                 }
             }
