@@ -176,7 +176,9 @@ public class DatabaseObjectStorage extends AbstractTriggeredExternalObjectStorag
                 keys.size());
         List<Object[]> rows;
         try {
-            rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keys.toArray());
+            Object[] keysAsArray = keys.toArray();
+            correctParameters(keysAsArray);
+            rows = new SQLWorker(databaseConnection.createAutoExecutor()).query(sql, keysAsArray);
         }
         catch(SQLException e) {
             throw new ObjectStorageException("Database error when refreshing " + keys.size() + " " + objectType.getSimpleName(), e);
