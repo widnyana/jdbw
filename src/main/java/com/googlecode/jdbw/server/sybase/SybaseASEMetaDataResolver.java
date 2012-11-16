@@ -124,8 +124,12 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
 
     @Override
     public List<Index> getIndexes(Table table) throws SQLException {
-        Connection pooledConnection = dataSource.getConnection();
         
+        //Preload all the table columns so we don't need to look them up later, while the connection
+        //below is in use (won't work for single-connection pools)
+        Map<String, TableColumn> tableColumns = table.getColumnMap();
+        
+        Connection pooledConnection = dataSource.getConnection();        
         SQLWorker worker = new SQLWorker(new SybaseExecutor(pooledConnection));
         String catalogName = table.getSchema().getCatalog().getName();
         String schemaName = table.getSchema().getName();
@@ -154,8 +158,13 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
             while(resultSet.next()) {
                 String indexName = resultSet.getString("INDEX_NAME");
                 String columnName = resultSet.getString("COLUMN_NAME");
-                if(result.containsKey(indexName)) {
-                    result.get(indexName).addColumn(table.getColumn(columnName));
+                
+                if(indexName == null) {
+                    //Sybase seems to send a null row??
+                    continue;
+                }
+                else if(result.containsKey(indexName)) {
+                    result.get(indexName).addColumn(tableColumns.get(columnName));
                 }
                 else {
                     result.put(indexName, 
@@ -164,7 +173,7 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
                                 indexName,
                                 clusteredIndexes.contains(indexName) ? DatabaseMetaData.tableIndexClustered : 0,
                                 resultSet.getBoolean("NON_UNIQUE"),
-                                table.getColumn(columnName)));
+                                tableColumns.get(columnName)));
                 }
             }
             return sortIndexList(new ArrayList<Index>(result.values()));
