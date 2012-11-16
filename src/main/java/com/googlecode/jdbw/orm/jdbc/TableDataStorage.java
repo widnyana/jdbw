@@ -168,6 +168,9 @@ class TableDataStorage<U, T extends Identifiable<U>> {
         else if(type == boolean.class && value instanceof Boolean) {
             return ((Boolean)value).booleanValue();
         }
+        else if(type == byte.class && value instanceof Byte) {
+            return ((Byte)value).byteValue();
+        }
         else if(type == double.class && value instanceof Double) {
             return value;
         }
