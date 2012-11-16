@@ -261,7 +261,7 @@ public class DefaultServerMetaData implements ServerMetaData {
                                 table, 
                                 indexName,
                                 resultSet.getShort("TYPE"),
-                                resultSet.getBoolean("NON_UNIQUE"),
+                                !resultSet.getBoolean("NON_UNIQUE"),
                                 table.getColumn(columnName)));
                 }
             }
