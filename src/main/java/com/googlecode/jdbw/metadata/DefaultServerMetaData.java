@@ -245,6 +245,11 @@ public class DefaultServerMetaData implements ServerMetaData {
 
     @Override
     public List<Index> getIndexes(Table table) throws SQLException {
+        
+        //Preload all the table columns so we don't need to look them up later, while the connection
+        //below is in use (won't work for single-connection pools)
+        Map<String, TableColumn> tableColumns = table.getColumnMap();
+        
         Connection pooledConnection = dataSource.getConnection();
         try {
             Map<String, Index> result = new HashMap<String, Index>();
@@ -253,7 +258,7 @@ public class DefaultServerMetaData implements ServerMetaData {
                 String indexName = resultSet.getString("INDEX_NAME");
                 String columnName = resultSet.getString("COLUMN_NAME");
                 if(result.containsKey(indexName)) {
-                    result.get(indexName).addColumn(table.getColumn(columnName));
+                    result.get(indexName).addColumn(tableColumns.get(columnName));
                 }
                 else {
                     result.put(indexName, 
@@ -262,7 +267,7 @@ public class DefaultServerMetaData implements ServerMetaData {
                                 indexName,
                                 resultSet.getShort("TYPE"),
                                 !resultSet.getBoolean("NON_UNIQUE"),
-                                table.getColumn(columnName)));
+                                tableColumns.get(columnName)));
                 }
             }
             return sortIndexList(new ArrayList<Index>(result.values()));
