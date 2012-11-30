@@ -20,6 +20,7 @@
 package com.googlecode.jdbw.server.mysql;
 
 import com.googlecode.jdbw.metadata.*;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -48,5 +49,11 @@ class MySQLMetaDataResolver extends DefaultServerMetaData {
         else {
             return null;
         }
+    }
+
+    //TODO: Fix this properly by loading primary keys from DatabaseMetaData using the appropriate method
+    @Override
+    protected Index createIndex(Table table, String indexName, short type, boolean unique, TableColumn firstColumn) {
+        return super.createIndex(table, indexName, "PRIMARY".equals(indexName) ? DatabaseMetaData.tableIndexClustered : type, unique, firstColumn);
     }
 }
