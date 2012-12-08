@@ -97,7 +97,7 @@ public interface SQLDialect {
     String getSingleLineCommentPrefix();
     
     /**
-     * @return The name of the 'default' schema (PUBLIC in H2, Postgres; dbo in Sybase, etc)
+     * @return The name of the 'default' schema (PUBLIC in H2 and Postgres, dbo in Sybase, etc)
      */
     String getDefaultSchemaName();
     
