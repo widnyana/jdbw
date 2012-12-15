@@ -56,7 +56,7 @@ public class JDBCStorageTest {
 
     @Before
     public void buildUp() throws SQLException {
-        SQLWorker worker = new SQLWorker(h2.createAutoExecutor());
+        SQLWorker worker = getWorker();
         worker.write("CREATE TABLE \"Person\" ("
                 + "\"id\" INT AUTO_INCREMENT PRIMARY KEY, "
                 + "\"name\" VARCHAR, "
@@ -69,7 +69,7 @@ public class JDBCStorageTest {
 
     @After
     public void tearDown() throws SQLException {
-        SQLWorker worker = new SQLWorker(h2.createAutoExecutor());
+        SQLWorker worker = getWorker();
         worker.write("DROP TABLE \"Person\"");
         h2.close();
     }
@@ -80,7 +80,7 @@ public class JDBCStorageTest {
     }
 
     @Test
-    public void settingUpAndRegisteringJORMInterfaceWorks() throws SQLException {
+    public void getAllPreexistingPersonsWorks() throws SQLException {
         List<Person> persons = objectStorage.getAll(Person.class);
         Collections.sort(persons, new PersonIdComparator());
         assertEquals(3, persons.size());
@@ -90,6 +90,24 @@ public class JDBCStorageTest {
         assertEquals("Jacques Brel", persons.get(1).getName());
         assertEquals((Integer) 3, persons.get(2).getId());
         assertEquals("Kyu Sakamoto", persons.get(2).getName());
+    }
+
+    @Test
+    public void getOnePreexistingPersonWorks() throws SQLException {
+        Person elvis = objectStorage.get(Person.class, 1);
+        assertEquals("Elvis Presley", elvis.getName());
+    }
+
+    @Test
+    public void modifyDatabaseExternallyWorks() throws SQLException {
+        List<Person> persons = objectStorage.getAll(Person.class);
+        assertEquals(3, persons.size());
+        getWorker().write("DELETE FROM \"Person\" WHERE \"id\" = 2");
+        persons = objectStorage.getAll(Person.class);
+        assertEquals(2, persons.size());
+        assertEquals(42, objectStorage.get(Person.class, 1).getAge());
+        getWorker().write("UPDATE \"Person\" SET \"age\" = 50 WHERE \"id\" = 1");
+        assertEquals(50, objectStorage.get(Person.class, 1).getAge());
     }
 
     /*
@@ -308,6 +326,11 @@ public class JDBCStorageTest {
      assertNull(jorm.get(Person.class, 2));
      assertEquals(1, jorm.getAll(Person.class).size());
      }*/
+
+    private SQLWorker getWorker() {
+        return new SQLWorker(h2.createAutoExecutor());
+    }
+    
     private static class PersonIdComparator implements Comparator<Person> {
 
         @Override
