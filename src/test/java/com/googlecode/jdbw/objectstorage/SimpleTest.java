@@ -28,24 +28,12 @@ import org.joda.time.DateMidnight;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class SimpleTest {
+public class SimpleTest extends TestBase {
     
     private final static Date birthdayElvis = new DateMidnight("1935-01-08").toDate();
     private final static Date birthdayJaques = new DateMidnight("1929-04-08").toDate();
     private final static Date birthdaySakamoto = new DateMidnight("1941-11-10").toDate();
-        
-    private static interface Person extends Storable<Integer> {
-        String getName();
-        int getAge();
-        Date getBirthday();
-        
-        static interface Builder extends ObjectBuilder<Person>, Person {
-            Builder setName(String name);
-            Builder setAge(int age);
-            Builder setBirthday(Date birthday);
-        }
-    }
-    
+            
     @Test
     public void creatingDefaultObjectStorageWorks() {
         new DefaultObjectStorage();

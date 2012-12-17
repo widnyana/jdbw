@@ -23,23 +23,10 @@ import com.googlecode.jdbw.objectstorage.impl.JDBCObjectStorage;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.sql.SQLException;
-import java.util.Date;
 import org.junit.After;
 import org.junit.Before;
 
-public class H2DatabaseTestBase {
-
-    protected static interface Person extends Storable<Integer> {
-        String getName();
-        int getAge();
-        Date getBirthday();
-
-        static interface Builder extends ObjectBuilder<Person>, Person {
-            Person.Builder setName(String name);
-            Person.Builder setAge(int age);
-            Person.Builder setBirthday(Date birthday);
-        }
-    }
+public class H2DatabaseTestBase extends TestBase {
     
     private final DatabaseConnection h2;
     private final JDBCObjectStorage objectStorage;
