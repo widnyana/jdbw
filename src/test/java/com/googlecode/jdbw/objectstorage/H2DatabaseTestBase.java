@@ -23,18 +23,13 @@ import com.googlecode.jdbw.objectstorage.impl.JDBCObjectStorage;
 import com.googlecode.jdbw.server.h2.H2InMemoryServer;
 import com.googlecode.jdbw.util.SQLWorker;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import org.junit.After;
-import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Test;
 
-public class JDBCStorageTest {
+public class H2DatabaseTestBase {
 
-    private static interface Person extends Storable<Integer> {
+    protected static interface Person extends Storable<Integer> {
         String getName();
         int getAge();
         Date getBirthday();
@@ -45,10 +40,11 @@ public class JDBCStorageTest {
             Person.Builder setBirthday(Date birthday);
         }
     }
+    
     private final DatabaseConnection h2;
     private final JDBCObjectStorage objectStorage;
 
-    public JDBCStorageTest() {
+    public H2DatabaseTestBase() {
         h2 = new H2InMemoryServer("junit").connect();
         objectStorage = new JDBCObjectStorage(h2);
         objectStorage.register(Person.class);
@@ -74,42 +70,14 @@ public class JDBCStorageTest {
         h2.close();
     }
 
-    @Test
-    public void notDoingAnythingWorks() {
-        assertTrue(true);
+    protected DatabaseConnection getDatabaseConnection() {
+        return h2;
     }
 
-    @Test
-    public void getAllPreexistingPersonsWorks() throws SQLException {
-        List<Person> persons = objectStorage.getAll(Person.class);
-        Collections.sort(persons, new PersonIdComparator());
-        assertEquals(3, persons.size());
-        assertEquals((Integer) 1, persons.get(0).getId());
-        assertEquals("Elvis Presley", persons.get(0).getName());
-        assertEquals((Integer) 2, persons.get(1).getId());
-        assertEquals("Jacques Brel", persons.get(1).getName());
-        assertEquals((Integer) 3, persons.get(2).getId());
-        assertEquals("Kyu Sakamoto", persons.get(2).getName());
+    protected JDBCObjectStorage getObjectStorage() {
+        return objectStorage;
     }
-
-    @Test
-    public void getOnePreexistingPersonWorks() throws SQLException {
-        Person elvis = objectStorage.get(Person.class, 1);
-        assertEquals("Elvis Presley", elvis.getName());
-    }
-
-    @Test
-    public void modifyDatabaseExternallyWorks() throws SQLException {
-        List<Person> persons = objectStorage.getAll(Person.class);
-        assertEquals(3, persons.size());
-        getWorker().write("DELETE FROM \"Person\" WHERE \"id\" = 2");
-        persons = objectStorage.getAll(Person.class);
-        assertEquals(2, persons.size());
-        assertEquals(42, objectStorage.get(Person.class, 1).getAge());
-        getWorker().write("UPDATE \"Person\" SET \"age\" = 50 WHERE \"id\" = 1");
-        assertEquals(50, objectStorage.get(Person.class, 1).getAge());
-    }
-
+    
     /*
      @Test
      public void testingLocalAndRemoteSearch() throws SQLException {
@@ -327,15 +295,7 @@ public class JDBCStorageTest {
      assertEquals(1, jorm.getAll(Person.class).size());
      }*/
 
-    private SQLWorker getWorker() {
+    protected SQLWorker getWorker() {
         return new SQLWorker(h2.createAutoExecutor());
-    }
-    
-    private static class PersonIdComparator implements Comparator<Person> {
-
-        @Override
-        public int compare(Person o1, Person o2) {
-            return o1.getId().compareTo(o2.getId());
-        }
     }
 }
