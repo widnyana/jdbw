@@ -32,31 +32,38 @@ public class ConcurrentHashMapObjectCache implements ObjectCache {
         hashMap = new ConcurrentHashMap<Object, Storable>();
     }
     
+    @Override
     public Storable get(Object key) {
         return hashMap.get(key);
     }
 
+    @Override
     public Collection<Storable> values() {
         return hashMap.values();
     }
 
+    @Override
     public void remove(Collection ids) {
         hashMap.keySet().removeAll(ids);
     }
 
+    @Override
     public void removeAll() {
         hashMap.clear();
     }
 
+    @Override
     public void put(Storable o) {
         hashMap.put(o.getId(), o);
     }
 
+    @Override
     public int size() {
         return hashMap.size();
     }
     
     public static class Factory implements ObjectCacheFactory {
+        @Override
         public ObjectCache createObjectCache() {
             return new ConcurrentHashMapObjectCache();
         }        
