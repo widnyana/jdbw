@@ -25,6 +25,7 @@ import java.util.List;
 
 public abstract class AbstractObjectStorage implements ObjectStorage {
 
+    @Override
     public <K, O extends Storable<K>> O get(Class<O> type, K id) {
         List<O> result = getSome(type, Arrays.asList(id));
         if(result.isEmpty()) {
@@ -35,14 +36,17 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
         }
     }
     
+    @Override
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, K... keys) {
         return getSome(type, Arrays.asList(keys));
     }
 
+    @Override
     public <O extends Storable> List<O> putAll(O... objects) {
         return putAll(Arrays.asList(objects));
     }
 
+    @Override
     public <O extends Storable> List<O> putAll(Collection<O> objects) {
         if(objects == null) {
             throw new IllegalArgumentException("Passing null to putAll(...) is not allowed");
@@ -56,10 +60,12 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
         return toReturn;
     }
 
+    @Override
     public <O extends Storable> void remove(O... objects) {
         remove(Arrays.asList(objects));
     }
 
+    @Override
     public <O extends Storable> void remove(Collection<O> objects) {
         Class<O> type = null;
         List<Object> keysToRemove = new ArrayList<Object>();
@@ -79,6 +85,7 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
         }
     }
 
+    @Override
     public <K, O extends Storable<K>> void remove(Class<O> objectType, K... ids) {
         remove(objectType, Arrays.asList(ids));
     }
