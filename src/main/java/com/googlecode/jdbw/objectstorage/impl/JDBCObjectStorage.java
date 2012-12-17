@@ -199,7 +199,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
             if(!toBeUpdated.isEmpty()) {
                 sql = tableMapping.getUpdate(databaseConnection.getServerType().getSQLDialect());
                 List<Object[]> batch = new ArrayList<Object[]>();
-                for(O o: toBeInserted) {
+                for(O o: toBeUpdated) {
                     batch.add(transform(tableMapping, o, false));
                 }
                 transaction.batchWrite(new BatchUpdateHandlerAdapter(), sql, batch);
@@ -210,7 +210,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
             throw new ObjectStorageException("Database error when calling JDBCObjectStorage.putAll(...) with {type=" +
                     objectType + "} and {objects=" + objects + "}", e);
         }
-        return null;
+        return new ArrayList<O>(objects);
     }
 
     @Override
