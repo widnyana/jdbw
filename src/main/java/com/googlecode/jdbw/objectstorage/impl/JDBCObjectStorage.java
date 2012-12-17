@@ -69,10 +69,12 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         this.tableMappings = new ConcurrentHashMap<Class, TableMapping>();
     }
 
+    @Override
     public <O extends Storable> void register(Class<O> objectType) {
         tableMappings.putIfAbsent(objectType, tableMappingFactory.createTableMapping(objectType));
     }
 
+    @Override
     public ObjectBuilderFactory getBuilderFactory() {
         return new DefaultObjectBuilderFactory() {
             @Override
@@ -87,6 +89,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         };
     }
 
+    @Override
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, Collection<K> ids) {
         if(!tableMappings.containsKey(type)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.getSome(...) non-registered type " + type.getSimpleName());
@@ -108,6 +111,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         return transform(type, tableMapping, rows);
     }
 
+    @Override
     public <O extends Storable> List<O> getAll(Class<O> type) {
         if(!tableMappings.containsKey(type)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.getAll(...) non-registered type " + type.getSimpleName());
@@ -124,6 +128,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         return transform(type, tableMapping, rows);
     }
 
+    @Override
     public <O extends Storable> int getSize(Class<O> type) {
         if(!tableMappings.containsKey(type)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.getSize(...) non-registered type " + type.getSimpleName());
@@ -139,6 +144,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         return count;
     }
 
+    @Override
     public <O extends Storable> O put(O object) {
         return putAll(object).get(0);
     }
@@ -207,6 +213,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         return null;
     }
 
+    @Override
     public <K, O extends Storable<K>> void remove(Class<O> objectType, Collection<K> ids) {
         if(!tableMappings.containsKey(objectType)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.remove(...) non-registered type " + objectType.getSimpleName());
@@ -225,6 +232,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         }
     }
 
+    @Override
     public <O extends Storable> void removeAll(Class<O> objectType) {
         if(!tableMappings.containsKey(objectType)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.getAll(...) non-registered type " + objectType.getSimpleName());
