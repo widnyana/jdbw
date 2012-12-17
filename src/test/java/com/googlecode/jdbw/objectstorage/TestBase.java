@@ -18,7 +18,9 @@
  */
 package com.googlecode.jdbw.objectstorage;
 
+import com.googlecode.jdbw.objectstorage.impl.DefaultObjectBuilderFactory;
 import java.util.Date;
+import org.joda.time.DateMidnight;
 
 public abstract class TestBase {
     
@@ -32,5 +34,46 @@ public abstract class TestBase {
             Person.Builder setAge(int age);
             Person.Builder setBirthday(Date birthday);
         }
+    }
+                
+    
+    protected final static Date ELVIS_BIRTHDAY = new DateMidnight("1935-01-08").toDate();
+    protected final static Date JAQUES_BIRTHDAY = new DateMidnight("1929-04-08").toDate();
+    protected final static Date SAKAMOTO_BIRTHDAY = new DateMidnight("1941-11-10").toDate();
+
+    protected Person createElvis() {
+        return createElvis(new DefaultObjectBuilderFactory());
+    }
+    
+    protected Person createElvis(ObjectBuilderFactory builderFactory) {
+        return builderFactory.newObject(Person.Builder.class, 1)
+                .setAge(42)
+                .setName("Elvis Presley")
+                .setBirthday(ELVIS_BIRTHDAY)
+                .build();
+    }
+
+    protected Person createJaques() {
+        return createJaques(new DefaultObjectBuilderFactory());
+    }
+    
+    protected Person createJaques(ObjectBuilderFactory builderFactory) {
+        return builderFactory.newObject(Person.Builder.class, 2)
+                .setAge(49)
+                .setName("Jaques Brel")
+                .setBirthday(JAQUES_BIRTHDAY)
+                .build();
+    }
+
+    protected Person createSakamoto() {
+        return createSakamoto(new DefaultObjectBuilderFactory());
+    }
+    
+    protected Person createSakamoto(ObjectBuilderFactory builderFactory) {
+        return builderFactory.newObject(Person.Builder.class, 3)
+                .setAge(43)
+                .setName("Kyo Sakamoto")
+                .setBirthday(SAKAMOTO_BIRTHDAY)
+                .build();
     }
 }

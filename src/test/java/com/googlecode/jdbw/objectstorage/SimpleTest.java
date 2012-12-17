@@ -22,17 +22,11 @@ import com.googlecode.jdbw.objectstorage.impl.DefaultObjectBuilderFactory;
 import com.googlecode.jdbw.objectstorage.impl.DefaultObjectStorage;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
-import org.joda.time.DateMidnight;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class SimpleTest extends TestBase {
-    
-    private final static Date birthdayElvis = new DateMidnight("1935-01-08").toDate();
-    private final static Date birthdayJaques = new DateMidnight("1929-04-08").toDate();
-    private final static Date birthdaySakamoto = new DateMidnight("1941-11-10").toDate();
             
     @Test
     public void creatingDefaultObjectStorageWorks() {
@@ -51,7 +45,7 @@ public class SimpleTest extends TestBase {
         assertEquals(1, elvis.getId().intValue());
         assertEquals(42, elvis.getAge());
         assertEquals("Elvis Presley", elvis.getName());
-        assertEquals(birthdayElvis, elvis.getBirthday());
+        assertEquals(ELVIS_BIRTHDAY, elvis.getBirthday());
     }
     
     @Test
@@ -62,7 +56,7 @@ public class SimpleTest extends TestBase {
         assertEquals(1, elvis.getId().intValue());
         assertEquals(42, elvis.getAge());
         assertEquals("Elvis Presley", elvis.getName());
-        assertEquals(birthdayElvis, elvis.getBirthday());
+        assertEquals(ELVIS_BIRTHDAY, elvis.getBirthday());
     }
     
     @Test
@@ -175,30 +169,6 @@ public class SimpleTest extends TestBase {
         assertSetEquals(Arrays.asList(elvis, jaques, sakamoto), objectStorage.getAll(Person.class));
         objectStorage.removeAll(Person.class);
         assertEquals(0, objectStorage.getSize(Person.class));
-    }            
-
-    private Person createElvis(ObjectBuilderFactory builderFactory) {
-        return builderFactory.newObject(Person.Builder.class, 1)
-                .setAge(42)
-                .setName("Elvis Presley")
-                .setBirthday(birthdayElvis)
-                .build();
-    }
-
-    private Person createJaques(ObjectBuilderFactory builderFactory) {
-        return builderFactory.newObject(Person.Builder.class, 2)
-                .setAge(49)
-                .setName("Jaques Brel")
-                .setBirthday(birthdayJaques)
-                .build();
-    }
-
-    private Person createSakamoto(ObjectBuilderFactory builderFactory) {
-        return builderFactory.newObject(Person.Builder.class, 3)
-                .setAge(43)
-                .setName("Kyo Sakamoto")
-                .setBirthday(birthdaySakamoto)
-                .build();
     }
 
     private void assertSetEquals(Collection a, Collection b) {
