@@ -21,10 +21,7 @@ package com.googlecode.jdbw.objectstorage.impl;
 import com.googlecode.jdbw.objectstorage.FieldMapping;
 import com.googlecode.jdbw.objectstorage.ObjectFactory;
 import com.googlecode.jdbw.objectstorage.ObjectStorageException;
-import com.googlecode.jdbw.objectstorage.SelfDescribingStorable;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Arrays;
 
 class BuilderProxyHandler extends ObjectProxyHandler {
     
