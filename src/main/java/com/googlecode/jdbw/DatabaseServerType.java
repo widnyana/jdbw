@@ -40,14 +40,7 @@ public interface DatabaseServerType {
      * @return SQLDialect for the server type
      */
     SQLDialect getSQLDialect();
-    
-    /**
-     * Creates an AutoExecutor for this server type
-     * @param dataSource DataSource that is backing the auto executor
-     * @return AutoExecutor-implementation for this server type
-     */
-    AutoExecutor createAutoExecutor(DataSource dataSource);
-    
+        
     /**
      * Creates an SQLExecutor for this server type
      * @param connection Connection to be used by the SQLExecutor

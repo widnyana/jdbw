@@ -251,7 +251,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public AutoExecutor createAutoExecutor() {
-        return getServerType().createAutoExecutor(dataSource);
+        return new AutoExecutor(dataSource, databaseServerType);
     }
     
     Connection getConnection() throws SQLException {
