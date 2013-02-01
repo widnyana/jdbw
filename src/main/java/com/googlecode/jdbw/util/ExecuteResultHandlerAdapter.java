@@ -16,7 +16,6 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw.util;
 
 import com.googlecode.jdbw.ExecuteResultHandler;
@@ -24,53 +23,40 @@ import java.sql.SQLWarning;
 import java.util.List;
 
 /**
- * This is a convenience class that implements ExecuteResultHandler and provides
- * a default method implementation for this interface. You can then override 
- * only the methods that you care about.
+ * This is a convenience class that implements ExecuteResultHandler and provides a default method implementation for
+ * this interface. You can then override only the methods that you care about.
+ *
  * @author Martin Berglund
  */
-public class ExecuteResultHandlerAdapter implements ExecuteResultHandler
-{
-    @Override
-    public int getMaxRowsToFetch()
-    {
-        return 0;   //Fetch all
-    }
+public class ExecuteResultHandlerAdapter implements ExecuteResultHandler {
 
     @Override
-    public boolean nextResultSet()
-    {
+    public boolean nextResultSet() {
         return true;
     }
 
     @Override
-    public boolean nextRow(Object[] row)
-    {
+    public boolean nextRow(Object[] row) {
         return true;
     }
 
     @Override
-    public void onDone()
-    {
+    public void onDone() {
     }
 
     @Override
-    public void onGeneratedKey(Object object)
-    {
+    public void onGeneratedKey(Object object) {
     }
 
     @Override
-    public void onResultSet(List<String> columnNames, List<Integer> columnTypes)
-    {
+    public void onResultSet(List<String> columnNames, List<Integer> columnTypes) {
     }
 
     @Override
-    public void onUpdateCount(int updateCount)
-    {
+    public void onUpdateCount(int updateCount) {
     }
 
     @Override
-    public void onWarning(SQLWarning warning)
-    {
+    public void onWarning(SQLWarning warning) {
     }
 }

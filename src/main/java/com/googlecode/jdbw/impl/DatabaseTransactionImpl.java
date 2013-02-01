@@ -52,8 +52,9 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     {
         executor = null;
         try {
-            if(initialized)        
+            if(initialized) {       
                 connection.commit();
+            }
         }
         finally {
             try {
@@ -70,8 +71,9 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     {
         executor = null;
         try {
-            if(initialized)        
+            if(initialized) {
                 connection.rollback();
+            }
         }
         finally {
             try {
@@ -84,26 +86,34 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     }
 
     @Override
-    public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException
-    {
-        if(connection == null)
+    public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException {
+        execute(handler, 0, 0, SQL, parameters);
+    }
+
+    @Override
+    public void execute(ExecuteResultHandler handler, int maxRowsToFetch, int queryTimeout, String SQL, Object... parameters) throws SQLException {
+        if(connection == null) {
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
+        }
 
-        if(!initialized)
+        if(!initialized) {
             initialize();
+        }
 
-        executor.execute(handler, SQL, parameters);
-    }   
+        executor.execute(handler, maxRowsToFetch, queryTimeout, SQL, parameters);
+    }
 
     
     @Override
     public synchronized void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
     {
-        if(connection == null)
+        if(connection == null) {
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
+        }
 
-        if(!initialized)
+        if(!initialized) {
             initialize();
+        }
 
         executor.batchWrite(handler, SQL, parameters);
     }
@@ -111,11 +121,13 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     @Override
     public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException
     {
-        if(connection == null)
+        if(connection == null) {
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
+        }
 
-        if(!initialized)
+        if(!initialized) {
             initialize();
+        }
 
         executor.batchWrite(handler, batchedSQL);
     }

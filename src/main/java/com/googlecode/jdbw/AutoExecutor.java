@@ -23,12 +23,15 @@ import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 /**
- * An auto executor will automatically allocate a connection from the pool when its SQL methods are
- * called and return the connection and all resources once done. If a query fails, it will
- * investigate the error and retry if the error is judged to be retryable.
+ * An auto executor will automatically allocate a connection from the pool when its SQL methods are called and return 
+ * the connection and all resources once done. If a query throws an exception, the exception will be evaluated and if
+ * it's classified as a connection error there is logic to automatically allocate a new connection and retry. You can 
+ * customize how long to wait between retries, how many time to retry and what transaction isolation to use when 
+ * executing the query. All queries are executed in auto-commit mode.
  *
  * @author Martin Berglund
  */
@@ -36,10 +39,69 @@ public class AutoExecutor implements SQLExecutor {
 
     private final DataSource dataSource;
     private final DatabaseServerType serverType;
+    private final TransactionIsolation transactionIsolation;
+    private final int connectionErrorRetryInterval;
+    private final TimeUnit connectionErrorRetryIntervalTimeUnit;
+    private final int connectionErrorNrOfRetries;
 
+    /**
+     * Creates a new AutoExecutor using READ_UNCOMMITTED isolation with an unlimited connection error retry limit and a 
+     * retry interval at 500 milliseconds.
+     * @param dataSource DataSource to draw connections from
+     * @param serverType Server type of the connections
+     */
     public AutoExecutor(DataSource dataSource, DatabaseServerType serverType) {
+        this(dataSource, serverType, TransactionIsolation.READ_UNCOMMITTED);
+    }
+
+    /**
+     * Creates a new AutoExecutor using a specified transaction isolation with an unlimited connection error retry limit 
+     * and a retry interval at 500 milliseconds.
+     * @param dataSource DataSource to draw connections from
+     * @param serverType Server type of the connections
+     * @param transactionIsolation Transaction isolation to use
+     */
+    public AutoExecutor(DataSource dataSource, DatabaseServerType serverType, TransactionIsolation transactionIsolation) {
+        this(dataSource, serverType, transactionIsolation, 500, TimeUnit.MILLISECONDS, -1);
+    }
+
+    /**
+     * Creates a new AutoExecutor with READ_UNCOMMITTED isolation, a specified number of connection retries on 
+     * connection error and a retry interval at 500 milliseconds.
+     * @param dataSource DataSource to draw connections from
+     * @param serverType Server type of the connections
+     * @param connectionErrorNrOfRetries How many times to retry a query on connection error (-1 means unlimited)
+     */
+    public AutoExecutor(DataSource dataSource, DatabaseServerType serverType, int connectionErrorNrOfRetries) {
+        this(dataSource, serverType, TransactionIsolation.READ_UNCOMMITTED, 500, TimeUnit.MILLISECONDS, connectionErrorNrOfRetries);
+    }    
+    
+
+    /**
+     * Creates a new AutoExecutor with a specified isolation, a specified number of retries on connection error and a 
+     * specified retry interval.
+     * @param dataSource DataSource to draw connections from
+     * @param serverType Server type of the connections
+     * @param connectionErrorRetryInterval How long to sleep between the connection retries
+     * @param connectionErrorRetryIntervalTimeUnit Unit of the {@link connectionErrorRetryInterval}
+     * @param connectionErrorNrOfRetries How many times to retry a query on connection error (-1 means unlimited)
+     */
+    public AutoExecutor(DataSource dataSource, 
+            DatabaseServerType serverType, 
+            TransactionIsolation transactionIsolation,
+            int connectionErrorRetryInterval, 
+            TimeUnit connectionErrorRetryIntervalTimeUnit, 
+            int connectionErrorNrOfRetries) {
+        
         this.dataSource = dataSource;
         this.serverType = serverType;
+        this.transactionIsolation = transactionIsolation;
+        this.connectionErrorRetryInterval = connectionErrorRetryInterval;
+        this.connectionErrorRetryIntervalTimeUnit = connectionErrorRetryIntervalTimeUnit;
+        this.connectionErrorNrOfRetries = connectionErrorNrOfRetries;
+        
+        assert this.connectionErrorNrOfRetries >= -1;
+        assert this.connectionErrorRetryIntervalTimeUnit != null;
     }
 
     /**
@@ -51,17 +113,24 @@ public class AutoExecutor implements SQLExecutor {
     
     @Override
     public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException {
+        execute(handler, 0, 0, SQL, parameters);
+    }
+
+    @Override
+    public void execute(ExecuteResultHandler handler, int maxRowsToFetch, int queryTimeoutInSeconds, String SQL, Object... parameters) throws SQLException {
         Connection connection = null;
-        while(true) {
+        int attempt = 0;
+        while(connectionErrorNrOfRetries == -1 || connectionErrorNrOfRetries > attempt) {
             try {
                 connection = getNewConnection();
                 SQLExecutor executor = createSQLExecutor(connection);
-                executor.execute(handler, SQL, parameters);
+                executor.execute(handler, maxRowsToFetch, queryTimeoutInSeconds, SQL, parameters);
                 return;
             }
             catch(SQLException e) {
                 if(serverType.isConnectionError(e)) {
-                    sleep(500);
+                    sleep(connectionErrorRetryIntervalTimeUnit.toMillis(connectionErrorRetryInterval));
+                    attempt++;
                     continue;
                 }
                 else {
@@ -86,7 +155,8 @@ public class AutoExecutor implements SQLExecutor {
     @Override
     public void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException {
         Connection connection = null;
-        while(true) {
+        int attempt = 0;
+        while(connectionErrorNrOfRetries == -1 || connectionErrorNrOfRetries > attempt) {
             try {
                 connection = getNewConnection();
                 SQLExecutor executor = createSQLExecutor(connection);
@@ -95,7 +165,8 @@ public class AutoExecutor implements SQLExecutor {
             }
             catch(SQLException e) {
                 if(serverType.isConnectionError(e)) {
-                    sleep(500);
+                    sleep(connectionErrorRetryIntervalTimeUnit.toMillis(connectionErrorRetryInterval));
+                    attempt++;
                     continue;
                 }
                 else {
@@ -118,7 +189,8 @@ public class AutoExecutor implements SQLExecutor {
     @Override
     public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException {
         Connection connection = null;
-        while(true) {
+        int attempt = 0;
+        while(connectionErrorNrOfRetries == -1 || connectionErrorNrOfRetries > attempt) {
             try {
                 connection = getNewConnection();
                 SQLExecutor executor = createSQLExecutor(connection);
@@ -127,7 +199,8 @@ public class AutoExecutor implements SQLExecutor {
             }
             catch(SQLException e) {
                 if(serverType.isConnectionError(e)) {
-                    sleep(500);
+                    sleep(connectionErrorRetryIntervalTimeUnit.toMillis(connectionErrorRetryInterval));
+                    attempt++;
                     continue;
                 }
                 else {
@@ -147,11 +220,11 @@ public class AutoExecutor implements SQLExecutor {
     private Connection getNewConnection() throws SQLException {
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(true);
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+        connection.setTransactionIsolation(transactionIsolation.getConstant());
         return connection;
     }
 
-    private void sleep(int milliseconds) {
+    private void sleep(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         }

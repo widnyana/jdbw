@@ -33,13 +33,9 @@ import javax.sql.DataSource;
  */
 public abstract class AbstractDatabaseType implements DatabaseServerType {
 
+    @Override
     public SQLDialect getSQLDialect() {
         return new DefaultSQLDialect();
-    }
-    
-    @Override
-    public AutoExecutor createAutoExecutor(DataSource dataSource) {
-        return new AutoExecutor(dataSource, this);
     }
 
     @Override
@@ -55,15 +51,18 @@ public abstract class AbstractDatabaseType implements DatabaseServerType {
     @Override
     public boolean isConnectionError(SQLException e)
     {
-        if(e instanceof SQLTransientException)
+        if(e instanceof SQLTransientException) {
             return true;
-        if(e instanceof SQLNonTransientException)
-            return false;    //Try again...
-        if(e instanceof SQLRecoverableException)
-            return true;
-        
-        if(e instanceof SQLSyntaxErrorException)
+        }
+        if(e instanceof SQLNonTransientException) {
             return false;
+        }    //Try again...
+        if(e instanceof SQLRecoverableException) {
+            return true;
+        }        
+        if(e instanceof SQLSyntaxErrorException) {
+            return false;
+        }
 
         //Other than that, dunno...! You'll have to implement this for every database vendor!
         return false;

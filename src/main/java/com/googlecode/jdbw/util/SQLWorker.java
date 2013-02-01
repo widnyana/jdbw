@@ -16,7 +16,6 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw.util;
 
 import com.googlecode.jdbw.SQLExecutor;
@@ -26,45 +25,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This utility class can be very helpful when sending simple queries to the
- * database and you don't want to get too involved in the details. It will help
- * you to send queries and get result back in simple and familiar formats, as 
- * well as grabbing only limited parts of the result set.
- * 
- * You normally create an SQLWorker on top of an auto-executor, but you can
- * also use a normal transaction.
+ * This utility class can be very helpful when sending simple queries to the database and you don't want to get too
+ * involved in the details. It will help you to send queries and get result back in simple and familiar formats, as well
+ * as grabbing only limited parts of the result set.
+ *
+ * You normally create an SQLWorker on top of an auto-executor, but you can also use a normal transaction.
+ *
  * @author Martin Berglund
  */
-public class SQLWorker
-{
+public class SQLWorker {
+
     private final SQLExecutor executor;
 
     /**
-     * Creates a new SQLWorker with a specified underlying SQLExecutor to use
-     * for the actual database communication.
+     * Creates a new SQLWorker with a specified underlying SQLExecutor to use for the actual database communication.
+     *
      * @param executor SQLExecutor send the queries to
      */
-    public SQLWorker(SQLExecutor executor)
-    {
+    public SQLWorker(SQLExecutor executor) {
         this.executor = executor;
     }
 
     /**
-     * Sends a query to the database and returns the whole ResultSet as a list of
-     * Object arrays.
+     * Sends a query to the database and returns the whole ResultSet as a list of Object arrays.
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
-     * @return The entire result set, converted into a list of Object arrays, 
-     * where each array in the list is one row in the result set
+     * @return The entire result set, converted into a list of Object arrays, where each array in the list is one row in
+     * the result set
      * @throws SQLException If any database error occurred
      */
-    public List<Object[]> query(String SQL, Object... parameters) throws SQLException
-    {
+    public List<Object[]> query(String SQL, Object... parameters) throws SQLException {
         final List<Object[]> result = new ArrayList<Object[]>();
         executor.execute(new ExecuteResultHandlerAdapter() {
             @Override
-            public boolean nextRow(Object[] row)
-            {
+            public boolean nextRow(Object[] row) {
                 result.add(row);
                 return true;
             }
@@ -73,26 +68,26 @@ public class SQLWorker
     }
 
     /**
-     * Sends a query to the database and returns the whole ResultSet as a list of
-     * String arrays.
+     * Sends a query to the database and returns the whole ResultSet as a list of String arrays.
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
-     * @return The entire result set, converted into a list of String arrays, 
-     * where each array in the list is one row in the result set and each element
-     * in the String arrays are the .toString() call on the underlying result 
-     * set object.
+     * @return The entire result set, converted into a list of String arrays, where each array in the list is one row in
+     * the result set and each element in the String arrays are the .toString() call on the underlying result set
+     * object.
      * @throws SQLException If any database error occurred
      */
-    public List<String[]> queryAsStrings(String SQL, Object... parameters) throws SQLException
-    {
+    public List<String[]> queryAsStrings(String SQL, Object... parameters) throws SQLException {
         List<String[]> result = new ArrayList<String[]>();
-        for(Object[] row: query(SQL, parameters)) {
+        for (Object[] row : query(SQL, parameters)) {
             String[] stringRow = new String[row.length];
-            for(int i = 0; i < row.length; i++)
-                if(row[i] == null)
+            for (int i = 0; i < row.length; i++) {
+                if (row[i] == null) {
                     stringRow[i] = null;
-                else
+                } else {
                     stringRow[i] = row[i].toString();
+                }
+            }
             result.add(stringRow);
         }
         return result;
@@ -100,215 +95,199 @@ public class SQLWorker
 
     /**
      * Sends a query to the database server and expects nothing to return.
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @throws SQLException If any database error occurred
      */
-    public void write(String SQL, Object... parameters) throws SQLException
-    {
+    public void write(String SQL, Object... parameters) throws SQLException {
         executor.execute(new ExecuteResultHandlerAdapter(), SQL, parameters);
     }
 
     /**
-     * Sends a query to the database server and returns any auto-generated value
-     * the database is telling us about. Please note that not all database 
-     * servers supports this feature.
+     * Sends a query to the database server and returns any auto-generated value the database is telling us about.
+     * Please note that not all database servers supports this feature.
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
-     * @return An auto-generated value created by the database as a result of 
-     * this query, or null
+     * @return An auto-generated value created by the database as a result of this query, or null
      * @throws SQLException If any database error occurred
      */
-    public Object insert(String SQL, Object... parameters) throws SQLException
-    {
+    public Object insert(String SQL, Object... parameters) throws SQLException {
         final List<Object> autoGeneratedKeys = new ArrayList<Object>();
         executor.execute(new ExecuteResultHandlerAdapter() {
-                @Override
-                public void onGeneratedKey(Object object)
-                {
-                    autoGeneratedKeys.add(object);
-                }
-            }, SQL, parameters);
-        if(autoGeneratedKeys.isEmpty())
+            @Override
+            public void onGeneratedKey(Object object) {
+                autoGeneratedKeys.add(object);
+            }
+        }, SQL, parameters);
+        if (autoGeneratedKeys.isEmpty()) {
             return null;
-        else
+        } else {
             return autoGeneratedKeys.get(0);
+        }
     }
 
-
     /**
-     * Sends a query to the database and returns the first row of the result set
-     * as an Object array.
+     * Sends a query to the database and returns the first row of the result set as an Object array.
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @return The first row of the result set, converted into an Object array
      * @throws SQLException If any database error occurred
      */
-    public Object[] top(String SQL, Object... parameters) throws SQLException
-    {
+    public Object[] top(String SQL, Object... parameters) throws SQLException {
         final List<Object[]> result = new ArrayList<Object[]>();
         executor.execute(new ExecuteResultHandlerAdapter() {
             @Override
-            public boolean nextRow(Object[] row)
-            {
+            public boolean nextRow(Object[] row) {
                 result.add(row);
                 return false;
             }
-
-            @Override
-            public int getMaxRowsToFetch()
-            {
-                return 1;
-            }
-        }, SQL, parameters);
+        }, 1, 0, SQL, parameters);
 
         return result.isEmpty() ? null : result.get(0);
     }
 
     /**
-     * Sends a query to the database and returns the first row of the result set
-     * as a String array.
+     * Sends a query to the database and returns the first row of the result set as a String array.
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
-     * @return The first row of the result set, converted into an String array
-     * where each element in the array is the .toString() result of each object
-     * in the result set
+     * @return The first row of the result set, converted into an String array where each element in the array is the
+     * .toString() result of each object in the result set
      * @throws SQLException If any database error occurred
      */
-    public String[] topAsString(String SQL, Object... parameters) throws SQLException
-    {
-        final Object []rowAsObjects = top(SQL, parameters);
-        final String []rowAsStrings = new String[rowAsObjects.length];
-        for(int i = 0; i < rowAsObjects.length; i++)
+    public String[] topAsString(String SQL, Object... parameters) throws SQLException {
+        final Object[] rowAsObjects = top(SQL, parameters);
+        final String[] rowAsStrings = new String[rowAsObjects.length];
+        for (int i = 0; i < rowAsObjects.length; i++) {
             rowAsStrings[i] = rowAsObjects[i] != null ? rowAsObjects[i].toString() : null;
+        }
         return rowAsStrings;
     }
 
     /**
      * Sends a query to the database and returns the first column of every row
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
-     * @return The first column of every row as a list, where the order is
-     * maintained from the result set
+     * @return The first column of every row as a list, where the order is maintained from the result set
      * @throws SQLException If any database error occurred
      */
-    public List<Object> leftColumn(String SQL, Object... parameters) throws SQLException
-    {
+    public List<Object> leftColumn(String SQL, Object... parameters) throws SQLException {
         List<Object[]> allRows = query(SQL, parameters);
         List<Object> result = new ArrayList<Object>();
-        for(Object[] row: allRows)
+        for (Object[] row : allRows) {
             result.add(row[0]);
-        return result;
-    }
-
-
-    /**
-     * Sends a query to the database and returns the first column of every row
-     * as a list of Strings
-     * @param SQL SQL to send to the database server
-     * @param parameters Parameters to substitute ?:s for in the SQL string
-     * @return The first column of every row as a list of Strings, where the
-     * order of the list is maintained from the result set and each element in
-     * the list is the result of calling .toString() on the object in the result
-     * set.
-     * @throws SQLException If any database error occurred
-     */
-    public List<String> leftColumnAsString(String SQL, Object... parameters) throws SQLException
-    {
-        List<Object> leftColumn = leftColumn(SQL, parameters);
-        List<String> result = new ArrayList<String>(leftColumn.size());
-        for(Object value: leftColumn) {
-            if(value == null)
-                result.add(null);
-            else
-                result.add(value.toString());
         }
         return result;
     }
 
     /**
-     * Sends a query to the database and returns the first column of the first 
-     * row
+     * Sends a query to the database and returns the first column of every row as a list of Strings
+     *
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @return The first column of every row as a list of Strings, where the order of the list is maintained from the
+     * result set and each element in the list is the result of calling .toString() on the object in the result set.
+     * @throws SQLException If any database error occurred
+     */
+    public List<String> leftColumnAsString(String SQL, Object... parameters) throws SQLException {
+        List<Object> leftColumn = leftColumn(SQL, parameters);
+        List<String> result = new ArrayList<String>(leftColumn.size());
+        for (Object value : leftColumn) {
+            if (value == null) {
+                result.add(null);
+            } else {
+                result.add(value.toString());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sends a query to the database and returns the first column of the first row
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @return The first column of the first row in the result set
      * @throws SQLException If any database error occurred
      */
-    public Object topLeftValue(String SQL, Object... parameters) throws SQLException
-    {
-        Object []row = top(SQL, parameters);
-        if(row == null)
+    public Object topLeftValue(String SQL, Object... parameters) throws SQLException {
+        Object[] row = top(SQL, parameters);
+        if (row == null) {
             return null;
-        else
+        } else {
             return row[0];
+        }
     }
 
-
     /**
-     * Sends a query to the database and returns the first column of the first 
-     * row, as a String
+     * Sends a query to the database and returns the first column of the first row, as a String
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @return The first column of the first row in the result set, as a String
      * @throws SQLException If any database error occurred
      */
-    public String topLeftValueAsString(String SQL, Object... parameters) throws SQLException
-    {
+    public String topLeftValueAsString(String SQL, Object... parameters) throws SQLException {
         final Object value = topLeftValue(SQL, parameters);
-        if(value == null)
+        if (value == null) {
             return null;
-        else
+        } else {
             return value.toString();
+        }
     }
 
     /**
-     * Sends a query to the database and returns the first column of the first 
-     * row, as an Integer
+     * Sends a query to the database and returns the first column of the first row, as an Integer
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @return The first column of the first row in the result set, as an Integer
      * @throws SQLException If any database error occurred
      */
-    public Integer topLeftValueAsInt(String SQL, Object... parameters) throws SQLException
-    {
+    public Integer topLeftValueAsInt(String SQL, Object... parameters) throws SQLException {
         Object value = topLeftValue(SQL, parameters);
-        if(value == null)
+        if (value == null) {
             return null;
-        else
+        } else {
             return Integer.parseInt(value.toString());
+        }
     }
 
     /**
-     * Sends a query to the database and returns the first column of the first 
-     * row, as a Long
+     * Sends a query to the database and returns the first column of the first row, as a Long
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @return The first column of the first row in the result set, as a Long
      * @throws SQLException If any database error occurred
      */
-    public Long topLeftValueAsLong(String SQL, Object... parameters) throws SQLException
-    {
+    public Long topLeftValueAsLong(String SQL, Object... parameters) throws SQLException {
         Object value = topLeftValue(SQL, parameters);
-        if(value == null)
+        if (value == null) {
             return null;
-        else
+        } else {
             return Long.parseLong(value.toString());
+        }
     }
 
     /**
-     * Sends a query to the database and returns the first column of the first 
-     * row, as a BigInteger
+     * Sends a query to the database and returns the first column of the first row, as a BigInteger
+     *
      * @param SQL SQL to send to the database server
      * @param parameters Parameters to substitute ?:s for in the SQL string
      * @return The first column of the first row in the result set, as a BigInteger
      * @throws SQLException If any database error occurred
      */
-    public BigInteger topLeftValueAsBigInteger(String SQL, Object... parameters) throws SQLException
-    {
+    public BigInteger topLeftValueAsBigInteger(String SQL, Object... parameters) throws SQLException {
         Object value = topLeftValue(SQL, parameters);
-        if(value == null)
+        if (value == null) {
             return null;
-        else
+        } else {
             return new BigInteger(value.toString());
+        }
     }
 }

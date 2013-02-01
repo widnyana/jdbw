@@ -48,22 +48,27 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 {
     protected final Connection connection;
 
-    protected SQLExecutorImpl(Connection connection)
-    {
+    protected SQLExecutorImpl(Connection connection) {
         this.connection = connection;
     }
 
     @Override
-    public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException
-    {
+    public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException {
+        execute(handler, 0, 0, SQL, parameters);
+    }
+
+    @Override
+    public void execute(ExecuteResultHandler handler, int maxRowsToFetch, int queryTimeoutInSeconds, String SQL, Object... parameters) throws SQLException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
             statement = prepareExecuteStatement(SQL);
-            for(int i = 0; i < parameters.length; i++)
+            for(int i = 0; i < parameters.length; i++) {
                 setParameter(statement, parameters[i], i + 1);
+            }
 
-            statement.setMaxRows(handler.getMaxRowsToFetch());
+            statement.setQueryTimeout(queryTimeoutInSeconds);
+            statement.setMaxRows(maxRowsToFetch);
             statement.execute();
             
             if(isInsertSQL(SQL)) {
@@ -79,47 +84,58 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                 if(resultSet != null) {
                     ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                     List<String> columnNames = new ArrayList<String>();
-                    for(int i = 0; i < resultSetMetaData.getColumnCount(); i++)
+                    for(int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
                         columnNames.add(resultSetMetaData.getColumnLabel(i + 1));
+                    }
 
                     List<Integer> columnTypes = new ArrayList<Integer>();
-                    for(int i = 0; i < resultSetMetaData.getColumnCount(); i++)
+                    for(int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
                         columnTypes.add(resultSetMetaData.getColumnType(i + 1));
+                    }
                     
                     handler.onResultSet(columnNames, columnTypes);
 
                     SQLWarning warning = resultSet.getWarnings();
-                    if(warning != null)
+                    if(warning != null) {
                         handler.onWarning(warning);
+                    }
 
                     boolean gotCancel = false;
                     while(resultSet.next() && !gotCancel) {
                         Object []row = new Object[resultSetMetaData.getColumnCount()];
-                        for(int i = 0; i < row.length; i++)
+                        for(int i = 0; i < row.length; i++) {
                             row[i] = resultSet.getObject(i + 1);
-                        if(!handler.nextRow(row))
+                        }
+                        if(!handler.nextRow(row)) {
                             gotCancel = true;
+                        }
                     }
                 }
                 else {
                     int updateCount = statement.getUpdateCount();
-                    if(updateCount == -1)
+                    if(updateCount == -1) {
                         break;
-                    else
+                    }
+                    else {
                         handler.onUpdateCount(updateCount);
+                    }
                 }
                 
-                if(statement.getMoreResults())
-                    if(!handler.nextResultSet())
+                if(statement.getMoreResults()) {
+                    if(!handler.nextResultSet()) {
                         break;
+                    }
+                }
             }
             handler.onDone();
         }
         finally {
-            if(resultSet != null)
+            if(resultSet != null) {
                 try { resultSet.close(); } catch(SQLException e) {}
-            if(statement != null)
+            }
+            if(statement != null) {
                 try { statement.close(); } catch(SQLException e) {}
+            }
         }
     }
 
@@ -131,8 +147,9 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             statement = prepareBatchUpdateStatement(SQL);
 
             for(Object []row: parameters) {
-                for(int i = 0; i < row.length; i++)
+                for(int i = 0; i < row.length; i++) {
                     setParameter(statement, row[i], i + 1);
+                }
                 statement.addBatch();
             }
 
@@ -140,12 +157,14 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             handler.onBatchResult(batchResult);
 
             SQLWarning warning = statement.getWarnings();
-            if(warning != null)
+            if(warning != null) {
                 handler.onWarning(warning);
+            }
         }
         finally {
-            if(statement != null)
+            if(statement != null) {
                 try { statement.close(); } catch(SQLException e) {}
+            }
         }
     }
 
@@ -155,19 +174,22 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         Statement statement = null;
         try {
             statement = connection.createStatement();
-            for(String row: batchedSQL)
+            for(String row: batchedSQL) {
                 statement.addBatch(row);
+            }
 
             int []batchResult = statement.executeBatch();
             handler.onBatchResult(Arrays.copyOf(batchResult, batchResult.length));
 
             SQLWarning warning = statement.getWarnings();
-            if(warning != null)
+            if(warning != null) {
                 handler.onWarning(warning);
+            }
         }
         finally {
-            if(statement != null)
+            if(statement != null) {
                 try { statement.close(); } catch(SQLException e) {}
+            }
         }
     }
 
@@ -193,10 +215,12 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
     private PreparedStatement prepareExecuteStatement(String SQL) throws SQLException
     {
-        if(isInsertSQL(SQL))
+        if(isInsertSQL(SQL)) {
             return prepareInsertStatement(SQL);
-        else
+        }
+        else {
             return prepareGeneralStatement(SQL);
+        }
     }
 
     protected void executeUpdate(Statement statement, String SQL) throws SQLException

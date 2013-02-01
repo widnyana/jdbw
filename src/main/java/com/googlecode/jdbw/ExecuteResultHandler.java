@@ -33,16 +33,6 @@ import java.util.List;
  * @author Martin Berglund
  */
 public interface ExecuteResultHandler {
-
-    /**
-     * This method is called just before the query is sent to the database, 
-     * setting the property on the Statement which limits the number of rows
-     * we want back. It's up to the driver implementation and the server if this
-     * limit will be honored or not (I think)
-     * @return Number of rows to fetch from the server, 0 means no limit
-     */
-    int getMaxRowsToFetch();
-
     /**
      * This callback is invoked when a new result set is read from the server,
      * if the result set contains any rows they will appear in subsequent calls

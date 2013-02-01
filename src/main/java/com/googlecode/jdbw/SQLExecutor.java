@@ -43,6 +43,19 @@ public interface SQLExecutor {
     void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException;
 
     /**
+     * Sends a query to the database and handles any results through a callback interface
+     * @param handler Callback interface to use for any results of the query
+     * @param maxRowsToFetch How many rows, at most, to fetch from the remote server, or 0 for no limit (<b>note:</b> 
+     * Not all JDBC driver implement this feature efficiently)
+     * @param queryTimeoutInSeconds Timeout for the query, in seconds, until the driver will throw an exception if the 
+     * query hasn't come back yet (0 means no timeout)
+     * @param SQL SQL code to send to the database server, use ? for parameter substitution
+     * @param parameters List of parameters to insert into the query, must be one for every ? used
+     * @throws SQLException 
+     */
+    void execute(ExecuteResultHandler handler, int maxRowsToFetch, int queryTimeoutInSeconds, String SQL, Object... parameters) throws SQLException;
+
+    /**
      * Executes a list of queries as one batch on the remote database server
      * @param handler Callback interface to use for any results of the query
      * @param batchedSQL List of SQL to send to the remote server
