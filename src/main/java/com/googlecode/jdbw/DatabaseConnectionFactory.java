@@ -16,14 +16,20 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
-package com.googlecode.jdbw.server.h2;
-
-import com.googlecode.jdbw.DatabaseServer;
+package com.googlecode.jdbw;
 
 /**
  *
  * @author Martin Berglund
  */
-public interface H2Server extends DatabaseServer {
+public interface DatabaseConnectionFactory {
+    /**
+     * Provides an extra property key-value to be passed to the JDBC driver when connecting, please see your JDBC 
+     * drivers documentation for more information on what properties are available.
+     * @param propertyName Name of the property
+     * @param value Value of the property
+     * @return Returns itself, so you can easily chain multiple calls together
+     */
+    DatabaseConnectionFactory setConnectionProperty(String propertyName, String value);
+    DatabaseConnection connect(DataSourceFactory dataSourceFactory);
 }

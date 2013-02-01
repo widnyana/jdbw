@@ -21,38 +21,25 @@ package com.googlecode.jdbw.server;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
- * A common base class for {@code DatabaseServer}s with are connected to over
- * network and using a username/password for authentication. This class
- * provides some helper methods and some default implementations for the
- * interface methods. 
+ * A common base class for {@code DatabaseServer}s with are connected to over a network. This class provides some helper 
+ * methods and some default implementations for the interface methods. 
  * @author Martin Berglund
  */
-public abstract class StandardDatabaseServer extends AbstractDatabaseServer implements NetworkDatabaseServer, MultiCatalogDatabaseServer, UserAuthenticatedDatabaseServer {
+public abstract class StandardDatabaseServer extends AbstractDatabaseServer implements NetworkDatabaseServer {
 
     private final String hostname;
     private final int port;
-    private final String catalog;
-    private final String username;
-    private final String password;
+    private final String defaultCatalog;
 
     protected StandardDatabaseServer(
             JDBCDriverDescriptor driverDescriptor,
             String hostname, 
-            int port, 
-            String catalog, 
-            String username, 
-            String password) {
+            int port,
+            String defaultCatalog) {
         super(driverDescriptor);
         this.hostname = hostname;
         this.port = port;
-        this.catalog = catalog;
-        this.username = username;
-        this.password = password;
-    }
-
-    @Override
-    public String getDefaultCatalog() {
-        return catalog;
+        this.defaultCatalog = defaultCatalog;
     }
 
     @Override
@@ -65,18 +52,8 @@ public abstract class StandardDatabaseServer extends AbstractDatabaseServer impl
         return port;
     }
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-    
-    protected String getJDBCUrl() {
-        return getDriverDescriptor().formatJDBCUrl(hostname, port, catalog);
+    public String getDefaultCatalog() {
+        return defaultCatalog;
     }
 
     @Override
@@ -94,15 +71,6 @@ public abstract class StandardDatabaseServer extends AbstractDatabaseServer impl
         if (this.port != other.port) {
             return false;
         }
-        if ((this.catalog == null) ? (other.catalog != null) : !this.catalog.equals(other.catalog)) {
-            return false;
-        }
-        if ((this.username == null) ? (other.username != null) : !this.username.equals(other.username)) {
-            return false;
-        }
-        if ((this.password == null) ? (other.password != null) : !this.password.equals(other.password)) {
-            return false;
-        }
         return true;
     }
 
@@ -111,14 +79,11 @@ public abstract class StandardDatabaseServer extends AbstractDatabaseServer impl
         int hash = 3;
         hash = 41 * hash + (this.hostname != null ? this.hostname.hashCode() : 0);
         hash = 41 * hash + this.port;
-        hash = 41 * hash + (this.catalog != null ? this.catalog.hashCode() : 0);
-        hash = 41 * hash + (this.username != null ? this.username.hashCode() : 0);
-        hash = 41 * hash + (this.password != null ? this.password.hashCode() : 0);
         return hash;
     }
 
     @Override
     public String toString() {
-        return getJDBCUrl();
+        return getClass().getSimpleName() + "(hostname=" + hostname + ",port=" + port + ")";
     }
 }

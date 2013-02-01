@@ -16,36 +16,35 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.server.mysql;
+package com.googlecode.jdbw.server.h2;
 
 import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.DatabaseServerTypes;
-import com.googlecode.jdbw.JDBCDriverDescriptor;
-import com.googlecode.jdbw.server.StandardDatabaseServer;
+import com.googlecode.jdbw.server.AbstractDatabaseServer;
 
 /**
- * This class represents a MySQL database server that is connected to over a
- * TCP/IP network. 
+ *
  * @author Martin Berglund
  */
-public class MySQLServer extends StandardDatabaseServer {
+public class H2DatabaseServer extends AbstractDatabaseServer {
+    private final H2ServerType serverType;
+    private final String jdbcUrl;
+    private final boolean allowMultipleConnections;
+
+    protected H2DatabaseServer(H2ServerType serverType, String jdbcUrl, boolean allowMultipleConnections) {
+        super(new H2JDBCDriverDescriptor());
+        this.serverType = serverType;
+        this.jdbcUrl = jdbcUrl;
+        this.allowMultipleConnections = allowMultipleConnections;
+    }
     
-    public MySQLServer(String hostname, int port, String catalog) {
-        this(new MySQLJDBCDriverDescriptor(), hostname, port, catalog);
-    }
-
-    protected MySQLServer(JDBCDriverDescriptor driverDescriptor, String hostname, int port, String catalog) {
-        super(driverDescriptor, hostname, port, catalog);
-    }
-
     @Override
     public DatabaseServerType getServerType() {
-        return DatabaseServerTypes.MYSQL;
+        return serverType;
     }
 
     @Override
-    public DatabaseConnectionFactory newConnectionFactory() {
-        return new MySQLDatabaseConnectionFactory(getDriverDescriptor().formatJDBCUrl(getHostname(), getPort(), getDefaultCatalog()));
+    public H2DatabaseConnectionFactory newConnectionFactory() {
+        return new H2DatabaseConnectionFactory(serverType, jdbcUrl, allowMultipleConnections);
     }
 }

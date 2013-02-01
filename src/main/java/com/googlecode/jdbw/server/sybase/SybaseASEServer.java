@@ -19,11 +19,11 @@
 
 package com.googlecode.jdbw.server.sybase;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
-import java.util.Properties;
 
 /**
  * This class represents a Sybase ASE server connected to over a TCP/IP network.
@@ -35,29 +35,21 @@ import java.util.Properties;
  * @author Martin Berglund
  */
 public class SybaseASEServer extends StandardDatabaseServer {
-    
-    private final String processName;
-    
+        
     public SybaseASEServer(
             String hostname, 
             int port, 
-            String catalog, 
-            String username, 
-            String password, 
-            String processName) {
-        this(new SybaseJConn3JDBCDriverDescriptor(), hostname, port, catalog, username, password, processName);
+            String catalog) {
+        
+        this(new SybaseJConn3JDBCDriverDescriptor(), hostname, port, catalog);
     }
 
-    public SybaseASEServer(
+    protected SybaseASEServer(
             JDBCDriverDescriptor driverDescriptor, 
             String hostname, 
             int port, 
-            String catalog, 
-            String username, 
-            String password,
-            String processName) {
-        super(driverDescriptor, hostname, port, catalog, username, password);
-        this.processName = processName;
+            String catalog) {
+        super(driverDescriptor, hostname, port, catalog);
     }
 
     @Override
@@ -66,12 +58,7 @@ public class SybaseASEServer extends StandardDatabaseServer {
     }
 
     @Override
-    protected Properties getConnectionProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("APPLICATIONNAME", processName);
-        properties.setProperty("USER", getUsername());
-        properties.setProperty("PASSWORD", getPassword());
-        properties.setProperty("CHARSET", "utf8");
-        return properties;
+    public DatabaseConnectionFactory newConnectionFactory() {
+        return new SybaseDatabaseConnectionFactory(getDriverDescriptor().formatJDBCUrl(getHostname(), getPort(), getDefaultCatalog()));
     }
 }

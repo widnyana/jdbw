@@ -16,22 +16,30 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-package com.googlecode.jdbw.server.h2;
+package com.googlecode.jdbw.impl;
 
-import com.googlecode.jdbw.DatabaseConnection;
-import com.googlecode.jdbw.DatabaseServerTypes;
+import com.googlecode.jdbw.DatabaseServerType;
 
 /**
  *
  * @author Martin Berglund
  */
-public class H2FileBasedServer extends H2DatabaseServer {
-    
-    public H2FileBasedServer(String databaseFilePrefix) {
-        super(DatabaseServerTypes.H2_FILE, new H2JDBCDriverDescriptor().formatJDBCUrlForFile(databaseFilePrefix), false);
+public class AuthenticatingDatabaseConnectionFactory extends BasicDatabaseConnectionFactory {
+
+    public AuthenticatingDatabaseConnectionFactory(
+            DatabaseServerType databaseServerType, 
+            String jdbcUrl) {
+        
+        super(databaseServerType, jdbcUrl);
     }
     
-    public DatabaseConnection connect() {
-        return newConnectionFactory().connect();
+    public AuthenticatingDatabaseConnectionFactory setUsername(String username) {
+        setConnectionProperty("user", username);
+        return this;
+    }
+    
+    public AuthenticatingDatabaseConnectionFactory setPassword(String password) {
+        setConnectionProperty("password", password);
+        return this;
     }
 }

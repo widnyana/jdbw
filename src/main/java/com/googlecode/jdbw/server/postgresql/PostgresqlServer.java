@@ -18,11 +18,12 @@
  */
 package com.googlecode.jdbw.server.postgresql;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
-import java.util.Properties;
 
 /**
  * This class represents a PostgreSQL server connected to over a TCP/IP network.
@@ -34,32 +35,26 @@ public class PostgresqlServer extends StandardDatabaseServer {
     public PostgresqlServer(
             String hostname, 
             int port, 
-            String catalog, 
-            String username, 
-            String password) {
-        this(new PostgresqlJDBCDriverDescriptor(), hostname, port, catalog, username, password);
+            String catalog) {
+        this(new PostgresqlJDBCDriverDescriptor(), hostname, port, catalog);
     }
 
-    public PostgresqlServer(
+    protected PostgresqlServer(
             JDBCDriverDescriptor driverDescriptor, 
             String hostname, 
             int port, 
-            String catalog, 
-            String username, 
-            String password) {
-        super(driverDescriptor, hostname, port, catalog, username, password);
+            String catalog) {
+        super(driverDescriptor, hostname, port, catalog);
     }
 
     @Override
     public DatabaseServerType getServerType() {
         return DatabaseServerTypes.POSTGRESQL;
     }
-
+    
     @Override
-    protected Properties getConnectionProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("user", getUsername());
-        properties.setProperty("password", getPassword());
-        return properties;
+    public DatabaseConnectionFactory newConnectionFactory() {
+        return new AuthenticatingDatabaseConnectionFactory(getServerType(), 
+                getDriverDescriptor().formatJDBCUrl(getHostname(), getPort(), getDefaultCatalog()));
     }
 }

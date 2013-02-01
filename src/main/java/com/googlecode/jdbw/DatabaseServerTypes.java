@@ -19,7 +19,7 @@
 
 package com.googlecode.jdbw;
 
-import com.googlecode.jdbw.server.h2.H2ServerTypes;
+import com.googlecode.jdbw.server.h2.H2ServerType;
 import com.googlecode.jdbw.server.mysql.MySQLServerType;
 import com.googlecode.jdbw.server.postgresql.PostgresqlServerType;
 import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
@@ -36,12 +36,12 @@ public class DatabaseServerTypes {
     
     public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new CopyOnWriteArraySet<DatabaseServerType>();
     
-    public static final DatabaseServerType MYSQL = MySQLServerType.INSTANCE;
-    public static final DatabaseServerType SYBASE_ASE = SybaseASEServerType.INSTANCE;
-    public static final DatabaseServerType POSTGRESQL = PostgresqlServerType.INSTANCE;
-    public static final DatabaseServerType H2_IN_MEMORY = H2ServerTypes.InMemory.INSTANCE;
-    public static final DatabaseServerType H2_FILE = H2ServerTypes.FileBased.INSTANCE;
-    public static final DatabaseServerType H2_NETWORK = H2ServerTypes.Network.INSTANCE;
+    public static final MySQLServerType MYSQL = MySQLServerType.INSTANCE;
+    public static final SybaseASEServerType SYBASE_ASE = SybaseASEServerType.INSTANCE;
+    public static final PostgresqlServerType POSTGRESQL = PostgresqlServerType.INSTANCE;
+    public static final H2ServerType H2_IN_MEMORY = H2ServerType.InMemory.INSTANCE;
+    public static final H2ServerType H2_FILE = H2ServerType.FileBased.INSTANCE;
+    public static final H2ServerType H2_NETWORK = H2ServerType.Network.INSTANCE;
     
     static {
         ALL_KNOWN_SERVER_TYPES.add(MYSQL);

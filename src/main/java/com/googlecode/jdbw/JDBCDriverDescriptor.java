@@ -16,10 +16,7 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw;
-
-import com.googlecode.jdbw.server.mysql.MySQLCommonJDBCDriverDescriptor;
 
 /**
  * This interface describes a JDBC driver and how to use it. You'll need to

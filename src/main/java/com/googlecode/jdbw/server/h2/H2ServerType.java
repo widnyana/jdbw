@@ -27,21 +27,19 @@ import javax.sql.DataSource;
  *
  * @author Martin Berglund
  */
-public class H2ServerTypes {
-    private H2ServerTypes() {}
+public abstract class H2ServerType extends AbstractDatabaseType {
     
-    public static abstract class H2ServerType extends AbstractDatabaseType {
-        protected H2ServerType() {}
+    protected H2ServerType() {
+    }
 
-        @Override
-        public SQLDialect getSQLDialect() {
-            return new H2SQLDialect();
-        }
+    @Override
+    public SQLDialect getSQLDialect() {
+        return new H2SQLDialect();
+    }
 
-        @Override
-        public ServerMetaData createMetaDataResolver(DataSource dataSource) {
-            return new H2MetaDataResolver(dataSource);
-        }
+    @Override
+    public ServerMetaData createMetaDataResolver(DataSource dataSource) {
+        return new H2MetaDataResolver(dataSource);
     }
     
     public static class InMemory extends H2ServerType {

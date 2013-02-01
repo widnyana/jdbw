@@ -19,13 +19,11 @@
 package com.googlecode.jdbw.server;
 
 import com.googlecode.jdbw.*;
-import com.googlecode.jdbw.impl.DatabaseConnectionImpl;
-import java.sql.DriverManager;
+import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
+import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
-import javax.sql.DataSource;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * A common base class for many types of {@code DatabaseServer}s. This class
@@ -41,64 +39,36 @@ import javax.sql.DataSource;
 public abstract class AbstractDatabaseServer implements DatabaseServer {
     
     private final JDBCDriverDescriptor driverDescriptor;
-    private final Properties additionalConnectionProperties;
 
     public AbstractDatabaseServer(JDBCDriverDescriptor driverDescriptor) {
         this.driverDescriptor = driverDescriptor;
-        this.additionalConnectionProperties = new Properties();
-    }
-    
-    protected Properties getConnectionProperties() {
-        return new Properties();
-    }
-    
-    private Properties assembleConnectionProperties() {
-        Properties properties = getConnectionProperties();
-        properties.putAll(additionalConnectionProperties);
-        return properties;
-    }
-
-    public void setConnectionProperty(String key, String value) {
-        additionalConnectionProperties.setProperty(key, value);
-    }
-    
-    public DatabaseConnection connect(final DataSourceFactory dataSourceFactory) {
         registerJDBCDriver(driverDescriptor.getDriverClassName());
-        return new DatabaseConnectionImpl(
-                dataSourceFactory.newDataSource(getJDBCUrl(), assembleConnectionProperties()),
-                new DataSourceCloser() {
-                    public void closeDataSource(DataSource dataSource) {
-                        dataSourceFactory.close(dataSource);
-                    }
-                },
-                getServerType());
     }
 
     @Override
-    public void testConnection() throws SQLException {
-        registerJDBCDriver(driverDescriptor.getDriverClassName());
-        DriverManager.getConnection(getJDBCUrl(), assembleConnectionProperties()).close();
+    public void testConnection(String username, String password) throws SQLException {
+        DatabaseConnectionFactory connectionFactory = newConnectionFactory();
+        if(connectionFactory instanceof AuthenticatingDatabaseConnectionFactory) {
+            ((AuthenticatingDatabaseConnectionFactory)connectionFactory).setUsername(username);
+            ((AuthenticatingDatabaseConnectionFactory)connectionFactory).setPassword(password);            
+        }
+        connectionFactory.connect(new OneSharedConnectionDataSource.Factory()).close();
     }
-    
-    protected abstract String getJDBCUrl();
     
     protected JDBCDriverDescriptor getDriverDescriptor() {
         return driverDescriptor;
     }
     
-    private static final Set<String> REGISTERED_DRIVERS = new HashSet<String>();
+    private static final Set<String> REGISTERED_DRIVERS = new ConcurrentSkipListSet<String>();
     private void registerJDBCDriver(String driverClassName) {
-        synchronized(REGISTERED_DRIVERS) {
-            if(REGISTERED_DRIVERS.contains(driverClassName))
-                return;
-            
+        if(REGISTERED_DRIVERS.add(driverClassName)) {
             try {
                 Class.forName(driverClassName).newInstance();
-                REGISTERED_DRIVERS.add(driverClassName);
             }
             catch(Exception e) {
-                throw new IllegalStateException("Unable to load the JDBC driver \"" + driverClassName + "\"");
-            }
+                REGISTERED_DRIVERS.remove(driverClassName);
+                throw new IllegalStateException("Unable to load the JDBC driver \"" + driverClassName + "\": " + e.getMessage());
+            }            
         }
     }
 }

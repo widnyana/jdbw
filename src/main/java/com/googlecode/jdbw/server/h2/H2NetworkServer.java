@@ -16,35 +16,17 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw.server.h2;
 
-import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.server.MultiCatalogDatabaseServer;
-import com.googlecode.jdbw.server.NetworkDatabaseServer;
-import com.googlecode.jdbw.server.StandardDatabaseServer;
-import com.googlecode.jdbw.server.UserAuthenticatedDatabaseServer;
-import java.util.Properties;
+import com.googlecode.jdbw.DatabaseServerTypes;
+
 
 /**
  *
  * @author Martin Berglund
  */
-public class H2NetworkServer extends StandardDatabaseServer implements NetworkDatabaseServer, MultiCatalogDatabaseServer, UserAuthenticatedDatabaseServer, H2Server {
-
-    public H2NetworkServer(String hostname, int port, String catalog, String username, String password) {
-        super(new H2JDBCDriverDescriptor(), hostname, port, catalog, username, password);
-    }
-
-    public DatabaseServerType getServerType() {
-        return H2ServerTypes.Network.INSTANCE;
-    }
-    
-    @Override
-    protected Properties getConnectionProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("USER", getUsername());
-        properties.setProperty("PASSWORD", getPassword());
-        return properties;
+public class H2NetworkServer extends H2DatabaseServer {
+    public H2NetworkServer(String hostname, int port, String catalog) {
+        super(DatabaseServerTypes.H2_NETWORK, new H2JDBCDriverDescriptor().formatJDBCUrl(hostname, port, catalog), true);
     }
 }

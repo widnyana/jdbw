@@ -17,15 +17,24 @@
  * Copyright (C) 2007-2012 Martin Berglund
  */
 
-package com.googlecode.jdbw.server;
+package com.googlecode.jdbw.server.mysql;
 
-import com.googlecode.jdbw.DatabaseServer;
+import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
- * A database server which is using username/password authentication for access
+ * This driver descriptor is designed to be used with the official MySQL JDBC
+ * driver. 
  * @author Martin Berglund
  */
-public interface UserAuthenticatedDatabaseServer extends DatabaseServer {
-    String getUsername();
-    String getPassword();
+public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
+
+    @Override
+    public String getDriverClassName() {
+        return "com.mysql.jdbc.Driver";
+    }
+
+    @Override
+    public String formatJDBCUrl(String host, int port, String defaultCatalog) {
+        return "jdbc:mysql://" + host + ":" + port + "/" + defaultCatalog;
+    }    
 }

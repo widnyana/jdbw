@@ -16,53 +16,26 @@
  * 
  * Copyright (C) 2007-2012 Martin Berglund
  */
-
 package com.googlecode.jdbw.server.h2;
 
-import com.googlecode.jdbw.DataSourceFactory;
 import com.googlecode.jdbw.DatabaseConnection;
-import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.server.AbstractDatabaseServer;
-import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
+import com.googlecode.jdbw.DatabaseServerTypes;
 
 /**
  *
  * @author Martin Berglund
  */
-public class H2InMemoryServer extends AbstractDatabaseServer implements H2Server {
-    
-    private final String name;
+public class H2InMemoryServer extends H2DatabaseServer {
 
     public H2InMemoryServer() {
         this(null);
     }
-
-    public H2InMemoryServer(String name) {
-        super(new H2JDBCDriverDescriptor());
-        this.name = name;
-    }
     
-    public DatabaseServerType getServerType() {
-        return H2ServerTypes.InMemory.INSTANCE;
-    }
-
-    @Override
-    protected String getJDBCUrl() {
-        if(name == null)
-            return ((H2JDBCDriverDescriptor)getDriverDescriptor()).formatJDBCUrlForAnonymousInMemory();
-        else
-            return ((H2JDBCDriverDescriptor)getDriverDescriptor()).formatJDBCUrlForInMemory(name);
+    public H2InMemoryServer(String name) {
+        super(DatabaseServerTypes.H2_IN_MEMORY, new H2JDBCDriverDescriptor().formatJDBCUrlForInMemory(name), name != null);
     }
     
     public DatabaseConnection connect() {
-        return connect(null);
-    }
-
-    @Override
-    public DatabaseConnection connect(DataSourceFactory dataSourceFactory) {
-        if(dataSourceFactory == null || name == null)
-            return super.connect(new OneSharedConnectionDataSource.Factory());
-        else
-            return super.connect(dataSourceFactory);
+        return newConnectionFactory().connect();
     }
 }
