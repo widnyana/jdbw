@@ -77,7 +77,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     public DatabaseConnectionImpl(Connection connection, DatabaseServerType databaseServerType) {
         this(new OneSharedConnectionDataSource(connection),
                 new DataSourceCloser() {
-
+                    @Override
                     public void closeDataSource(DataSource dataSource) {
                         ((OneSharedConnectionDataSource) dataSource).close();
                     }
@@ -207,10 +207,12 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     public DatabaseConnectionImpl(DataSource dataSource, DataSourceCloser dataSourceCloser, DatabaseServerType databaseServerType) {
         this.dataSource = dataSource;
         this.dataSourceCloser = dataSourceCloser;
-        if(databaseServerType != null)
+        if(databaseServerType != null) {
             this.databaseServerType = databaseServerType;
-        else
+        }
+        else {
             this.databaseServerType = guessDatabaseServerType(dataSource);
+        }
     }
 
     @Override
@@ -236,8 +238,9 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
 
     @Override
     public void close() {
-        if(dataSourceCloser != null)
+        if(dataSourceCloser != null) {
             dataSourceCloser.closeDataSource(dataSource);
+        }
     }
 
     @Override
@@ -254,7 +257,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
         return new AutoExecutor(dataSource, databaseServerType);
     }
     
-    Connection getConnection() throws SQLException {
+    private Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
@@ -275,6 +278,7 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
         return databaseServerType;
     }
 
+    @Override
     public String getDefaultCatalogName() {
         Connection connection = null;
         try {
