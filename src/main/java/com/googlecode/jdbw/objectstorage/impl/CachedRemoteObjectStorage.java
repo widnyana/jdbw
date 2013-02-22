@@ -44,6 +44,26 @@ public class CachedRemoteObjectStorage extends AbstractExternalObjectStorage {
     }
 
     @Override
+    public <O extends Storable> O put(O object) {
+        try {
+            return remoteObjectStorage.put(object);
+        }
+        finally {
+            getLocalStorage().put(object);
+        }
+    }
+
+    @Override
+    public <O extends Storable> List<O> putAll(Collection<O> objects) {
+        try {
+            return remoteObjectStorage.putAll(objects);
+        }
+        finally {
+            getLocalStorage().putAll(objects);
+        }
+    }
+    
+    @Override
     public <K, O extends Storable<K>> void remove(Class<O> objectType, Collection<K> ids) {
         remoteObjectStorage.remove(objectType, ids);
         localRemove(objectType, ids);
@@ -64,7 +84,7 @@ public class CachedRemoteObjectStorage extends AbstractExternalObjectStorage {
 
     @Override
     public <O extends Storable> List<O> remoteGetAll(Class<O> type) {
-        List<O> objects = remoteGetAll(type);
+        List<O> objects = remoteObjectStorage.getAll(type);
         localRemoveAll(type);
         localPut(objects);
         return objects;
