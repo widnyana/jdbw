@@ -72,6 +72,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
         return objects;
     }
 
+    @Override
     public <O extends Storable> int getSize(Class<O> type) {
         int size = backend.getSize(type);
         if(size == 0) {
