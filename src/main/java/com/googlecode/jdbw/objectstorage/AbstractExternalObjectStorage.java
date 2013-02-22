@@ -136,6 +136,12 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
     }
 
     @Override
+    public <K, O extends Storable<K>> O remoteGet(O object) {
+        Class<O> objectType = getStorableTypeFromObject(object);
+        return remoteGet(objectType, object.getId());
+    }
+
+    @Override
     public <K, O extends Storable<K>> List<O> remoteGetSome(Class<O> type, K... keys) {
         return remoteGetSome(type, Arrays.asList(keys));
     }

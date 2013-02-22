@@ -24,6 +24,10 @@ import java.util.List;
 public interface ExternalObjectStorage extends ObjectStorage {
     <K, O extends Storable<K>> O remoteGet(Class<O> type, K key);
     
+    <K, O extends Storable<K>> O remoteGet(O object);
+    
+    <K, O extends Storable<K>> O localGet(Class<O> type, K key);
+    
     <K, O extends Storable<K>> List<O> remoteGetSome(Class<O> type, K... keys);
     
     <K, O extends Storable<K>> List<O> remoteGetSome(Class<O> type, Collection<K> keys);
