@@ -93,26 +93,32 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
         backend.putAll(objects);
     }
     
+    @Override
     public <O extends Storable> void localRemove(O... objects) {
         backend.remove(objects);
     }
 
+    @Override
     public <O extends Storable> void localRemove(Collection<O> objects) {
         backend.remove(objects);
     }
 
+    @Override
     public <K, O extends Storable<K>> void localRemove(Class<O> objectType, K... ids) {
         backend.remove(objectType, ids);
     }
 
+    @Override
     public <K, O extends Storable<K>> void localRemove(Class<O> objectType, Collection<K> ids) {
         backend.remove(objectType, ids);
     }
 
+    @Override
     public <K, O extends Storable<K>> void localRemoveAll(Class<O> objectType) {
         backend.removeAll(objectType);
     }
 
+    @Override
     public <K, O extends Storable<K>> O remoteGet(Class<O> type, K key) {
         List<O> objects = remoteGetSome(type, Arrays.asList(key));
         if(!objects.isEmpty()) {
@@ -123,6 +129,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
         }
     }
 
+    @Override
     public <K, O extends Storable<K>> List<O> remoteGetSome(Class<O> type, K... keys) {
         return remoteGetSome(type, Arrays.asList(keys));
     }
