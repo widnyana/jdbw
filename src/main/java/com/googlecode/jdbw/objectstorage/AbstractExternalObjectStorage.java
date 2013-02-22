@@ -87,11 +87,6 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
     }
 
     @Override
-    public <O extends Storable> O put(O object) {
-        return putAll(object).get(0);
-    }
-
-    @Override
     public <K, O extends Storable<K>> O localGet(Class<O> type, K key) {
         return localStorage.get(type, key);
     }
