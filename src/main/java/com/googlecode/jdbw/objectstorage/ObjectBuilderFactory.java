@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ObjectBuilderFactory {
+    public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newClone(Class<B> builderType, O object);
     public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newObject(Class<B> builderType, K key);
     public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newObject(Class<B> builderType, K key, O template);
     public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newObject(Class<B> builderType, K key, Map<String, Object> initialValues);

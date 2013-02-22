@@ -44,6 +44,11 @@ public class DefaultObjectBuilderFactory implements ObjectBuilderFactory {
     public DefaultObjectBuilderFactory(ObjectFactory objectFactory) {
         this.objectFactory = objectFactory;
     }
+
+    @Override
+    public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newClone(Class<B> builderType, O object) {
+        return newObject(builderType, object.getId(), object);
+    }
     
     @Override
     public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newObject(Class<B> builderType, K key) {
