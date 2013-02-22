@@ -47,7 +47,7 @@ public abstract class BasicDatabaseConnectionFactory implements DatabaseConnecti
     
     @Override
     public final DatabaseConnectionFactory setConnectionProperty(String propertyName, String value) {
-        connectionProperties.setProperty(propertyName, value);
+        connectionProperties.setProperty(propertyName, value == null ? "" : value);
         return this;
     }
 
