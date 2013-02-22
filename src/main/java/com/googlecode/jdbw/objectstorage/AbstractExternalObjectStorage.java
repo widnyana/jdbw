@@ -29,6 +29,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
         this.backend = backend;
     }
 
+    @Override
     public ObjectBuilderFactory getBuilderFactory() {
         return backend.getBuilderFactory();
     }
