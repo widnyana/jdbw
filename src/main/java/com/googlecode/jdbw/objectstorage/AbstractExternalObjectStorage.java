@@ -23,21 +23,25 @@ import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractExternalObjectStorage extends AbstractObjectStorage implements ExternalObjectStorage {
-    private final ObjectStorage backend;
+    private final ObjectStorage localStorage;
 
     public AbstractExternalObjectStorage(ObjectStorage backend) {
-        this.backend = backend;
+        this.localStorage = backend;
     }
 
+    protected ObjectStorage getLocalStorage() {
+        return localStorage;
+    }
+    
     @Override
     public ObjectBuilderFactory getBuilderFactory() {
-        return backend.getBuilderFactory();
+        return localStorage.getBuilderFactory();
     }
 
     @Override
     protected <O extends Storable> Class<O> getStorableTypeFromObject(O object) throws ObjectStorageException {
-        if(backend instanceof AbstractObjectStorage) {
-            return ((AbstractObjectStorage)backend).getStorableTypeFromObject(object);
+        if(localStorage instanceof AbstractObjectStorage) {
+            return ((AbstractObjectStorage)localStorage).getStorableTypeFromObject(object);
         }
         else {
             throw new ObjectStorageException("Cannot figure out which storable type to use for " + 
@@ -48,7 +52,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
     
     @Override
     public <K, O extends Storable<K>> O get(Class<O> type, K key) {
-        O object = backend.get(type, key);
+        O object = localStorage.get(type, key);
         if(object == null) {
             object = remoteGet(type, key);
         }
@@ -57,7 +61,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
 
     @Override
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, Collection<K> keys) {
-        List<O> objects = backend.getSome(type, keys);
+        List<O> objects = localStorage.getSome(type, keys);
         if(objects.isEmpty()) {
             objects = remoteGetSome(type, keys);
         }
@@ -66,7 +70,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
 
     @Override
     public <O extends Storable> List<O> getAll(Class<O> type) {
-        List<O> objects = backend.getAll(type);
+        List<O> objects = localStorage.getAll(type);
         if(objects.isEmpty()) {
             objects = remoteGetAll(type);
         }
@@ -75,7 +79,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
 
     @Override
     public <O extends Storable> int getSize(Class<O> type) {
-        int size = backend.getSize(type);
+        int size = localStorage.getSize(type);
         if(size == 0) {
             return remoteGetSize(type);
         }
@@ -88,36 +92,36 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
     }
     
     protected <O extends Storable> List<O> localGetAll(Class<O> type) {
-        return backend.getAll(type);
+        return localStorage.getAll(type);
     }
     
     protected <O extends Storable> void localPut(Collection<O> objects) {
-        backend.putAll(objects);
+        localStorage.putAll(objects);
     }
     
     @Override
     public <O extends Storable> void localRemove(O... objects) {
-        backend.remove(objects);
+        localStorage.remove(objects);
     }
 
     @Override
     public <O extends Storable> void localRemove(Collection<O> objects) {
-        backend.remove(objects);
+        localStorage.remove(objects);
     }
 
     @Override
     public <K, O extends Storable<K>> void localRemove(Class<O> objectType, K... ids) {
-        backend.remove(objectType, ids);
+        localStorage.remove(objectType, ids);
     }
 
     @Override
     public <K, O extends Storable<K>> void localRemove(Class<O> objectType, Collection<K> ids) {
-        backend.remove(objectType, ids);
+        localStorage.remove(objectType, ids);
     }
 
     @Override
     public <K, O extends Storable<K>> void localRemoveAll(Class<O> objectType) {
-        backend.removeAll(objectType);
+        localStorage.removeAll(objectType);
     }
 
     @Override
