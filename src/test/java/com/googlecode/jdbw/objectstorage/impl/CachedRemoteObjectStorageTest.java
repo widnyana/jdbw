@@ -97,12 +97,6 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testPutAll() {
         System.out.println("putAll");
-        CachedRemoteObjectStorage instance = null;
-        List expResult = null;
-        List result = instance.putAll(null);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
