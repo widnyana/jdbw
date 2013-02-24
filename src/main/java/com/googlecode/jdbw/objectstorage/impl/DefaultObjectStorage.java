@@ -61,6 +61,21 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
                 new Cell(fieldMappingFactory.createFieldMapping(objectType), objectCacheFactory.createObjectCache()));
     }
 
+    @Override
+    public <O extends Storable> boolean contains(O object) {
+        if(object == null) {
+            throw new IllegalArgumentException("Passing null object to contains(...) is not allowed");
+        }
+        Class objectType = object.getClass();
+        if(object instanceof Proxy) {
+            objectType = ((ObjectProxyHandler)Proxy.getInvocationHandler(object)).getObjectType();
+        }
+        if(!storageCells.containsKey(objectType)) {
+            throw new IllegalArgumentException("Trying to call contains(...) on unregistered type " + objectType.getName());
+        }
+        return storageCells.get(objectType).get(object.getId()) != null;
+    }
+
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, Collection<K> keys) {
         if(type == null) {
             throw new IllegalArgumentException("Passing null type to getSome(...) is not allowed");

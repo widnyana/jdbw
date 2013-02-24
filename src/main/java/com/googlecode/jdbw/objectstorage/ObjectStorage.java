@@ -26,6 +26,8 @@ public interface ObjectStorage {
     <O extends Storable> void register(Class<O> objectType);
     
     ObjectBuilderFactory getBuilderFactory();
+    
+    <O extends Storable> boolean contains(O object);
 
     <K, O extends Storable<K>> O get(Class<O> type, K id);
     

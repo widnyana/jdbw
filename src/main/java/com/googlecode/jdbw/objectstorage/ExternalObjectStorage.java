@@ -22,6 +22,11 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ExternalObjectStorage extends ObjectStorage {
+    
+    <O extends Storable> boolean localContains(O object);
+    
+    <O extends Storable> boolean remoteContains(O object);
+    
     <K, O extends Storable<K>> O remoteGet(Class<O> type, K key);
     
     <K, O extends Storable<K>> O remoteGet(O object);

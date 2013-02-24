@@ -95,6 +95,15 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.toString();
     }
 
+    @Override
+    public String getSelectContains(SQLDialect sqlDialect) {
+        StringBuilder sb = new StringBuilder("SELECT COUNT(");
+        sb.append(sqlDialect.escapeIdentifier("id"));
+        sb.append(") FROM ").append(sqlDialect.escapeIdentifier(getTableName()));
+        sb.append(" WHERE ").append(sqlDialect.escapeIdentifier("id")).append(" = ?");
+        return sb.toString();
+    }
+
     public String getInsert(SQLDialect dialect) {
         StringBuilder sb = new StringBuilder("INSERT INTO ");
         sb.append(dialect.escapeIdentifier(getTableName()));

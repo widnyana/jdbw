@@ -90,6 +90,33 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
     }
 
     @Override
+    public <O extends Storable> boolean contains(O object) {
+        if(object == null) {
+            throw new IllegalArgumentException("Cannot call JDBCObjectStorage.contains(...) with null object");
+        }
+        Class<O> objectType = getStorableTypeFromObject(object);
+        if(objectType == null || !tableMappings.containsKey(objectType)) {
+            throw new IllegalArgumentException("Cannot call JDBCObjectStorage.contains(...) non-registered type " + objectType.getSimpleName());
+        }
+        
+        TableMapping tableMapping = tableMappings.get(objectType);        
+        String sql = tableMapping.getSelectContains(
+                databaseConnection.getServerType().getSQLDialect());
+        try {
+            int nrOfRows = new SQLWorker(databaseConnection.createAutoExecutor()).topLeftValueAsInt(sql, object.getId());
+            if(nrOfRows > 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch(SQLException e) {
+            throw new ObjectStorageException("Database error when calling JDBCObjectStorage.contains(...) with {object=" + object + "}", e);
+        }
+    }
+
+    @Override
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, Collection<K> ids) {
         if(!tableMappings.containsKey(type)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.getSome(...) non-registered type " + type.getSimpleName());
