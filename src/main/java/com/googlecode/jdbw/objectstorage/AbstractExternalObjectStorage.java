@@ -100,6 +100,11 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
     }
 
     @Override
+    public <K, O extends Storable<K>> boolean localContains(Class<O> type, K key) {
+        return localStorage.contains(type, key);
+    }
+
+    @Override
     public <K, O extends Storable<K>> O localGet(Class<O> type, K key) {
         return localStorage.get(type, key);
     }

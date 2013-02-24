@@ -25,7 +25,11 @@ public interface ExternalObjectStorage extends ObjectStorage {
     
     <O extends Storable> boolean localContains(O object);
     
+    <K, O extends Storable<K>> boolean localContains(Class<O> type, K key);
+    
     <O extends Storable> boolean remoteContains(O object);
+    
+    <K, O extends Storable<K>> boolean remoteContains(Class<O> type, K key);
     
     <K, O extends Storable<K>> O remoteGet(Class<O> type, K key);
     

@@ -79,6 +79,11 @@ public class CachedRemoteObjectStorage extends AbstractExternalObjectStorage {
     public <O extends Storable> boolean remoteContains(O object) {
         return remoteContains(object);
     }
+
+    @Override
+    public <K, O extends Storable<K>> boolean remoteContains(Class<O> type, K key) {
+        return remoteContains(type, key);
+    }
     
     @Override
     public <K, O extends Storable<K>> List<O> remoteGetSome(Class<O> type, Collection<K> keys) {
