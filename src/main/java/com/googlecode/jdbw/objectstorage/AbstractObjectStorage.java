@@ -35,6 +35,11 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
             return result.get(0);
         }
     }
+
+    @Override
+    public <K, O extends Storable<K>> boolean contains(Class<O> type, K id) {
+        return get(type, id) != null;
+    }
     
     @Override
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, K... keys) {

@@ -70,10 +70,15 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         if(object instanceof Proxy) {
             objectType = ((ObjectProxyHandler)Proxy.getInvocationHandler(object)).getObjectType();
         }
-        if(!storageCells.containsKey(objectType)) {
-            throw new IllegalArgumentException("Trying to call contains(...) on unregistered type " + objectType.getName());
+        return contains(objectType, object.getId());
+    }
+
+    @Override
+    public <K, O extends Storable<K>> boolean contains(Class<O> type, K id) {
+        if(!storageCells.containsKey(type)) {
+            throw new IllegalArgumentException("Trying to call contains(...) on unregistered type " + type.getName());
         }
-        return storageCells.get(objectType).get(object.getId()) != null;
+        return storageCells.get(type).get(id) != null;
     }
 
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, Collection<K> keys) {
