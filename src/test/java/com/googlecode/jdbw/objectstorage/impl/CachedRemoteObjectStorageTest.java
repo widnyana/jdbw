@@ -249,4 +249,26 @@ public class CachedRemoteObjectStorageTest extends TestBase {
         assertEquals(2, cachedRemoteStorage.remoteGetSize(Person.class));
         assertEquals(0, localStorage.getSize(Person.class));
     }
+
+    /**
+     * Test of remoteContains method, of class CachedRemoteObjectStorage.
+     */
+    @Test
+    public void testRemoteContains() {
+        System.out.println("remoteContains");
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        final Person elvis = createElvis();
+        
+        remoteStorage.put(elvis);
+        assertTrue(remoteStorage.contains(elvis));
+        assertTrue(remoteStorage.contains(Person.class, elvis.getId()));
+        assertFalse(localStorage.contains(elvis));
+        assertFalse(localStorage.contains(Person.class, elvis.getId()));
+        assertTrue(cachedRemoteStorage.remoteContains(elvis));
+        assertTrue(cachedRemoteStorage.remoteContains(Person.class, elvis.getId()));
+        assertFalse(localStorage.contains(elvis));
+        assertFalse(localStorage.contains(Person.class, elvis.getId()));
+    }
 }
