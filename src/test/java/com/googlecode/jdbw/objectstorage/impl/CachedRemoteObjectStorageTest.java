@@ -20,6 +20,7 @@ package com.googlecode.jdbw.objectstorage.impl;
 
 import com.googlecode.jdbw.objectstorage.ObjectStorage;
 import com.googlecode.jdbw.objectstorage.TestBase;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -89,6 +90,15 @@ public class CachedRemoteObjectStorageTest extends TestBase {
         assertEquals(elvis, localStorage.get(Person.class, elvis.getId()));
         assertEquals(elvis, remoteStorage.get(Person.class, elvis.getId()));
         assertEquals(elvis, cachedRemoteStorage.get(Person.class, elvis.getId()));
+        
+        assertEquals(1, localStorage.getSize(Person.class));
+        assertEquals(1, remoteStorage.getSize(Person.class));
+        assertEquals(1, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.put(elvis);        
+        assertEquals(1, localStorage.getSize(Person.class));
+        assertEquals(1, remoteStorage.getSize(Person.class));
+        assertEquals(1, cachedRemoteStorage.getSize(Person.class));
     }
 
     /**
@@ -97,6 +107,24 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testPutAll() {
         System.out.println("putAll");
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.putAll(createElvis(), createJaques());
+        assertEquals(2, localStorage.getSize(Person.class));
+        assertEquals(2, remoteStorage.getSize(Person.class));
+        assertEquals(2, cachedRemoteStorage.getSize(Person.class));        
+        
+        cachedRemoteStorage.putAll(Arrays.asList(createElvis(), createJaques()));
+        assertEquals(2, localStorage.getSize(Person.class));
+        assertEquals(2, remoteStorage.getSize(Person.class));
+        assertEquals(2, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.putAll(createElvis(), createSakamoto());
+        assertEquals(3, localStorage.getSize(Person.class));
+        assertEquals(3, remoteStorage.getSize(Person.class));
+        assertEquals(3, cachedRemoteStorage.getSize(Person.class));
     }
 
     /**
@@ -105,6 +133,47 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testRemove() {
         System.out.println("remove");
+        Person elvis = createElvis();
+        
+        cachedRemoteStorage.put(elvis);
+        assertEquals(1, localStorage.getSize(Person.class));
+        assertEquals(1, remoteStorage.getSize(Person.class));
+        assertEquals(1, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.remove(elvis);
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.put(elvis);
+        assertEquals(1, localStorage.getSize(Person.class));
+        assertEquals(1, remoteStorage.getSize(Person.class));
+        assertEquals(1, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.remove(Arrays.asList(elvis));
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.put(elvis);
+        assertEquals(1, localStorage.getSize(Person.class));
+        assertEquals(1, remoteStorage.getSize(Person.class));
+        assertEquals(1, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.remove(Person.class, elvis.getId());
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.put(elvis);
+        assertEquals(1, localStorage.getSize(Person.class));
+        assertEquals(1, remoteStorage.getSize(Person.class));
+        assertEquals(1, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.remove(Person.class, Arrays.asList(elvis.getId()));
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
     }
 
     /**
@@ -113,6 +182,19 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testRemoveAll() {
         System.out.println("removeAll");
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        cachedRemoteStorage.putAll(createElvis(), createJaques());
+        assertEquals(2, localStorage.getSize(Person.class));
+        assertEquals(2, remoteStorage.getSize(Person.class));
+        assertEquals(2, cachedRemoteStorage.getSize(Person.class));   
+        
+        cachedRemoteStorage.removeAll(Person.class);
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
     }
 
     /**
@@ -121,6 +203,17 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testRemoteGetSome() {
         System.out.println("remoteGetSome");
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        final Person sakamoto = createSakamoto();
+        remoteStorage.put(sakamoto);
+        
+        assertNotNull(remoteStorage.get(Person.class, sakamoto.getId()));
+        assertNull(localStorage.get(Person.class, sakamoto.getId()));
+        assertNotNull(cachedRemoteStorage.remoteGetSome(Person.class, sakamoto.getId()));
+        assertNotNull(localStorage.get(Person.class, sakamoto.getId()));
     }
 
     /**
@@ -129,6 +222,15 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testRemoteGetAll() {
         System.out.println("remoteGetAll");
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        remoteStorage.putAll(createJaques(), createSakamoto());
+        assertEquals(0, localStorage.getAll(Person.class).size());
+        assertEquals(2, remoteStorage.getAll(Person.class).size());
+        assertEquals(2, cachedRemoteStorage.remoteGetAll(Person.class).size());
+        assertEquals(2, localStorage.getAll(Person.class).size());
     }
 
     /**
@@ -137,5 +239,14 @@ public class CachedRemoteObjectStorageTest extends TestBase {
     @Test
     public void testRemoteGetSize() {
         System.out.println("remoteGetSize");
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(0, remoteStorage.getSize(Person.class));
+        assertEquals(0, cachedRemoteStorage.getSize(Person.class));
+        
+        remoteStorage.putAll(createJaques(), createSakamoto());
+        assertEquals(0, localStorage.getSize(Person.class));
+        assertEquals(2, remoteStorage.getSize(Person.class));
+        assertEquals(2, cachedRemoteStorage.remoteGetSize(Person.class));
+        assertEquals(0, localStorage.getSize(Person.class));
     }
 }
