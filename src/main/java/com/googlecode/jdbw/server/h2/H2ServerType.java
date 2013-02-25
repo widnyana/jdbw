@@ -47,6 +47,7 @@ public abstract class H2ServerType extends AbstractDatabaseType {
         public static final InMemory INSTANCE = new InMemory();
         private InMemory() { }
         
+        @Override
         public String getName() {
             return "H2 in-memory";
         }        
@@ -56,6 +57,7 @@ public abstract class H2ServerType extends AbstractDatabaseType {
         public static final FileBased INSTANCE = new FileBased();        
         private FileBased() { }
         
+        @Override
         public String getName() {
             return "H2 file based";
         }        
@@ -65,6 +67,7 @@ public abstract class H2ServerType extends AbstractDatabaseType {
         public static final Network INSTANCE = new Network();        
         private Network() { }
         
+        @Override
         public String getName() {
             return "H2 TCP/IP";
         }        

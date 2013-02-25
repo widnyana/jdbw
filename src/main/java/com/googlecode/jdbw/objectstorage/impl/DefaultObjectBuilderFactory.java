@@ -66,6 +66,7 @@ public class DefaultObjectBuilderFactory implements ObjectBuilderFactory {
         return newBuilderProxy(builderType, key, template);
     }
 
+    @Override
     public <K, O extends Storable<K>, B extends ObjectBuilder<O>> B newObject(Class<B> builderType, K key, Map<String, Object> initialValues) {
         if(builderType == null) {
             throw new IllegalArgumentException("Passing null type to DefaultObjectBuilderFactory.newObject(...) is not allowed");

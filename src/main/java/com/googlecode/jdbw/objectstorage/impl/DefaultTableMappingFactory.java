@@ -23,6 +23,7 @@ import com.googlecode.jdbw.objectstorage.TableMapping;
 import com.googlecode.jdbw.objectstorage.TableMappingFactory;
 
 public class DefaultTableMappingFactory implements TableMappingFactory {
+    @Override
     public TableMapping createTableMapping(Class<? extends Storable> objectType) {
         return new DefaultTableMapping(objectType);
     }

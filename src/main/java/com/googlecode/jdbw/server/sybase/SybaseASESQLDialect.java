@@ -65,10 +65,12 @@ public class SybaseASESQLDialect extends DefaultSQLDialect {
     
     @Override
     protected String formatBinary(Object value) {
-        if(value instanceof byte[])
+        if(value instanceof byte[]) {
             return "0x" + getHex((byte[]) value);
-        else
+        }
+        else {
             return super.formatBinary(value);
+        }
     }
     
     @Override
@@ -80,10 +82,12 @@ public class SybaseASESQLDialect extends DefaultSQLDialect {
         for(Column column: columns) {
             sb.append("\t").append(column.getName()).append(" ");
             sb.append(getSybaseDatatype(column));
-            if(column.getNullable() == Nullability.NOT_NULLABLE)
+            if(column.getNullable() == Nullability.NOT_NULLABLE) {
                 sb.append(" NOT NULL");
-            else
+            }
+            else {
                 sb.append(" NULL");
+            }
             sb.append(",\n");
         }
         sb.delete(sb.length() - 2, sb.length());
@@ -96,12 +100,15 @@ public class SybaseASESQLDialect extends DefaultSQLDialect {
             sb.append(" ADD CONSTRAINT ");
             sb.append(index.getName());
             sb.append(" ");
-            if(index.isPrimaryKey())
+            if(index.isPrimaryKey()) {
                 sb.append("PRIMARY KEY ");
-            else if(index.isUnique())
+            }
+            else if(index.isUnique()) {
                 sb.append("UNIQUE ");
-            if(index.isClustered())
+            }
+            if(index.isClustered()) {
                 sb.append("CLUSTERED ");
+            }
             sb.append("(");
             sb.append(StringUtils.concatenateStringList(index.getColumnNames(), ","));
             sb.append(")");

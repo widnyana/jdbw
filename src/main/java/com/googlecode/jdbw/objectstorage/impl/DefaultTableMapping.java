@@ -43,6 +43,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return tableName;
     }
 
+    @Override
     public String getSelectAll(SQLDialect dialect) {
         StringBuilder sb = new StringBuilder("SELECT ");
         sb.append(dialect.escapeIdentifier("id"));
@@ -53,6 +54,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.toString();
     }
 
+    @Override
     public String getSelectSome(SQLDialect dialect, int numberOfObjects) {
         if(numberOfObjects <= 0) {
             throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectSome with numberOfObjects <= 0 ");
@@ -72,6 +74,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.toString();
     }
 
+    @Override
     public String getSelectKeys(SQLDialect dialect, int numberOfObjects) {
         if(numberOfObjects <= 0) {
             throw new IllegalArgumentException("Cannot call DefaultTableMapping.getSelectKeys with numberOfObjects <= 0 ");
@@ -88,6 +91,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.toString();
     }
 
+    @Override
     public String getSelectCount(SQLDialect sqlDialect) {
         StringBuilder sb = new StringBuilder("SELECT COUNT(");
         sb.append(sqlDialect.escapeIdentifier("id"));
@@ -104,6 +108,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.toString();
     }
 
+    @Override
     public String getInsert(SQLDialect dialect) {
         StringBuilder sb = new StringBuilder("INSERT INTO ");
         sb.append(dialect.escapeIdentifier(getTableName()));
@@ -119,6 +124,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.append(")").toString();
     }
 
+    @Override
     public String getUpdate(SQLDialect dialect) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         sb.append(dialect.escapeIdentifier(getTableName()));
@@ -132,6 +138,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.append(" = ?").toString();
     }
 
+    @Override
     public String getDelete(SQLDialect dialect, int numberOfObjectsToDelete) {
         if(numberOfObjectsToDelete <= 0) {
             throw new IllegalArgumentException("Cannot call DefaultTableMapping.getDelete(...) with numberOfObjectsToDelete <= 0");
@@ -145,6 +152,7 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         return sb.append(")").toString();
     }
 
+    @Override
     public String getDeleteAll(SQLDialect dialect) {
         StringBuilder sb = new StringBuilder("DELETE FROM ");
         sb.append(dialect.escapeIdentifier(getTableName()));

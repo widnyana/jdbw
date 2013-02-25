@@ -41,6 +41,7 @@ import javax.sql.DataSource;
 public class OneSharedConnectionDataSource implements DataSource {
     
     public static class Factory implements DataSourceFactory {
+        @Override
         public DataSource newDataSource(String jdbcUrl, Properties properties) {
             try {
                 return new OneSharedConnectionDataSource(
@@ -51,6 +52,7 @@ public class OneSharedConnectionDataSource implements DataSource {
             }
         }
         
+        @Override
         public void close(DataSource previouslyConstructedDataSource) {
             ((OneSharedConnectionDataSource)previouslyConstructedDataSource).close();
         }        
@@ -71,9 +73,11 @@ public class OneSharedConnectionDataSource implements DataSource {
         }
     }
 
+    @Override
     public Connection getConnection() throws SQLException {
         try {
             return new DelegatingConnection(connectionQueue.take()) {
+                @Override
                 public void close() throws SQLException {
                     //We don't need to call .offer(...) here since the capacity is only 1
                     connectionQueue.add(_conn);
@@ -85,14 +89,17 @@ public class OneSharedConnectionDataSource implements DataSource {
         }
     }
 
+    @Override
     public Connection getConnection(String username, String password) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public PrintWriter getLogWriter() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public int getLoginTimeout() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -101,18 +108,22 @@ public class OneSharedConnectionDataSource implements DataSource {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void setLoginTimeout(int seconds) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

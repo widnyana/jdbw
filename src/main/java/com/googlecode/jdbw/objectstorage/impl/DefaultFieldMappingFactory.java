@@ -23,6 +23,7 @@ import com.googlecode.jdbw.objectstorage.FieldMappingFactory;
 import com.googlecode.jdbw.objectstorage.Storable;
 
 public class DefaultFieldMappingFactory implements FieldMappingFactory {
+    @Override
     public FieldMapping createFieldMapping(Class<? extends Storable> objectType) {
         return new DefaultFieldMapping(objectType);
     }

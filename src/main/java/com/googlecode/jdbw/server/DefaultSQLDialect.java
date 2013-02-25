@@ -57,18 +57,21 @@ public class DefaultSQLDialect implements SQLDialect {
         return identifier;
     }
 
+    @Override
     public String formatDateTime(Date date) {
         synchronized(defaultTimestampFormat) {
             return defaultTimestampFormat.format(date);
         }
     }
 
+    @Override
     public String formatDate(Date date) {
         synchronized(defaultDateFormat) {
             return defaultDateFormat.format(date);
         }
     }
 
+    @Override
     public String formatTime(Date date) {
         synchronized(defaultTimeFormat) {
             return defaultTimeFormat.format(date);

@@ -38,6 +38,7 @@ public class MySQLServerType extends AbstractDatabaseType {
         
     }
     
+    @Override
     public String getName() {
         return "MySQL";
     }

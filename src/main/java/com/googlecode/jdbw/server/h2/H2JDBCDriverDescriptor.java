@@ -20,7 +20,6 @@
 package com.googlecode.jdbw.server.h2;
 
 import com.googlecode.jdbw.JDBCDriverDescriptor;
-import java.io.File;
 
 /**
  *
@@ -40,10 +39,12 @@ public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
         return "jdbc:h2:file:" + databaseFilePrefix;
     }
     
+    @Override
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:h2:tcp://" + host + ":" + port + "/" + defaultCatalog; //What to do about the path to the database???
     }
 
+    @Override
     public String getDriverClassName() {
         return "org.h2.Driver";
     }

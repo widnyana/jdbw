@@ -31,8 +31,9 @@ public class StringUtils
     public static String concatenateStringList(List<String> list, String separator)
     {
         StringBuilder sb = new StringBuilder();
-        for(String replicatedDatabase: list)
+        for(String replicatedDatabase: list) {
             sb.append(replicatedDatabase).append(separator);
+        }
         sb.delete(sb.length()-separator.length(), sb.length());
         return sb.toString();
     }

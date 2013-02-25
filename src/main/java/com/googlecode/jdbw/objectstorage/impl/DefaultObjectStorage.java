@@ -53,6 +53,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         storageCells = new ConcurrentHashMap<Class, Cell>();
     }
     
+    @Override
     public <O extends Storable> void register(Class<O> objectType) {
         if(objectType == null) {
             throw new IllegalArgumentException("Passing null to register(...) is not allowed");
@@ -81,6 +82,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return storageCells.get(type).get(id) != null;
     }
 
+    @Override
     public <K, O extends Storable<K>> List<O> getSome(Class<O> type, Collection<K> keys) {
         if(type == null) {
             throw new IllegalArgumentException("Passing null type to getSome(...) is not allowed");
@@ -98,6 +100,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return toReturn;
     }
 
+    @Override
     public <O extends Storable> List<O> getAll(Class<O> type) {
         if(type == null) {
             throw new IllegalArgumentException("Passing null type to getAll(...) is not allowed");
@@ -108,6 +111,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return new ArrayList<O>((Collection)storageCells.get(type).values());
     }
 
+    @Override
     public <O extends Storable> int getSize(Class<O> type) {
         if(type == null) {
             throw new IllegalArgumentException("Passing null type to getSize(...) is not allowed");
@@ -118,6 +122,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return storageCells.get(type).size();
     }
 
+    @Override
     public ObjectBuilderFactory getBuilderFactory() {
         return new DefaultObjectBuilderFactory() {
             @Override
@@ -132,6 +137,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         };
     }
 
+    @Override
     public <O extends Storable> O put(O object) {
         if(object == null) {
             throw new IllegalArgumentException("Passing null object to put(...) is not allowed");
@@ -147,6 +153,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return object;
     }
 
+    @Override
     public <K, O extends Storable<K>> void remove(Class<O> objectType, Collection<K> ids) {
         if(objectType == null) {
             throw new IllegalArgumentException("Passing null object type to remove(...) is not allowed");
@@ -160,6 +167,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         storageCells.get(objectType).remove(ids);
     }
 
+    @Override
     public <O extends Storable> void removeAll(Class<O> objectType) {
         if(objectType == null) {
             throw new IllegalArgumentException("Passing null object type to removeAll(...) is not allowed");
@@ -204,26 +212,32 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
             return fieldMapping;
         }
         
+        @Override
         public Storable get(Object key) {
             return cache.get(key);
         }
 
+        @Override
         public Collection values() {
             return cache.values();
         }
 
+        @Override
         public void remove(Collection ids) {
             cache.remove(ids);
         }
 
+        @Override
         public void removeAll() {
             cache.removeAll();
         }
 
+        @Override
         public void put(Storable o) {
             cache.put(o);
         }
         
+        @Override
         public int size() {
             return cache.size();
         }
