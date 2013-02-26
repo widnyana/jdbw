@@ -35,6 +35,7 @@ class ObjectProxyHandler implements InvocationHandler {
         this.fields = fields;
     }
     
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if(method.getName().equals("getId")) {
             return getKey();

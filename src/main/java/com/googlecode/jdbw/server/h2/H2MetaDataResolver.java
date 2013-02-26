@@ -38,8 +38,9 @@ public class H2MetaDataResolver extends DefaultServerMetaData {
     @Override
     public Catalog getCatalog(String catalogName) throws SQLException {
         for(Catalog catalog: getCatalogs()) {
-            if(catalog.getName().equals(catalogName.toUpperCase()))
+            if(catalog.getName().equals(catalogName.toUpperCase())) {
                 return catalog;
+            }
         }
         return null;
     }

@@ -25,6 +25,7 @@ import com.googlecode.jdbw.objectstorage.Storable;
 import java.lang.reflect.Proxy;
 
 public class ImmutableObjectFactory implements ObjectFactory {
+    @Override
     public <O extends Storable> O newObject(Class<O> type, FieldMapping fieldMapping, Object[] idAndValues) {
         Object[] valuesOnly = new Object[idAndValues.length - 1];
         System.arraycopy(idAndValues, 1, valuesOnly, 0, idAndValues.length - 1);

@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.server.mysql;
 
-import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;

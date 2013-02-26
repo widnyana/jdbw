@@ -49,6 +49,14 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
                     getClass().getName());
         }
     }
+
+    @Override
+    public <O extends Storable> boolean contains(O object) {
+        if(localContains(object)) {
+            return true;
+        }
+        return remoteContains(object);
+    }
     
     @Override
     public <K, O extends Storable<K>> O get(Class<O> type, K key) {
@@ -84,6 +92,16 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
             return remoteGetSize(type);
         }
         return size;
+    }
+
+    @Override
+    public <O extends Storable> boolean localContains(O object) {
+        return localStorage.contains(object);
+    }
+
+    @Override
+    public <K, O extends Storable<K>> boolean localContains(Class<O> type, K key) {
+        return localStorage.contains(type, key);
     }
 
     @Override

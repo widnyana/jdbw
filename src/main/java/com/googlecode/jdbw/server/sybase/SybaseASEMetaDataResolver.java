@@ -141,8 +141,9 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
         Set<String> clusteredIndexes = new HashSet<String>();
         for(Object[] row: rows) {
             String indexName = (row[0] != null ? row[0].toString().trim() : null);
-            if(indexName == null || "".equals(indexName) || clusteredIndexes.contains(indexName))
+            if(indexName == null || "".equals(indexName) || clusteredIndexes.contains(indexName)) {
                 continue;
+            }
             
             int status = (Integer) row[1];
             int status2 = (Integer) row[2];

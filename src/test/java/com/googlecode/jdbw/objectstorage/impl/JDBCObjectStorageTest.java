@@ -165,19 +165,20 @@ public class JDBCObjectStorageTest extends H2DatabaseTestBase {
      * Test of getSize method, of class JDBCObjectStorage.
      */
     @Test
-    public void testGetSize() {
+    public void testGetSize() throws SQLException {
         System.out.println("getSize");
         JDBCObjectStorage instance = getObjectStorage();
         int expResult = 3;
         int result = instance.getSize(Person.class);
         assertEquals(expResult, result);
+        assertEquals(expResult, getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\"").intValue());
     }
 
     /**
      * Test of put method, of class JDBCObjectStorage.
      */
     @Test
-    public void testPut() {
+    public void testPut() throws SQLException {
         System.out.println("put");
         JDBCObjectStorage instance = getObjectStorage();
         Person.Builder builder = instance.getBuilderFactory().newObject(Person.Builder.class, 4);
@@ -195,6 +196,10 @@ public class JDBCObjectStorageTest extends H2DatabaseTestBase {
         assertEquals("Evert Tabue", result.getName());
         assertEquals(new DateMidnight("1890-03-12").toDate(), result.getBirthday());
         assertEquals(4, instance.getSize(Person.class));
+        assertEquals(4, getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\"").intValue());
+        assertArrayEquals(
+                new Object[] { evert.getId(), evert.getAge(), evert.getBirthday(), evert.getName() }, 
+                getWorker().top("SELECT \"id\", \"age\", \"birthday\", \"name\" FROM \"Person\" WHERE \"id\" = 4"));
         
         builder = instance.getBuilderFactory().newObject(Person.Builder.class, 4, evert);
         builder.setName("Evert Taube");
@@ -209,13 +214,17 @@ public class JDBCObjectStorageTest extends H2DatabaseTestBase {
         assertEquals("Evert Taube", result.getName());
         assertEquals(new DateMidnight("1890-03-12").toDate(), result.getBirthday());
         assertEquals(4, instance.getSize(Person.class));        
+        assertEquals(4, getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\"").intValue());
+        assertArrayEquals(
+                new Object[] { evert.getId(), evert.getAge(), evert.getBirthday(), evert.getName() }, 
+                getWorker().top("SELECT \"id\", \"age\", \"birthday\", \"name\" FROM \"Person\" WHERE \"id\" = 4"));
     }
 
     /**
      * Test of putAll method, of class JDBCObjectStorage.
      */
     @Test
-    public void testPutAll() {
+    public void testPutAll() throws SQLException {
         System.out.println("putAll");
         JDBCObjectStorage instance = getObjectStorage();
         Set<Person> expectedResult = new HashSet<Person>();
@@ -234,13 +243,15 @@ public class JDBCObjectStorageTest extends H2DatabaseTestBase {
         instance.putAll(expectedResult);
         Set<Person> result = new HashSet<Person>(instance.getSome(Person.class, 4, 5));
         assertEquals(expectedResult, result);
+        
+        assertEquals(5, getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\"").intValue());
     }
 
     /**
      * Test of remove method, of class JDBCObjectStorage.
      */
     @Test
-    public void testRemove() {
+    public void testRemove() throws SQLException {
         System.out.println("remove");
         JDBCObjectStorage instance = getObjectStorage();
         Map<Integer, Person> allPersons = new HashMap<Integer, Person>();
@@ -254,18 +265,22 @@ public class JDBCObjectStorageTest extends H2DatabaseTestBase {
         assertEquals(allPersons.size(), instance.getSize(Person.class));
         assertEquals(new HashSet<Person>(allPersons.values()), 
                 new HashSet<Person>(instance.getAll(Person.class)));
+        
+        assertEquals(allPersons.size(), getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\"").intValue());
+        assertEquals(0, getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\" WHERE \"id\" = ?", randomPerson.getId()).intValue());
     }
 
     /**
      * Test of removeAll method, of class JDBCObjectStorage.
      */
     @Test
-    public void testRemoveAll() {
+    public void testRemoveAll() throws SQLException {
         System.out.println("removeAll");
         JDBCObjectStorage instance = getObjectStorage();
         assertTrue(instance.getSize(Person.class) > 0);
         instance.removeAll(Person.class);
         assertEquals(0, instance.getSize(Person.class));
+        assertEquals(0, getWorker().topLeftValueAsInt("SELECT COUNT(*) FROM \"Person\"").intValue());
     }
     
     private static class PersonIdComparator implements Comparator<Person> {

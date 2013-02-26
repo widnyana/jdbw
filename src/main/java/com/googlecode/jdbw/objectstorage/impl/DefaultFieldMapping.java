@@ -41,10 +41,12 @@ public class DefaultFieldMapping implements FieldMapping {
         resolveFields();
     }
     
+    @Override
     public Class<? extends Storable> getObjectType() {
         return objectType;
     }
 
+    @Override
     public String getFieldName(Method method) {
         return getFieldName(method.getName());
     }
@@ -82,8 +84,9 @@ public class DefaultFieldMapping implements FieldMapping {
     
     private void resolveFields() {
         for(Method method: objectType.getMethods()) {
-            if((method.getModifiers() & Modifier.STATIC) != 0)
+            if((method.getModifiers() & Modifier.STATIC) != 0) {
                 continue;
+            }
             
             String fieldName = null;
             if(method.getName().startsWith("get")) {

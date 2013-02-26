@@ -25,6 +25,7 @@ public interface TableMapping extends FieldMapping {
     String getSelectSome(SQLDialect dialect, int numberOfObjects);
     String getSelectKeys(SQLDialect dialect, int numberOfObjects);
     String getSelectCount(SQLDialect sqlDialect);
+    String getSelectContains(SQLDialect sqlDialect);
     String getInsert(SQLDialect dialect);
     String getUpdate(SQLDialect dialect);
     String getDelete(SQLDialect dialect, int numberOfObjectsToDelete);

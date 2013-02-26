@@ -18,10 +18,6 @@
  */
 package com.googlecode.jdbw.metadata;
 
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * A <i>stored procedure</i> is normally a piece of programming code that has 
  * been pre-created on the server and has been compiled into some intermediate
