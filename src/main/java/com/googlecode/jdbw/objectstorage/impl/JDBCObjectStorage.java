@@ -42,13 +42,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JDBCObjectStorage extends AbstractObjectStorage {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(JDBCObjectStorage.class);
+    
     private final DatabaseConnection databaseConnection;
     private final TableMappingFactory tableMappingFactory;
     private final ObjectFactory objectFactory;
     private final ConcurrentHashMap<Class, TableMapping> tableMappings;
+    private final int retryAttempts;
 
     public JDBCObjectStorage(DatabaseConnection databaseConnection) {
         this(databaseConnection, new DefaultTableMappingFactory());
@@ -62,11 +67,20 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
             DatabaseConnection databaseConnection, 
             TableMappingFactory tableMappingFactory, 
             ObjectFactory objectFactory) {
+        this(databaseConnection, tableMappingFactory, objectFactory, 3);
+    }
+    
+    public JDBCObjectStorage(
+            DatabaseConnection databaseConnection, 
+            TableMappingFactory tableMappingFactory, 
+            ObjectFactory objectFactory,
+            int retryAttempts) {
         
         this.databaseConnection = databaseConnection;
         this.tableMappingFactory = tableMappingFactory;
         this.objectFactory = objectFactory;
         this.tableMappings = new ConcurrentHashMap<Class, TableMapping>();
+        this.retryAttempts = retryAttempts;
     }
 
     @Override
@@ -165,50 +179,70 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         }
         
         DatabaseTransaction transaction = null;
-        try {
-            TableMapping tableMapping = tableMappings.get(objectType);        
-            String sql = tableMapping.getSelectKeys(databaseConnection.getServerType().getSQLDialect(), objects.size());
-            Object[] allKeys = new Object[objects.size()];
-            int count = 0;
-            for(O object: objects) {
-                allKeys[count++] = object.getId();
+        TableMapping tableMapping = tableMappings.get(objectType);        
+        String sql = tableMapping.getSelectKeys(databaseConnection.getServerType().getSQLDialect(), objects.size());
+        Object[] allKeys = new Object[objects.size()];
+        int count = 0;
+        for(O object: objects) {
+            allKeys[count++] = object.getId();
+        }
+
+        for(int i = 0; i < retryAttempts; i++) {
+            try {
+                transaction = databaseConnection.beginTransaction(TransactionIsolation.SERIALIZABLE);
+                SQLWorker worker = new SQLWorker(transaction);
+                Set<Object> existingRows = new HashSet<Object>(worker.leftColumn(sql, allKeys));
+
+                List<O> toBeUpdated = new ArrayList<O>();
+                List<O> toBeInserted = new ArrayList<O>();
+                for(O object: objects) {
+                    if(existingRows.contains(object.getId())) {
+                        toBeUpdated.add(object);
+                    }
+                    else {
+                        toBeInserted.add(object);
+                    }
+                }
+                if(!toBeInserted.isEmpty()) {
+                    sql = tableMapping.getInsert(databaseConnection.getServerType().getSQLDialect());
+                    List<Object[]> batch = new ArrayList<Object[]>();
+                    for(O o: toBeInserted) {
+                        batch.add(transform(tableMapping, o));
+                    }
+                    transaction.batchWrite(new BatchUpdateHandlerAdapter(), sql, batch);
+                }
+                if(!toBeUpdated.isEmpty()) {
+                    sql = tableMapping.getUpdate(databaseConnection.getServerType().getSQLDialect());
+                    List<Object[]> batch = new ArrayList<Object[]>();
+                    for(O o: toBeUpdated) {
+                        batch.add(transform(tableMapping, o, false));
+                    }
+                    transaction.batchWrite(new BatchUpdateHandlerAdapter(), sql, batch);
+                }
+                transaction.commit();
+                break;  //Break the retry loop
             }
-            
-            transaction = databaseConnection.beginTransaction(TransactionIsolation.SERIALIZABLE);
-            SQLWorker worker = new SQLWorker(transaction);
-            Set<Object> existingRows = new HashSet<Object>(worker.leftColumn(sql, allKeys));
-            
-            List<O> toBeUpdated = new ArrayList<O>();
-            List<O> toBeInserted = new ArrayList<O>();
-            for(O object: objects) {
-                if(existingRows.contains(object.getId())) {
-                    toBeUpdated.add(object);
+            catch(SQLException e) {
+                try {
+                    transaction.rollback();
+                }
+                catch(SQLException e2) {
+                    //We don't really care about this
+                    LOGGER.debug("Database error when trying to rollback transaction after previous error (logged below)", e2);
+                }
+                
+                if(i + 1 >= retryAttempts) {
+                    throw new ObjectStorageException("Database error when calling JDBCObjectStorage.putAll(...) with {type=" +
+                            objectType + "} and {objects=" + objects + "}", e);
                 }
                 else {
-                    toBeInserted.add(object);
+                    LOGGER.warn("Database error when calling JDBCObjectStorage.putAll(...) with "
+                            + "type={} and objects={}, retrying attempt {} of {}...",
+                            new Object[] { objectType, objects, i + 1, retryAttempts });
+                    LOGGER.warn("Stack trace for the previous error", e);
+                    continue;                    
                 }
             }
-            if(!toBeInserted.isEmpty()) {
-                sql = tableMapping.getInsert(databaseConnection.getServerType().getSQLDialect());
-                List<Object[]> batch = new ArrayList<Object[]>();
-                for(O o: toBeInserted) {
-                    batch.add(transform(tableMapping, o));
-                }
-                transaction.batchWrite(new BatchUpdateHandlerAdapter(), sql, batch);
-            }
-            if(!toBeUpdated.isEmpty()) {
-                sql = tableMapping.getUpdate(databaseConnection.getServerType().getSQLDialect());
-                List<Object[]> batch = new ArrayList<Object[]>();
-                for(O o: toBeUpdated) {
-                    batch.add(transform(tableMapping, o, false));
-                }
-                transaction.batchWrite(new BatchUpdateHandlerAdapter(), sql, batch);
-            }
-            transaction.commit();
-        }
-        catch(SQLException e) {
-            throw new ObjectStorageException("Database error when calling JDBCObjectStorage.putAll(...) with {type=" +
-                    objectType + "} and {objects=" + objects + "}", e);
         }
         return new ArrayList<O>(objects);
     }
