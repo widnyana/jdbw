@@ -211,8 +211,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         }
         
         DatabaseTransaction transaction = null;
-        TableMapping tableMapping = tableMappings.get(objectType);        
-        String sql = tableMapping.getSelectKeys(databaseConnection.getServerType().getSQLDialect(), objects.size());
+        TableMapping tableMapping = tableMappings.get(objectType);
         Object[] allKeys = new Object[objects.size()];
         int count = 0;
         for(O object: objects) {
@@ -221,6 +220,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
 
         for(int i = 0; i < retryAttempts; i++) {
             try {
+                String sql = tableMapping.getSelectKeys(databaseConnection.getServerType().getSQLDialect(), objects.size());
                 transaction = databaseConnection.beginTransaction(TransactionIsolation.SERIALIZABLE);
                 SQLWorker worker = new SQLWorker(transaction);
                 Set<Object> existingRows = new HashSet<Object>(worker.leftColumn(sql, allKeys));
