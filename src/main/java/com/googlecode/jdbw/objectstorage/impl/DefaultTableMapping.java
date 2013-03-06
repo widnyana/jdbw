@@ -35,10 +35,12 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
         this.tableName = tableName;
     }
     
-    protected String getColumnName(String fieldName) {
+    @Override
+    public String getColumnName(String fieldName) {
         return fieldName;
     }
 
+    @Override
     public String getTableName() {
         return tableName;
     }

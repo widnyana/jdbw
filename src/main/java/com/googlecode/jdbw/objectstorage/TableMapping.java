@@ -21,6 +21,8 @@ package com.googlecode.jdbw.objectstorage;
 import com.googlecode.jdbw.SQLDialect;
 
 public interface TableMapping extends FieldMapping {
+    String getTableName();
+    String getColumnName(String fieldName);
     String getSelectAll(SQLDialect dialect);
     String getSelectSome(SQLDialect dialect, int numberOfObjects);
     String getSelectKeys(SQLDialect dialect, int numberOfObjects);
