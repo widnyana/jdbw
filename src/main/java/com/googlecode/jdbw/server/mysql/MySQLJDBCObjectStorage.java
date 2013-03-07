@@ -25,6 +25,7 @@ import com.googlecode.jdbw.objectstorage.ObjectFactory;
 import com.googlecode.jdbw.objectstorage.Storable;
 import com.googlecode.jdbw.objectstorage.TableMapping;
 import com.googlecode.jdbw.objectstorage.TableMappingFactory;
+import com.googlecode.jdbw.objectstorage.impl.DefaultTableMappingFactory;
 import com.googlecode.jdbw.objectstorage.impl.JDBCObjectStorage;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import java.sql.SQLException;
@@ -44,7 +45,7 @@ public class MySQLJDBCObjectStorage extends JDBCObjectStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(MySQLJDBCObjectStorage.class);
     
     public MySQLJDBCObjectStorage(DatabaseConnection databaseConnection) {
-        super(databaseConnection);
+        this(databaseConnection, new DefaultTableMappingFactory());
     }
 
     public MySQLJDBCObjectStorage(DatabaseConnection databaseConnection, TableMappingFactory tableMappingFactory) {
