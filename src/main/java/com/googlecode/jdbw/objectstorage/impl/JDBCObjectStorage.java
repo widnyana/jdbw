@@ -89,6 +89,9 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
 
     @Override
     public <O extends Storable> void register(Class<O> objectType) {
+        if(objectType == null) {
+            throw new IllegalArgumentException("Cannot call JDBCObjectStorage.register(...) with null object");
+        }
         tableMappings.putIfAbsent(objectType, tableMappingFactory.createTableMapping(objectType));
     }
 
