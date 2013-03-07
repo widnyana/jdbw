@@ -315,6 +315,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         for(int i = 0; i < retryAttempts; i++) {
             try {
                 doPutAll(objectType, objects, tableMapping);
+                break;
             }
             catch(SQLException e) {
                 if(i + 1 >= retryAttempts) {
