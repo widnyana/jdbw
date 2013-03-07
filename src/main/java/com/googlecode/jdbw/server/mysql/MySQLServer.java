@@ -30,6 +30,12 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  */
 public class MySQLServer extends StandardDatabaseServer {
     
+    public static final int DEFAULT_MYSQL_PORT = 3306;
+    
+    public MySQLServer(String hostname, String catalog) {
+        this(new MySQLJDBCDriverDescriptor(), hostname, DEFAULT_MYSQL_PORT, catalog);
+    }
+    
     public MySQLServer(String hostname, int port, String catalog) {
         this(new MySQLJDBCDriverDescriptor(), hostname, port, catalog);
     }
