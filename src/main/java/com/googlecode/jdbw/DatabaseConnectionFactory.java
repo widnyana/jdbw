@@ -31,5 +31,14 @@ public interface DatabaseConnectionFactory {
      * @return Returns itself, so you can easily chain multiple calls together
      */
     DatabaseConnectionFactory setConnectionProperty(String propertyName, String value);
+    
+    /**
+     * Establishes a database connection using the currently configured values of this DatabaseConnectionFactory and the
+     * DataSourceFactory passed in, returning a DatabaseConnection object representing this connection.
+     * @param dataSourceFactory DataSourceFactory to use when creating the underlying DataSource for the returned
+     * DatabaseConnection
+     * @return DatabaseConnection containing a DataSource configured for the database server this connection factory has
+     * been specified for
+     */
     DatabaseConnection connect(DataSourceFactory dataSourceFactory);
 }
