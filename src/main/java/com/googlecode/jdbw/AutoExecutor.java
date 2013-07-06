@@ -208,7 +208,9 @@ public class AutoExecutor implements SQLExecutor {
                 }
             }
             finally {
-                connection.close();
+                if(connection != null) {
+                    connection.close();
+                }
             }
         }
     }
