@@ -46,11 +46,15 @@ public class Table implements Comparable<Table> {
     private final ServerMetaData metaDataResolver;
     private final Schema schema;
     private final String name;
+    private List<TableColumn> cachedColumns;
+    private List<Index> cachedIndexes;
 
     public Table(ServerMetaData metaDataResolver, Schema schema, String tableName) {
         this.metaDataResolver = metaDataResolver;
         this.schema = schema;
         this.name = tableName;
+        this.cachedColumns = null;
+        this.cachedIndexes = null;
     }
 
     /**
@@ -109,7 +113,11 @@ public class Table implements Comparable<Table> {
      * the database
      */
     public List<TableColumn> getColumns() throws SQLException {
-        return metaDataResolver.getColumns(this);
+        List<TableColumn> cache = this.cachedColumns;
+        if(cache == null) {
+            cache = metaDataResolver.getColumns(this);
+        }
+        return cache;
     }
 
     /**
@@ -118,7 +126,11 @@ public class Table implements Comparable<Table> {
      * the database
      */
     public List<Index> getIndexes() throws SQLException {
-        return metaDataResolver.getIndexes(this);
+        List<Index> cache = this.cachedIndexes;
+        if(cache == null) {
+            cache = metaDataResolver.getIndexes(this);
+        }
+        return cache;
     }
 
     /**
@@ -194,6 +206,11 @@ public class Table implements Comparable<Table> {
         return getName().toLowerCase().compareTo(o.getName().toLowerCase());
     }
 
+    public void clearCachedData() {
+        cachedColumns = null;
+        cachedIndexes = null;
+    }
+    
     @Override
     public String toString() {
         return getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName();
