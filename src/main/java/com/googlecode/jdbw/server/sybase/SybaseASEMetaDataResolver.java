@@ -129,7 +129,8 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
         //below is in use (won't work for single-connection pools)
         Map<String, TableColumn> tableColumns = table.getColumnMap();
         
-        Connection pooledConnection = dataSource.getConnection();        
+        Connection pooledConnection = dataSource.getConnection();
+        pooledConnection.setAutoCommit(true);
         SQLWorker worker = new SQLWorker(new SybaseExecutor(pooledConnection));
         String catalogName = table.getSchema().getCatalog().getName();
         String schemaName = table.getSchema().getName();
