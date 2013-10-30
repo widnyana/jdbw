@@ -82,6 +82,7 @@ public class AutoExecutor implements SQLExecutor {
      * specified retry interval.
      * @param dataSource DataSource to draw connections from
      * @param serverType Server type of the connections
+     * @param transactionIsolation Transaction isolation level to use when running each statement
      * @param connectionErrorRetryInterval How long to sleep between the connection retries
      * @param connectionErrorRetryIntervalTimeUnit Unit of the {@link connectionErrorRetryInterval}
      * @param connectionErrorNrOfRetries How many times to retry a query on connection error (-1 means unlimited)
