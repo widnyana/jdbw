@@ -505,8 +505,6 @@ abstract class DelegatingConnection implements Connection
         return _conn.getClientInfo(name);
     }
     
-    /*
-     * Java 7 methods, what should we do about these?
     @Override
     public void setSchema(String schema) throws SQLException {
         _conn.setSchema(schema);
@@ -531,5 +529,4 @@ abstract class DelegatingConnection implements Connection
     public int getNetworkTimeout() throws SQLException {
         return _conn.getNetworkTimeout();
     }
-    */
 }
