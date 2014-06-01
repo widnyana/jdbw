@@ -55,6 +55,6 @@ public class PostgresqlServer extends StandardDatabaseServer {
     @Override
     public DatabaseConnectionFactory newConnectionFactory() {
         return new AuthenticatingDatabaseConnectionFactory(getServerType(), 
-                getDriverDescriptor().formatJDBCUrl(getHostname(), getPort(), getDefaultCatalog()));
+                getDriverDescriptor().formatJDBCUrl(this));
     }
 }

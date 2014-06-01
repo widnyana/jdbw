@@ -32,12 +32,11 @@ public interface JDBCDriverDescriptor {
     String getDriverClassName();
     
     /**
-     * Given a host, port and default catalog, return a JDBC URL formatted to
-     * be used by this driver
-     * @param host Hostname of the database server
-     * @param port Port number to connect on
-     * @param defaultCatalog Default catalog to use
+     * Given a database server (assumed to be compatible with this driver descriptor, or it will throw 
+     * IllegalArgumentException), format a JDBC URL that can be used to connect to the server.
+     * @param databaseServer Database server to connect to
      * @return JDBC url formatted for this driver
+     * @throws IllegalArgumentException If the databaseServer is not supported by this driver descriptor
      */
-    String formatJDBCUrl(String host, int port, String defaultCatalog);
+    String formatJDBCUrl(DatabaseServer databaseServer);
 }

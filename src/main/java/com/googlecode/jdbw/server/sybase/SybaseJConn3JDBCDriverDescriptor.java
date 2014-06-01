@@ -19,7 +19,9 @@
 
 package com.googlecode.jdbw.server.sybase;
 
+import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
  * This is a driver descriptor for the Sybase jconn3 driver, 
@@ -29,6 +31,13 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
 public class SybaseJConn3JDBCDriverDescriptor implements JDBCDriverDescriptor {
 
     @Override
+    public String formatJDBCUrl(DatabaseServer databaseServer) {
+        return formatJDBCUrl(
+                ((StandardDatabaseServer)databaseServer).getHostname(),
+                ((StandardDatabaseServer)databaseServer).getPort(),
+                ((StandardDatabaseServer)databaseServer).getDefaultCatalog());
+    }
+
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:sybase:Tds:" + host + ":" + port + "/" + defaultCatalog;
     }

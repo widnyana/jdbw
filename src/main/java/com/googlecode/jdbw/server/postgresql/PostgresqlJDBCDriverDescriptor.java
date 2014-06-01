@@ -18,7 +18,9 @@
  */
 package com.googlecode.jdbw.server.postgresql;
 
+import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
  * JDBC driver descriptor designed to work with the official PostgreSQL JDBC
@@ -26,8 +28,14 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
  * @author Martin Berglund
  */
 public class PostgresqlJDBCDriverDescriptor implements JDBCDriverDescriptor {
-
     @Override
+    public String formatJDBCUrl(DatabaseServer databaseServer) {
+        return formatJDBCUrl(
+                ((StandardDatabaseServer)databaseServer).getHostname(),
+                ((StandardDatabaseServer)databaseServer).getPort(),
+                ((StandardDatabaseServer)databaseServer).getDefaultCatalog());
+    }
+
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:postgresql://" + host + ":" + port + "/" + defaultCatalog;
     }

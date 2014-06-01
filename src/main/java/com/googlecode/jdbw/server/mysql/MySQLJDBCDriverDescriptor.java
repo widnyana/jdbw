@@ -19,7 +19,9 @@
 
 package com.googlecode.jdbw.server.mysql;
 
+import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
  * This driver descriptor is designed to be used with the official MySQL JDBC
@@ -34,6 +36,13 @@ public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
     }
 
     @Override
+    public String formatJDBCUrl(DatabaseServer databaseServer) {
+        return formatJDBCUrl(
+                ((StandardDatabaseServer)databaseServer).getHostname(),
+                ((StandardDatabaseServer)databaseServer).getPort(),
+                ((StandardDatabaseServer)databaseServer).getDefaultCatalog());
+    }
+
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:mysql://" + host + ":" + port + "/" + defaultCatalog;
     }    

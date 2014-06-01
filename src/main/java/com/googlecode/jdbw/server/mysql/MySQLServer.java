@@ -51,6 +51,6 @@ public class MySQLServer extends StandardDatabaseServer {
 
     @Override
     public MySQLDatabaseConnectionFactory newConnectionFactory() {
-        return new MySQLDatabaseConnectionFactory(getDriverDescriptor().formatJDBCUrl(getHostname(), getPort(), getDefaultCatalog()));
+        return new MySQLDatabaseConnectionFactory(getDriverDescriptor().formatJDBCUrl(this));
     }
 }

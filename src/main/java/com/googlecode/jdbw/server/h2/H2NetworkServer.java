@@ -26,7 +26,23 @@ import com.googlecode.jdbw.DatabaseServerTypes;
  * @author Martin Berglund
  */
 public class H2NetworkServer extends H2DatabaseServer {
+    private final String hostname;
+    private final int port;
+    private final String catalog;
+    
     public H2NetworkServer(String hostname, int port, String catalog) {
         super(DatabaseServerTypes.H2_NETWORK, new H2JDBCDriverDescriptor().formatJDBCUrl(hostname, port, catalog), true);
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getCatalog() {
+        return catalog;
     }
 }
