@@ -102,6 +102,8 @@ public interface SQLDialect {
     String getDefaultSchemaName();
     
     /**
+     * @param fromSqlType JDBC SQL type we want to convert from (constants out of java.sql.Types)
+     * @param toSqlType JDBC SQL type we want to convert to (constants out of java.sql.Types)
      * @return True if this database can convert data of type fromSqlType to type toSqlType
      */
     boolean isCompatible(int fromSqlType, int toSqlType);
