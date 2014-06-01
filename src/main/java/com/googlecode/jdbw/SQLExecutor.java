@@ -46,7 +46,7 @@ public interface SQLExecutor {
      * Sends a query to the database and handles any results through a callback interface
      * @param handler Callback interface to use for any results of the query
      * @param maxRowsToFetch How many rows, at most, to fetch from the remote server, or 0 for no limit (<b>note:</b> 
-     * Not all JDBC driver implement this feature efficiently)
+     * Not all JDBC driver implement this feature efficiently, some don't honour it at all)
      * @param queryTimeoutInSeconds Timeout for the query, in seconds, until the driver will throw an exception if the 
      * query hasn't come back yet (0 means no timeout)
      * @param SQL SQL code to send to the database server, use ? for parameter substitution
