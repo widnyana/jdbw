@@ -34,13 +34,24 @@ import java.util.List;
  */
 public interface ExecuteResultHandler {
     /**
-     * This callback is invoked when a new result set is read from the server,
-     * if the result set contains any rows they will appear in subsequent calls
-     * to the nextRow(Object[] row) callback.
-     * @param columnNames List of all column names
-     * @param columnTypes List of all column types (see java.sql.Types)
+     * This callback is invoked when a new result set is read from the server.
+     * If the result set contains any rows they will appear in subsequent calls
+     * to the {@code nextRow(Object[] row)} callback. The whole ResultSet has been read
+     * through when either {@code onResultSet()} or {@code onDone()} are called.
+     * <p/>
+     * You can control if you want the result set to be processed by returning {@code true}
+     * or {@code false}. If you return {@code false}, no rows will be read and the
+     * ResultSet is immediately closed. Please note that some JDBC drivers
+     * (MySQL, for example) will still stream down all rows from the server so
+     * closing it could take a significant amount of time. If you return {@code true},
+     * the result set is iterated and JDBW calls {@code nextRow(..)} on each row.
+     * @return {@code true} if you want to read through the ResultSet, {@code false}
+     * if you want to skip it
+     * <p/>
+     * If your query returns multiple result sets, they will be read in order and
+     * {@code onResultSet(..)} is called on each one in turn.
      */
-    void onResultSet(List<String> columnNames, List<Integer> columnTypes);
+    boolean onResultSet(ResultSetInformation information);
 
     /**
      * The callback is called once for every row returned by a result set. The
@@ -50,18 +61,10 @@ public interface ExecuteResultHandler {
      * the result set and skip remaining rows
      */
     boolean nextRow(Object[] row);
-    
-    /**
-     * This method is called in a multi result set query after one result set
-     * have been read and another one is coming. Expect another call to 
-     * onResultSet as well, for the next result set.
-     * @return true if you want to read the next result set, false if you want
-     * to skip remaining result sets and close the statement
-     */
-    boolean nextResultSet();
 
     /**
-     * Callback called for queries that updated rows
+     * Callback called for queries that updated rows. Not all servers supports this
+     * and some JDBC drivers doesn't handle it correctly.
      * @param updateCount Number of rows affected by the query, as reported by
      * the server
      */
@@ -69,7 +72,7 @@ public interface ExecuteResultHandler {
 
     /**
      * When a key has been generated on the server by the query, this callback
-     * is called with that value
+     * is called with that value. Not all servers/queries/JDBC drivers supports this.
      * @param object Generated key value
      */
     void onGeneratedKey(Object object);
