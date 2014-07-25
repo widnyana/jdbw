@@ -36,7 +36,8 @@ public interface DataSourceFactory {
      * Creates a new {@code DataSource} using supplied connection configuration
      * @param jdbcUrl JDBC url to connect to
      * @param properties Extra connection properties (should contain username
-     * and password, at least)
+     * and password, at least). These are passed to the JDBC driver so what
+     * values to use depend on the driver.
      * @return DataSource implementation created from the supplied configuration
      */
     DataSource newDataSource(String jdbcUrl, Properties properties);
