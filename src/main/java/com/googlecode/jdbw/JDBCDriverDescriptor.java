@@ -39,4 +39,6 @@ public interface JDBCDriverDescriptor {
      * @throws IllegalArgumentException If the databaseServer is not supported by this driver descriptor
      */
     String formatJDBCUrl(DatabaseServer databaseServer);
+
+    DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer);
 }

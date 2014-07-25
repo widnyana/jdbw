@@ -27,7 +27,7 @@ import java.sql.Connection;
 import javax.sql.DataSource;
 
 /**
- *
+ * DatabaseServerType implementation for Sybase ASE
  * @author Martin Berglund
  */
 public class SybaseASEServerType extends AbstractDatabaseType {
@@ -35,7 +35,6 @@ public class SybaseASEServerType extends AbstractDatabaseType {
     public static final SybaseASEServerType INSTANCE = new SybaseASEServerType();
     
     private SybaseASEServerType() {
-        
     }
     
     @Override

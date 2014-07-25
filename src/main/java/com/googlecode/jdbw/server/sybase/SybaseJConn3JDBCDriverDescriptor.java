@@ -19,6 +19,7 @@
 
 package com.googlecode.jdbw.server.sybase;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
@@ -45,5 +46,10 @@ public class SybaseJConn3JDBCDriverDescriptor implements JDBCDriverDescriptor {
     @Override
     public String getDriverClassName() {
         return "com.sybase.jdbc3.jdbc.SybDriver";
+    }
+
+    @Override
+    public DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
+        return new SybaseDatabaseConnectionFactory(formatJDBCUrl(databaseServer));
     }
 }
