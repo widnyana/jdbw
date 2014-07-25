@@ -19,6 +19,7 @@
 
 package com.googlecode.jdbw.server.mysql;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
@@ -45,5 +46,10 @@ public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
 
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:mysql://" + host + ":" + port + "/" + defaultCatalog;
-    }    
+    }
+
+    @Override
+    public DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
+        return new MySQLDatabaseConnectionFactory(formatJDBCUrl(databaseServer));
+    }
 }
