@@ -19,6 +19,8 @@
 package com.googlecode.jdbw.util;
 
 import com.googlecode.jdbw.ExecuteResultHandler;
+import com.googlecode.jdbw.ResultSetInformation;
+
 import java.sql.SQLWarning;
 import java.util.List;
 
@@ -29,9 +31,8 @@ import java.util.List;
  * @author Martin Berglund
  */
 public class ExecuteResultHandlerAdapter implements ExecuteResultHandler {
-
     @Override
-    public boolean nextResultSet() {
+    public boolean onResultSet(ResultSetInformation information) {
         return true;
     }
 
@@ -41,7 +42,7 @@ public class ExecuteResultHandlerAdapter implements ExecuteResultHandler {
     }
 
     @Override
-    public void onDone() {
+    public void onUpdateCount(int updateCount) {
     }
 
     @Override
@@ -49,14 +50,10 @@ public class ExecuteResultHandlerAdapter implements ExecuteResultHandler {
     }
 
     @Override
-    public void onResultSet(List<String> columnNames, List<Integer> columnTypes) {
-    }
-
-    @Override
-    public void onUpdateCount(int updateCount) {
-    }
-
-    @Override
     public void onWarning(SQLWarning warning) {
+    }
+
+    @Override
+    public void onDone() {
     }
 }
