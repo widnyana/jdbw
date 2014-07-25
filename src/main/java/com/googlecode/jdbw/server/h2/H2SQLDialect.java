@@ -72,7 +72,7 @@ public class H2SQLDialect extends DefaultSQLDialect {
             sb.append("\")");
             SQL.add(sb.toString());
         }
-        return SQL.toArray(new String[0]);
+        return SQL.toArray(new String[SQL.size()]);
     }
     
     //This may be a column from any other database so don't make any assumptions!

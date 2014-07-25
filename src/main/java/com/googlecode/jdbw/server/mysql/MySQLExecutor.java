@@ -46,14 +46,12 @@ class MySQLExecutor extends SQLExecutorImpl {
 
     @Override
     protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
-        return ps;
+        return connection.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
     }
 
     @Override
     protected PreparedStatement prepareBatchUpdateStatement(String SQL) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(SQL, Statement.NO_GENERATED_KEYS);
-        return ps;
+        return connection.prepareStatement(SQL, Statement.NO_GENERATED_KEYS);
     }
 
     @Override

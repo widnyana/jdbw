@@ -108,7 +108,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         if(!storageCells.containsKey(type)) {
             throw new IllegalArgumentException("Trying to call getAll(...) on unregistered type " + type.getName());
         }
-        return new ArrayList<O>((Collection)storageCells.get(type).values());
+        return new ArrayList<O>(storageCells.get(type).values());
     }
 
     @Override

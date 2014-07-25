@@ -60,7 +60,7 @@ public class ViewColumn extends Column {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null || obj instanceof ViewColumn == false) {
+        if(obj == null || !(obj instanceof ViewColumn)) {
             return false;
         }
 

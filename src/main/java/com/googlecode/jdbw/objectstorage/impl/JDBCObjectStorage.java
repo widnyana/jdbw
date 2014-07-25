@@ -122,7 +122,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
     @Override
     public <K, O extends Storable<K>> boolean contains(Class<O> type, K id) {
         if(type == null || !tableMappings.containsKey(type)) {
-            throw new IllegalArgumentException("Cannot call JDBCObjectStorage.contains(...) non-registered type " + type.getSimpleName());
+            throw new IllegalArgumentException("Cannot call JDBCObjectStorage.contains(...) non-registered type " + (type != null ? type.getSimpleName() : null));
         }
         
         TableMapping tableMapping = tableMappings.get(type);        
@@ -130,12 +130,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
                 databaseConnection.getServerType().getSQLDialect());
         try {
             int nrOfRows = new SQLWorker(databaseConnection.createAutoExecutor()).topLeftValueAsInt(sql, id);
-            if(nrOfRows > 0) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return nrOfRows > 0;
         }
         catch(SQLException e) {
             throw new ObjectStorageException("Database error when calling JDBCObjectStorage.contains(...) with {type=" + type + ",id=" + id + "}", e);
@@ -204,15 +199,12 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
 
     @Override
     public <O extends Storable> List<O> putAll(Collection<O> objects) {
-        Class<O> objectType = null;
+        Class<O> objectType;
         objects = Utils.removeNullElements(new ArrayList(objects));
         if(objects.isEmpty()) {
             return Collections.emptyList();
         }
-        for(O object: objects) {
-            objectType = getStorableTypeFromObject(object);
-            break;
-        }
+        objectType = getStorableTypeFromObject(objects.iterator().next());
         if(!tableMappings.containsKey(objectType)) {
             throw new IllegalArgumentException("Cannot call JDBCObjectStorage.putAll(...) non-registered type " + objectType.getSimpleName());
         }
@@ -325,7 +317,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
                 else {
                     LOGGER.warn("Database error when calling JDBCObjectStorage.putAll(...) with "
                             + "type={} and objects={}, retrying attempt {} of {}...",
-                            new Object[] { objectType, objects, i + 1, retryAttempts });
+                            objectType, objects, i + 1, retryAttempts);
                     LOGGER.warn("Stack trace for the previous error", e);
                 }
             }

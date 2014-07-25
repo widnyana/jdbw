@@ -163,7 +163,6 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
                 
                 if(indexName == null) {
                     //Sybase seems to send a null row??
-                    continue;
                 }
                 else if(result.containsKey(indexName)) {
                     result.get(indexName).addColumn(tableColumns.get(columnName));

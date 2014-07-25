@@ -51,13 +51,7 @@ abstract class DelegatingConnection implements Connection
                 else {
                     DatabaseMetaData meta = c.getMetaData();
                     if(meta != null) {
-                        StringBuffer sb = new StringBuffer();
-                        sb.append(meta.getURL());
-                        sb.append(", UserName=");
-                        sb.append(meta.getUserName());
-                        sb.append(", ");
-                        sb.append(meta.getDriverName());
-                        s = sb.toString();
+                        s = meta.getURL() + ", UserName=" + meta.getUserName() + ", " + meta.getDriverName();
                     }
                 }
             }
@@ -208,7 +202,7 @@ abstract class DelegatingConnection implements Connection
     public CallableStatement prepareCall(String sql,
                                          int resultSetType,
                                          int resultSetConcurrency) throws SQLException {
-        return prepareCall(sql, resultSetType, resultSetConcurrency);
+        return _conn.prepareCall(sql, resultSetType, resultSetConcurrency);
     }
 
     @Override
@@ -233,10 +227,10 @@ abstract class DelegatingConnection implements Connection
     @Override
     public boolean getAutoCommit() throws SQLException {
         if(_cacheState && _autoCommitCached != null) {
-            return _autoCommitCached.booleanValue();
+            return _autoCommitCached;
         }
-        _autoCommitCached = Boolean.valueOf(_conn.getAutoCommit());
-        return _autoCommitCached.booleanValue();
+        _autoCommitCached = _conn.getAutoCommit();
+        return _autoCommitCached;
     }
 
     @Override
@@ -267,10 +261,10 @@ abstract class DelegatingConnection implements Connection
     @Override
     public boolean isReadOnly() throws SQLException {
         if(_cacheState && _readOnlyCached != null) {
-            return _readOnlyCached.booleanValue();
+            return _readOnlyCached;
         }
-        _readOnlyCached = Boolean.valueOf(_conn.isReadOnly());
-        return _readOnlyCached.booleanValue();
+        _readOnlyCached = _conn.isReadOnly();
+        return _readOnlyCached;
     }
 
     @Override
@@ -306,7 +300,7 @@ abstract class DelegatingConnection implements Connection
         try {
             _conn.setAutoCommit(autoCommit);
             if(_cacheState)
-                _autoCommitCached = Boolean.valueOf(autoCommit);
+                _autoCommitCached = autoCommit;
         }
         catch(SQLException e) {
             _autoCommitCached = null;
@@ -324,7 +318,7 @@ abstract class DelegatingConnection implements Connection
         try {
             _conn.setReadOnly(readOnly);
             if(_cacheState)
-                _readOnlyCached = Boolean.valueOf(readOnly);
+                _readOnlyCached = readOnly;
         }
         catch(SQLException e) {
             _readOnlyCached = null;

@@ -268,7 +268,7 @@ public class DefaultSQLDialect implements SQLDialect {
             return ((BigDecimal) value).toPlainString();
         }
         if(value instanceof BigInteger) {
-            return ((BigInteger) value).toString();
+            return value.toString();
         }
         try {
             return new BigDecimal(value.toString()).toPlainString();
@@ -279,7 +279,7 @@ public class DefaultSQLDialect implements SQLDialect {
 
     protected String formatBoolean(Object value) {
         if(value instanceof Boolean) {
-            if(((Boolean) value).booleanValue()) {
+            if((Boolean) value) {
                 return "true";
             } else {
                 return "false";
@@ -319,7 +319,7 @@ public class DefaultSQLDialect implements SQLDialect {
             return value.toString();
         }
         if(value instanceof BigInteger) {
-            return ((BigInteger) value).toString();
+            return value.toString();
         }
 
         try {

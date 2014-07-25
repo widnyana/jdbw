@@ -73,7 +73,7 @@ public class Catalog implements Comparable<Catalog> {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null || obj instanceof Catalog == false) {
+        if(obj == null || !(obj instanceof Catalog)) {
             return false;
         }
 

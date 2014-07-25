@@ -135,7 +135,7 @@ public class Schema implements Comparable<Schema> {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null || obj instanceof Schema == false) {
+        if(obj == null || !(obj instanceof Schema)) {
             return false;
         }
         return toString().equals(obj.toString());

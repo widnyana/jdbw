@@ -46,7 +46,7 @@ public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
     
     @Override
     public String formatJDBCUrl(DatabaseServer databaseServer) {
-        if(databaseServer instanceof H2DatabaseServer == false) {
+        if(!(databaseServer instanceof H2DatabaseServer)) {
             throw new IllegalArgumentException("H2JDBCDriverDescriptor only supports H2DatabaseServer");
         }
         return ((H2DatabaseServer)databaseServer).getJDBCUrl(this);

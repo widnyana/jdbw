@@ -114,7 +114,7 @@ public class SybaseASESQLDialect extends DefaultSQLDialect {
             sb.append(")");
             statements.add(sb.toString());
         }
-        return statements.toArray(new String[0]);
+        return statements.toArray(new String[statements.size()]);
     }
 
     //This may be a column from any other database so don't make any assumptions!

@@ -95,19 +95,14 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
 
     @Override
     public String getSelectCount(SQLDialect sqlDialect) {
-        StringBuilder sb = new StringBuilder("SELECT COUNT(");
-        sb.append(sqlDialect.escapeIdentifier("id"));
-        sb.append(") FROM ").append(sqlDialect.escapeIdentifier(getTableName()));
-        return sb.toString();
+        return "SELECT COUNT(" + sqlDialect.escapeIdentifier("id") + ") FROM " + sqlDialect.escapeIdentifier(getTableName());
     }
 
     @Override
     public String getSelectContains(SQLDialect sqlDialect) {
-        StringBuilder sb = new StringBuilder("SELECT COUNT(");
-        sb.append(sqlDialect.escapeIdentifier("id"));
-        sb.append(") FROM ").append(sqlDialect.escapeIdentifier(getTableName()));
-        sb.append(" WHERE ").append(sqlDialect.escapeIdentifier("id")).append(" = ?");
-        return sb.toString();
+        return "SELECT COUNT(" + sqlDialect.escapeIdentifier("id") + ") FROM " +
+                sqlDialect.escapeIdentifier(getTableName()) + " WHERE " +
+                sqlDialect.escapeIdentifier("id") + " = ?";
     }
 
     @Override
@@ -156,8 +151,6 @@ public class DefaultTableMapping extends DefaultFieldMapping implements TableMap
 
     @Override
     public String getDeleteAll(SQLDialect dialect) {
-        StringBuilder sb = new StringBuilder("DELETE FROM ");
-        sb.append(dialect.escapeIdentifier(getTableName()));
-        return sb.toString();
+        return "DELETE FROM " + dialect.escapeIdentifier(getTableName());
     }
 }

@@ -59,7 +59,7 @@ public class TableColumn extends Column {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null || obj instanceof TableColumn == false) {
+        if(obj == null || !(obj instanceof TableColumn)) {
             return false;
         }
 

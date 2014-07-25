@@ -68,10 +68,7 @@ public abstract class StandardDatabaseServer extends AbstractDatabaseServer impl
         if ((this.hostname == null) ? (other.hostname != null) : !this.hostname.equals(other.hostname)) {
             return false;
         }
-        if (this.port != other.port) {
-            return false;
-        }
-        return true;
+        return this.port == other.port;
     }
 
     @Override
