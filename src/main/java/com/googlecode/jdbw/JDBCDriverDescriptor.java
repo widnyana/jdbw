@@ -22,7 +22,7 @@ package com.googlecode.jdbw;
  * This interface describes a JDBC driver and how to use it. You'll need to
  * implement this interface in order to use a custom JDBC driver not bundled
  * with jdbw.
- * @see MySQLCommonJDBCDriverDescriptor
+ * @see com.googlecode.jdbw.server.mysql.MySQLJDBCDriverDescriptor
  * @author Martin Berglund
  */
 public interface JDBCDriverDescriptor {
