@@ -58,6 +58,11 @@ public abstract class AbstractDatabaseServer implements DatabaseServer {
     protected JDBCDriverDescriptor getDriverDescriptor() {
         return driverDescriptor;
     }
+
+    @Override
+    public DatabaseConnectionFactory newConnectionFactory() {
+        return getDriverDescriptor().createDatabaseConnectionFactory(this);
+    }
     
     private static final Set<String> REGISTERED_DRIVERS = new ConcurrentSkipListSet<String>();
     private void registerJDBCDriver(String driverClassName) {

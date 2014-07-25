@@ -56,9 +56,4 @@ public class SybaseASEServer extends StandardDatabaseServer {
     public DatabaseServerType getServerType() {
         return DatabaseServerTypes.SYBASE_ASE;
     }
-
-    @Override
-    public DatabaseConnectionFactory newConnectionFactory() {
-        return getDriverDescriptor().createDatabaseConnectionFactory(this);
-    }
 }
