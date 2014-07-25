@@ -80,10 +80,12 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                 }
             }
 
+            int resultSetCounter = 0;
             while(true) {
                 int updateCount = getUpdateCount(statement);
                 if(updateCount != -1) {
                     handler.onUpdateCount(updateCount);
+                    statement.getMoreResults();
                     continue;
                 }
                 resultSet = getResultSet(statement);
@@ -96,7 +98,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
                 boolean gotCancel = false;
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-                if(!handler.onResultSet(new ResultSetInformationImpl(resultSetMetaData))) {
+                if(!handler.onResultSet(new ResultSetInformationImpl(resultSetMetaData, resultSetCounter++))) {
                     gotCancel = true;
                 }
 
@@ -114,6 +116,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                         gotCancel = true;
                     }
                 }
+                statement.getMoreResults();
             }
             handler.onDone();
         }
