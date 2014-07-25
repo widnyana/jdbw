@@ -29,7 +29,7 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  * client driver, {@code org.postgresql.Driver}
  * @author Martin Berglund
  */
-public class PostgresqlJDBCDriverDescriptor implements JDBCDriverDescriptor {
+public class PostgreSQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
     @Override
     public String formatJDBCUrl(DatabaseServer databaseServer) {
         return formatJDBCUrl(
