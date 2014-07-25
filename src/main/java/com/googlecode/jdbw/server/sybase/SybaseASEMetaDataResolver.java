@@ -93,39 +93,9 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
         }
         return new SimpleResultSet(rows);
     }
-/*
-    @Override
-    public String getStoredProcedureCode(String catalogName, String schemaName, String procedureName) throws SQLException {
-        final StringBuilder sb = new StringBuilder();
-        final AtomicInteger counter = new AtomicInteger(2);
-        DatabaseConnection tempConnection = new DatabaseConnectionImpl(dataSource, null, DatabaseServerTypes.SYBASE_ASE);
-        DatabaseTransaction transaction = tempConnection.beginTransaction(TransactionIsolation.READ_COMMITTED);
-        transaction.execute(new ExecuteResultHandlerAdapter(), "use " + catalogName);
-        transaction.execute(new ExecuteResultHandlerAdapter() {
-            @Override
-            public boolean nextResultSet() {
-                counter.decrementAndGet();
-                return true;
-            }
-
-            @Override
-            public boolean nextRow(Object[] row) {
-                if(counter.get() > 0) {
-                    return true;
-                }
-                sb.append((String) row[0]);
-                return true;
-            }
-        }, "sp_helptext " + procedureName);
-        transaction.execute(new ExecuteResultHandlerAdapter(), "use " + tempConnection.getDefaultCatalogName());
-        transaction.rollback();
-        return sb.toString();
-    }
-*/
 
     @Override
     public List<Index> getIndexes(Table table) throws SQLException {
-        
         //Preload all the table columns so we don't need to look them up later, while the connection
         //below is in use (won't work for single-connection pools)
         Map<String, TableColumn> tableColumns = table.getColumnMap();
