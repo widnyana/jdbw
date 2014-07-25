@@ -113,9 +113,9 @@ public interface SQLDialect {
      * a column on the server and the value we want to put into this column,
      * the method will try to convert the value into a format that is compatible
      * with the column.
-     * @param targetColumn Column we want to insert into
+     * @param targetColumnType Column we want to insert into
      * @param object Object to insert
      * @return A compatible value for the target column
      */
-    Object safeType(Column targetColumn, Object object);
+    Object safeType(Column targetColumnType, Object object);
 }

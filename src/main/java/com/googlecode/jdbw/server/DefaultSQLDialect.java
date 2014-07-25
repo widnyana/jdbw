@@ -159,12 +159,12 @@ public class DefaultSQLDialect implements SQLDialect {
     }
 
     @Override
-    public Object safeType(Column targetColumn, Object object) {
+    public Object safeType(Column targetColumnType, Object object) {
         if(object == null) {
-            return NullValue.fromSqlType(targetColumn.getSqlType());
+            return NullValue.fromSqlType(targetColumnType.getSqlType());
         }
 
-        if(object instanceof BigDecimal && isDatetime(targetColumn.getSqlType())) {
+        if(object instanceof BigDecimal && isDatetime(targetColumnType.getSqlType())) {
             try {
                 synchronized(decimalTimestampFormat) {
                     return decimalTimestampFormat.parse(((BigDecimal) object).toPlainString());
@@ -173,13 +173,13 @@ public class DefaultSQLDialect implements SQLDialect {
                 return object;
             }
         }
-        if(object instanceof Date && isBigDecimal(targetColumn.getSqlType())
-                && targetColumn.getColumnSize() == 17 && targetColumn.getDecimalDigits() == 3) {
+        if(object instanceof Date && isBigDecimal(targetColumnType.getSqlType())
+                && targetColumnType.getColumnSize() == 17 && targetColumnType.getDecimalDigits() == 3) {
             synchronized(decimalTimestampFormat) {
                 return new BigDecimal(decimalTimestampFormat.format((Date) object));
             }
         }
-        if(object instanceof UUID && isString(targetColumn.getSqlType())) {
+        if(object instanceof UUID && isString(targetColumnType.getSqlType())) {
             return object.toString();
         }
         return object;
