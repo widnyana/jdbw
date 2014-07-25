@@ -89,6 +89,16 @@ public interface DatabaseConnection {
      * for catalog information
      */
     Catalog getCatalog(String catalogName) throws SQLException;
+
+    /**
+     * Returns a Catalog object for ideally the currently used catalog, but
+     * if unable to determine this will return the same as if calling
+     * {@code getCatalog(getDefaultCatalogName())}
+     * @return Catalog object representing the catalog or null if not found
+     * @throws SQLException If an error occurred when asking the database
+     * for catalog information
+     */
+    Catalog getCurrentCatalog() throws SQLException;
     
     /**
      * Closes this connection and any underlying data source
