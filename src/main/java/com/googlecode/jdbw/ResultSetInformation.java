@@ -1,6 +1,7 @@
 package com.googlecode.jdbw;
 
 import java.sql.ResultSetMetaData;
+import java.util.List;
 
 /**
  * This interface contains extracted values from ResultSetMetaData describing a ResultSet that JDBW has received. It can
@@ -34,6 +35,12 @@ public interface ResultSetInformation {
      * @throws java.lang.ArrayIndexOutOfBoundsException If columnIndex was out of bounds
      */
     String getColumnLabel(int columnIndex) throws ArrayIndexOutOfBoundsException;
+
+    /**
+     * Returns all the label of all columns in the result set, ordered. This list is not modifiable.
+     * @return List of all column names
+     */
+    List<String> getColumnLabels();
 
     /**
      * Returns the type code, as specified by java.sql.Types, of the column with index columnIndex (first column has
