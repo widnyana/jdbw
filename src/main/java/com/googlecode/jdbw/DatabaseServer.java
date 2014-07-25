@@ -36,8 +36,6 @@ public interface DatabaseServer {
     
     /**
      * Creates a new {@link DatabaseConnectionFactory} that can be used for establishing a JDBC connection to this database.
-     * @param username Username to use when connecting to the server
-     * @param password Password to use when connecting to the server
      * @return A {@link DatabaseConnectionFactory} targeting this database server
      */
     DatabaseConnectionFactory newConnectionFactory();
