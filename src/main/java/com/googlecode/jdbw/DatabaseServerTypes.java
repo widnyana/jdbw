@@ -21,7 +21,7 @@ package com.googlecode.jdbw;
 
 import com.googlecode.jdbw.server.h2.H2ServerType;
 import com.googlecode.jdbw.server.mysql.MySQLServerType;
-import com.googlecode.jdbw.server.postgresql.PostgresqlServerType;
+import com.googlecode.jdbw.server.postgresql.PostgreSQLServerType;
 import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -38,7 +38,7 @@ public class DatabaseServerTypes {
     
     public static final MySQLServerType MYSQL = MySQLServerType.INSTANCE;
     public static final SybaseASEServerType SYBASE_ASE = SybaseASEServerType.INSTANCE;
-    public static final PostgresqlServerType POSTGRESQL = PostgresqlServerType.INSTANCE;
+    public static final PostgreSQLServerType POSTGRESQL = PostgreSQLServerType.INSTANCE;
     public static final H2ServerType H2_IN_MEMORY = H2ServerType.InMemory.INSTANCE;
     public static final H2ServerType H2_FILE = H2ServerType.FileBased.INSTANCE;
     public static final H2ServerType H2_NETWORK = H2ServerType.Network.INSTANCE;
