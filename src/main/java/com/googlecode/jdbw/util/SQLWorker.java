@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.util;
 
+import com.googlecode.jdbw.ResultSetInformation;
 import com.googlecode.jdbw.SQLExecutor;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
@@ -336,13 +337,9 @@ public class SQLWorker {
         }
 
         @Override
-        public void onResultSet(List<String> columnNames, List<Integer> columnTypes) {
-            builder = new DataSet.Builder<V>(columnNames);
-        }
-
-        @Override
-        public boolean nextResultSet() {
-            return false;
+        public boolean onResultSet(ResultSetInformation information) {
+            builder = new DataSet.Builder<V>(information.getColumnLabels());
+            return information.getResultSetIndex() == 0;
         }
 
         @Override
