@@ -24,7 +24,7 @@ import com.googlecode.jdbw.objectstorage.impl.DelegatingTableMapping;
 /**
  * Special table mapping class for MySQL which supports the 
  * <b>INSERT INTO ... ON DUPLICATE UPDATE ...</b> syntax.
- * @author mberglun
+ * @author Martin Berglund
  */
 class MySQLTableMapping extends DelegatingTableMapping {
 

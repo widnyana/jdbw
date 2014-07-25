@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author mberglun
+ * @author Martin Berglund
  */
 public class DefaultFieldMappingTest extends TestBase {
     

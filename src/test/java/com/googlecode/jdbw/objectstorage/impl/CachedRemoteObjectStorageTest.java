@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author martin
+ * @author Martin Berglund
  */
 public class CachedRemoteObjectStorageTest extends TestBase {
     

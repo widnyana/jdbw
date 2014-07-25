@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * This class is available for extending, delegating all method calls to a another
  * TableMappingFactory so that you can extend only the methods you are interested in.
- * @author mberglun
+ * @author Martin Berglund
  */
 public class DelegatingTableMapping implements TableMapping {
     private final TableMapping backend;

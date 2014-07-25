@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  *
- * @author mberglun
+ * @author Martin Berglund
  * @param <V>
  */
 public class DataSet<V> implements Iterable<V[]> {

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Specialized {@code JDBCObjectStorage} which is optimizing {@code putAll} calls by using the
  * <b>INSERT INTO ... ON DUPLICATE UPDATE ...</b> syntax in MySQL.
- * @author mberglun
+ * @author Martin Berglund
  */
 public class MySQLJDBCObjectStorage extends JDBCObjectStorage {
 

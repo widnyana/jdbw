@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  *
- * @author mberglun
+ * @author Martin Berglund
  */
 public class CachedRemoteObjectStorage extends AbstractExternalObjectStorage {
     

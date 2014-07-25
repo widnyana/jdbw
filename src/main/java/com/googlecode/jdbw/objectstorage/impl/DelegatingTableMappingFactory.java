@@ -25,7 +25,7 @@ import com.googlecode.jdbw.objectstorage.TableMappingFactory;
 /**
  * This class is available for extending, delegating all method calls to a another
  * TableMappingFactory so that you can extend only the methods you are interested in.
- * @author mberglun
+ * @author Martin Berglund
  */
 public class DelegatingTableMappingFactory implements TableMappingFactory {
 

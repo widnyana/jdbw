@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  *
- * @author Martin
+ * @author Martin Berglund
  */
 public class MockResultSet implements ResultSet { 
     
