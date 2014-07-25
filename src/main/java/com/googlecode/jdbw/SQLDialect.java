@@ -117,5 +117,5 @@ public interface SQLDialect {
      * @param object Object to insert
      * @return A compatible value for the target column
      */
-    Object safeType(Column targetColumnType, Object object);
+    Object convertToCompatibleType(Column targetColumnType, Object object);
 }

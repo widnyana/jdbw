@@ -159,7 +159,7 @@ public class DefaultSQLDialect implements SQLDialect {
     }
 
     @Override
-    public Object safeType(Column targetColumnType, Object object) {
+    public Object convertToCompatibleType(Column targetColumnType, Object object) {
         if(object == null) {
             return NullValue.fromSqlType(targetColumnType.getSqlType());
         }

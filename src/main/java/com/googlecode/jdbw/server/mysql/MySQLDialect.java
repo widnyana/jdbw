@@ -107,14 +107,14 @@ class MySQLDialect extends DefaultSQLDialect {
     }
 
     @Override
-    public Object safeType(Column targetColumnType, Object object) {
+    public Object convertToCompatibleType(Column targetColumnType, Object object) {
         if(targetColumnType.getSqlType() == java.sql.Types.TIMESTAMP
                 && object instanceof Date) {
             if("1900-01-01 00:00:00.0".equals(object.toString())) {
                 return "1970-01-01 00:00:01";
             }
         }
-        return super.safeType(targetColumnType, object);
+        return super.convertToCompatibleType(targetColumnType, object);
     }
 
     @Override
