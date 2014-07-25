@@ -28,7 +28,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 /**
- *
+ * Common base class for DatabaseConnectionFactory:s which keeps a few shared properties and method implementations.
  * @author Martin Berglund
  */
 public abstract class BasicDatabaseConnectionFactory implements DatabaseConnectionFactory {
@@ -62,9 +62,5 @@ public abstract class BasicDatabaseConnectionFactory implements DatabaseConnecti
                     }
                 },
                 databaseServerType);
-    }
-    
-    public DatabaseConnection connect() {
-        return connect(new OneSharedConnectionDataSource.Factory());
     }
 }

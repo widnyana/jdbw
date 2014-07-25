@@ -20,6 +20,7 @@ package com.googlecode.jdbw.server.h2;
 
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseServerTypes;
+import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 
 /**
  *
@@ -39,7 +40,7 @@ public class H2InMemoryServer extends H2DatabaseServer {
     }
     
     public DatabaseConnection connect() {
-        return newConnectionFactory().connect();
+        return newConnectionFactory().connect(new OneSharedConnectionDataSource.Factory());
     }
 
     @Override

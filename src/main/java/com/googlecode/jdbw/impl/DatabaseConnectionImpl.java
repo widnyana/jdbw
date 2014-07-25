@@ -274,6 +274,11 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
     }
 
     @Override
+    public Catalog getCurrentCatalog() throws SQLException {
+        return getCatalog(getDefaultCatalogName());
+    }
+
+    @Override
     public DatabaseServerType getServerType() {
         return databaseServerType;
     }

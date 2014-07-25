@@ -21,7 +21,8 @@ package com.googlecode.jdbw.impl;
 import com.googlecode.jdbw.DatabaseServerType;
 
 /**
- *
+ * Describes a DatabaseConnectionFactory that can specify a username and a password to use when connecting to the
+ * database server.
  * @author Martin Berglund
  */
 public class AuthenticatingDatabaseConnectionFactory extends BasicDatabaseConnectionFactory {
