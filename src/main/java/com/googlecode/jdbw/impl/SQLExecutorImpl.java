@@ -23,7 +23,6 @@ import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.util.NullValue;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,63 +66,52 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                 setParameter(statement, parameters[i], i + 1);
             }
 
-            statement.setQueryTimeout(queryTimeoutInSeconds);
-            statement.setMaxRows(maxRowsToFetch);
-            statement.execute();
-            
-            if(isInsertSQL(SQL)) {
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                while(generatedKeys.next()) {
-                    handler.onGeneratedKey(generatedKeys.getObject(1));
+            setQueryTimeout(statement, queryTimeoutInSeconds);
+            setMaxRowsToFetch(statement, maxRowsToFetch);
+            execute(statement);
+
+            if(canGetGeneratedKeys(SQL)) {
+                ResultSet generatedKeys = getGeneratedKeys(statement);
+                if(generatedKeys != null) {
+                    while (generatedKeys.next()) {
+                        handler.onGeneratedKey(generatedKeys.getObject(1));
+                    }
+                    generatedKeys.close();
                 }
-                generatedKeys.close();
             }
 
             while(true) {
-                resultSet = statement.getResultSet();
-                if(resultSet != null) {
-                    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-                    List<String> columnNames = new ArrayList<String>();
-                    for(int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
-                        columnNames.add(resultSetMetaData.getColumnLabel(i + 1));
-                    }
-
-                    List<Integer> columnTypes = new ArrayList<Integer>();
-                    for(int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
-                        columnTypes.add(resultSetMetaData.getColumnType(i + 1));
-                    }
-                    
-                    handler.onResultSet(columnNames, columnTypes);
-
-                    SQLWarning warning = resultSet.getWarnings();
-                    if(warning != null) {
-                        handler.onWarning(warning);
-                    }
-
-                    boolean gotCancel = false;
-                    while(resultSet.next() && !gotCancel) {
-                        Object []row = new Object[resultSetMetaData.getColumnCount()];
-                        for(int i = 0; i < row.length; i++) {
-                            row[i] = resultSet.getObject(i + 1);
-                        }
-                        if(!handler.nextRow(row)) {
-                            gotCancel = true;
-                        }
-                    }
+                int updateCount = getUpdateCount(statement);
+                if(updateCount != -1) {
+                    handler.onUpdateCount(updateCount);
+                    continue;
                 }
-                else {
-                    int updateCount = statement.getUpdateCount();
-                    if(updateCount == -1) {
+                resultSet = getResultSet(statement);
+                if(resultSet == null) {
+                    if (statement.getMoreResults() == false) {
                         break;
                     }
-                    else {
-                        handler.onUpdateCount(updateCount);
-                    }
+                    continue;
                 }
-                
-                if(statement.getMoreResults()) {
-                    if(!handler.nextResultSet()) {
-                        break;
+
+                boolean gotCancel = false;
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                if(!handler.onResultSet(new ResultSetInformationImpl(resultSetMetaData))) {
+                    gotCancel = true;
+                }
+
+                SQLWarning warning = getWarnings(resultSet);
+                if(warning != null) {
+                    handler.onWarning(warning);
+                }
+
+                while(resultSet.next() && !gotCancel) {
+                    Object []row = new Object[resultSetMetaData.getColumnCount()];
+                    for(int i = 0; i < row.length; i++) {
+                        row[i] = resultSet.getObject(i + 1);
+                    }
+                    if(!handler.nextRow(row)) {
+                        gotCancel = true;
                     }
                 }
             }
@@ -131,10 +119,14 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         }
         finally {
             if(resultSet != null) {
-                try { resultSet.close(); } catch(SQLException e) {}
+                try {
+                    close(resultSet);
+                } catch(SQLException e) {}
             }
             if(statement != null) {
-                try { statement.close(); } catch(SQLException e) {}
+                try {
+                    close(statement);
+                } catch(SQLException e) {}
             }
         }
     }
@@ -150,20 +142,30 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                 for(int i = 0; i < row.length; i++) {
                     setParameter(statement, row[i], i + 1);
                 }
-                statement.addBatch();
+                addBatch(statement);
             }
 
-            int []batchResult = statement.executeBatch();
+            int []batchResult = executeBatch(statement);
             handler.onBatchResult(batchResult);
 
-            SQLWarning warning = statement.getWarnings();
+            ResultSet generatedKeys = getGeneratedKeys(statement);
+            if(generatedKeys != null) {
+                while (generatedKeys.next()) {
+                    handler.onGeneratedKey(generatedKeys.getObject(1));
+                }
+                generatedKeys.close();
+            }
+
+            SQLWarning warning = getWarnings(statement);
             if(warning != null) {
                 handler.onWarning(warning);
             }
         }
         finally {
             if(statement != null) {
-                try { statement.close(); } catch(SQLException e) {}
+                try {
+                    close(statement);
+                } catch(SQLException e) {}
             }
         }
     }
@@ -175,20 +177,28 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         try {
             statement = connection.createStatement();
             for(String row: batchedSQL) {
-                statement.addBatch(row);
+                addBatch(statement, row);
             }
 
-            int []batchResult = statement.executeBatch();
+            int []batchResult = executeBatch(statement);
             handler.onBatchResult(Arrays.copyOf(batchResult, batchResult.length));
 
-            SQLWarning warning = statement.getWarnings();
+            ResultSet generatedKeys = getGeneratedKeys(statement);
+            if(generatedKeys != null) {
+                while (generatedKeys.next()) {
+                    handler.onGeneratedKey(generatedKeys.getObject(1));
+                }
+                generatedKeys.close();
+            }
+
+            SQLWarning warning = getWarnings(statement);
             if(warning != null) {
                 handler.onWarning(warning);
             }
         }
         finally {
             if(statement != null) {
-                try { statement.close(); } catch(SQLException e) {}
+                try { close(statement); } catch(SQLException e) {}
             }
         }
     }
@@ -197,6 +207,73 @@ public abstract class SQLExecutorImpl implements SQLExecutor
     // Protected methods below are for sub-classes tuned for particular database
     // servers which may or may not support all of JDBC. Please see 
     // MySQLExecutor for an example.
+    protected boolean canGetGeneratedKeys(String SQL) {
+        return SQL.trim().substring(0, "insert".length()).toLowerCase().equals("insert");
+    }
+
+    protected ResultSet getGeneratedKeys(PreparedStatement statement) throws SQLException {
+        return statement.getGeneratedKeys();
+    }
+
+    protected SQLWarning getWarnings(ResultSet resultSet) throws SQLException {
+        return resultSet.getWarnings();
+    }
+
+    protected ResultSet getResultSet(PreparedStatement statement) throws SQLException {
+        return statement.getResultSet();
+    }
+
+    protected int getUpdateCount(PreparedStatement statement) throws SQLException {
+        return statement.getUpdateCount();
+    }
+
+    protected SQLWarning getWarnings(Statement statement) throws SQLException {
+        return statement.getWarnings();
+    }
+
+    protected int[] executeBatch(Statement statement) throws SQLException {
+        return statement.executeBatch();
+    }
+
+    protected void addBatch(Statement statement, String row) throws SQLException {
+        statement.addBatch(row);
+    }
+
+    protected void close(PreparedStatement statement) throws SQLException {
+        statement.close();
+    }
+
+    protected void close(Statement statement) throws SQLException {
+        statement.close();
+    }
+
+    protected SQLWarning getWarnings(PreparedStatement statement) throws SQLException {
+        return statement.getWarnings();
+    }
+
+    protected int[] executeBatch(PreparedStatement statement) throws SQLException {
+        return statement.executeBatch();
+    }
+
+    protected void addBatch(PreparedStatement statement) throws SQLException {
+        statement.addBatch();
+    }
+
+    protected void close(ResultSet resultSet) throws SQLException {
+        resultSet.close();
+    }
+
+    protected void setQueryTimeout(PreparedStatement statement, int queryTimeoutInSeconds) throws SQLException {
+        statement.setQueryTimeout(queryTimeoutInSeconds);
+    }
+
+    protected void setMaxRowsToFetch(PreparedStatement statement, int maxRowsToFetch) throws SQLException {
+        statement.setMaxRows(maxRowsToFetch);
+    }
+
+    protected void execute(PreparedStatement statement) throws SQLException {
+        statement.execute();
+    }
     
     protected PreparedStatement prepareGeneralStatement(String SQL) throws SQLException
     {
@@ -215,7 +292,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
     private PreparedStatement prepareExecuteStatement(String SQL) throws SQLException
     {
-        if(isInsertSQL(SQL)) {
+        if(canGetGeneratedKeys(SQL)) {
             return prepareInsertStatement(SQL);
         }
         else {
@@ -275,9 +352,5 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             statement.setTimestamp(i, new Timestamp(((java.util.Date)object).getTime()));
         else
             statement.setObject(i, object);
-    }
-
-    private boolean isInsertSQL(String SQL) {
-        return SQL.trim().substring(0, "insert".length()).toLowerCase().equals("insert");
     }
 }
