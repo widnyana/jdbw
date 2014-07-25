@@ -26,12 +26,20 @@ import com.googlecode.jdbw.DatabaseServerTypes;
  * @author Martin Berglund
  */
 public class H2FileBasedServer extends H2DatabaseServer {
+
+    private final String databaseFilePrefix;
     
     public H2FileBasedServer(String databaseFilePrefix) {
-        super(DatabaseServerTypes.H2_FILE, new H2JDBCDriverDescriptor().formatJDBCUrlForFile(databaseFilePrefix), false);
+        super(DatabaseServerTypes.H2_FILE, false);
+        this.databaseFilePrefix = databaseFilePrefix;
     }
     
     public DatabaseConnection connect() {
         return newConnectionFactory().connect();
+    }
+
+    @Override
+    String getJDBCUrl(H2JDBCDriverDescriptor driverDescriptor) {
+        return driverDescriptor.formatJDBCUrlForFile(databaseFilePrefix);
     }
 }

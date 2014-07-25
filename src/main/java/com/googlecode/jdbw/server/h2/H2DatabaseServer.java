@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.server.h2;
 
-import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.server.AbstractDatabaseServer;
 
@@ -26,15 +25,13 @@ import com.googlecode.jdbw.server.AbstractDatabaseServer;
  *
  * @author Martin Berglund
  */
-public class H2DatabaseServer extends AbstractDatabaseServer {
+public abstract class H2DatabaseServer extends AbstractDatabaseServer {
     private final H2ServerType serverType;
-    private final String jdbcUrl;
     private final boolean allowMultipleConnections;
 
-    protected H2DatabaseServer(H2ServerType serverType, String jdbcUrl, boolean allowMultipleConnections) {
+    protected H2DatabaseServer(H2ServerType serverType, boolean allowMultipleConnections) {
         super(new H2JDBCDriverDescriptor());
         this.serverType = serverType;
-        this.jdbcUrl = jdbcUrl;
         this.allowMultipleConnections = allowMultipleConnections;
     }
     
@@ -45,6 +42,8 @@ public class H2DatabaseServer extends AbstractDatabaseServer {
 
     @Override
     public H2DatabaseConnectionFactory newConnectionFactory() {
-        return new H2DatabaseConnectionFactory(serverType, jdbcUrl, allowMultipleConnections);
+        return new H2DatabaseConnectionFactory(serverType, getDriverDescriptor().formatJDBCUrl(this), allowMultipleConnections);
     }
+
+    abstract String getJDBCUrl(H2JDBCDriverDescriptor driverDescriptor);
 }

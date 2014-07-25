@@ -39,17 +39,17 @@ public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
     public String formatJDBCUrlForFile(String databaseFilePrefix) {
         return "jdbc:h2:file:" + databaseFilePrefix;
     }
+
+    public String formatJDBCUrlForRemoteServer(String host, int port, String defaultCatalog) {
+        return "jdbc:h2:tcp://" + host + ":" + port + "/" + defaultCatalog; //What to do about the path to the database???
+    }
     
     @Override
     public String formatJDBCUrl(DatabaseServer databaseServer) {
-        if(databaseServer instanceof H2NetworkServer == false) {
-            throw new IllegalArgumentException("H2JDBCDriverDescriptor only supports H2NetworkServer");
+        if(databaseServer instanceof H2DatabaseServer == false) {
+            throw new IllegalArgumentException("H2JDBCDriverDescriptor only supports H2DatabaseServer");
         }
-        H2NetworkServer h2Server = (H2NetworkServer)databaseServer;
-        String host = h2Server.getHostname();
-        int port = h2Server.getPort();
-        String defaultCatalog = h2Server.getCatalog();
-        return "jdbc:h2:tcp://" + host + ":" + port + "/" + defaultCatalog; //What to do about the path to the database???
+        return ((H2DatabaseServer)databaseServer).getJDBCUrl(this);
     }
 
     @Override

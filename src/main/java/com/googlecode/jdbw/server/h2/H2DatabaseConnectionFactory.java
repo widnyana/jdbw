@@ -29,7 +29,7 @@ import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
  */
 public class H2DatabaseConnectionFactory extends AuthenticatingDatabaseConnectionFactory {
     
-    private boolean allowMultipleConnections;
+    private final boolean allowMultipleConnections;
     
     public H2DatabaseConnectionFactory(H2ServerType databaseServerType, String jdbcUrl, boolean allowMultipleConnections) {
         super(databaseServerType, jdbcUrl);

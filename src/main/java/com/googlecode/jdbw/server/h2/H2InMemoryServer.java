@@ -27,15 +27,28 @@ import com.googlecode.jdbw.DatabaseServerTypes;
  */
 public class H2InMemoryServer extends H2DatabaseServer {
 
+    private final String name;
+
     public H2InMemoryServer() {
         this(null);
     }
     
     public H2InMemoryServer(String name) {
-        super(DatabaseServerTypes.H2_IN_MEMORY, new H2JDBCDriverDescriptor().formatJDBCUrlForInMemory(name), name != null);
+        super(DatabaseServerTypes.H2_IN_MEMORY, name != null);
+        this.name = name;
     }
     
     public DatabaseConnection connect() {
         return newConnectionFactory().connect();
+    }
+
+    @Override
+    String getJDBCUrl(H2JDBCDriverDescriptor driverDescriptor) {
+        if(name == null) {
+            return driverDescriptor.formatJDBCUrlForAnonymousInMemory();
+        }
+        else {
+            return driverDescriptor.formatJDBCUrlForInMemory(name);
+        }
     }
 }

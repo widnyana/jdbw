@@ -31,7 +31,10 @@ public class H2NetworkServer extends H2DatabaseServer {
     private final String catalog;
     
     public H2NetworkServer(String hostname, int port, String catalog) {
-        super(DatabaseServerTypes.H2_NETWORK, new H2JDBCDriverDescriptor().formatJDBCUrl(hostname, port, catalog), true);
+        super(DatabaseServerTypes.H2_NETWORK, true);
+        this.hostname = hostname;
+        this.port = port;
+        this.catalog = catalog;
     }
 
     public String getHostname() {
@@ -44,5 +47,10 @@ public class H2NetworkServer extends H2DatabaseServer {
 
     public String getCatalog() {
         return catalog;
+    }
+
+    @Override
+    String getJDBCUrl(H2JDBCDriverDescriptor driverDescriptor) {
+        return driverDescriptor.formatJDBCUrlForRemoteServer(hostname, port, catalog);
     }
 }
