@@ -19,6 +19,7 @@
 package com.googlecode.jdbw.util;
 
 import com.googlecode.jdbw.SQLExecutor;
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -288,6 +289,75 @@ public class SQLWorker {
             return null;
         } else {
             return new BigInteger(value.toString());
+        }
+    }
+
+    public DataSet<String> dataSetOfStrings(String SQL, Object... parameters) throws SQLException {
+        return dataSet(String.class, new ObjectMapper<Object, String>() {
+            @Override
+            public String invoke(Object param) {
+                return param.toString();
+            }
+        }, SQL, parameters);
+    }
+
+    public DataSet<Long> dataSetOfLong(String SQL, Object... parameters) throws SQLException {
+        return dataSet(Long.class, new ObjectMapper<Object, Long>() {
+            @Override
+            public Long invoke(Object param) {
+                try {
+                    return Long.parseLong(param.toString());
+                }
+                catch(NumberFormatException e) {
+                    return null;
+                }
+            }
+        }, SQL, parameters);
+    }
+
+    public <V> DataSet<V> dataSet(Class<V> typeClass, ObjectMapper<Object, V> mapper, String SQL, Object... parameters) throws SQLException {
+        ResultSetConverter<V> converter = new ResultSetConverter(typeClass, mapper);
+        executor.execute(converter, SQL, parameters);
+        return converter.builder.build();
+    }
+
+    public static interface ObjectMapper<S, T> {
+        T invoke(S param);
+    }
+
+    private static class ResultSetConverter<V> extends ExecuteResultHandlerAdapter {
+        private final Class<V> typeClass;
+        private final ObjectMapper<Object, V> converter;
+        DataSet.Builder<V> builder;
+
+        public ResultSetConverter(Class<V> typeClass, ObjectMapper<Object, V> converter) {
+            this.typeClass = typeClass;
+            this.converter = converter;
+        }
+
+        @Override
+        public void onResultSet(List<String> columnNames, List<Integer> columnTypes) {
+            builder = new DataSet.Builder<V>(columnNames);
+        }
+
+        @Override
+        public boolean nextResultSet() {
+            return false;
+        }
+
+        @Override
+        public boolean nextRow(Object[] row) {
+            V[] newRow = (V[])Array.newInstance(typeClass, row.length);
+            for(int i = 0; i < row.length; i++) {
+                if(row[i] == null) {
+                    newRow[i] = null;
+                }
+                else {
+                    newRow[i] = converter.invoke(row[i]);
+                }
+            }
+            builder.addRow(newRow);
+            return true;
         }
     }
 }
