@@ -19,7 +19,7 @@
 package com.googlecode.jdbw;
 
 /**
- *
+ * Factory interface for creating DatabaseConnection:s.
  * @author Martin Berglund
  */
 public interface DatabaseConnectionFactory {
