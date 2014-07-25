@@ -24,7 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- *
+ * This class wraps a set of rows (along with their column names) and presents it in a friendly view. If you use the
+ * generic parameter V, you can force the whole DataSet to have the same type, for example String. Has a nice toString()
+ * implementation that will format the data in a ASCII table.
  * @author Martin Berglund
  * @param <V>
  */
