@@ -77,8 +77,12 @@ public class DataSet<V> implements Iterable<V[]> {
         }
         bob.append("\n");
         bob.append("|");
-        for(String columnName: columnNames) {
+        for(int i = 0; i < columnNames.size(); i++) {
+            String columnName = columnNames.get(i);
             bob.append(columnName);
+            for(int j = columnName.length(); j < columnSizes.get(i); j++) {
+                bob.append(" ");
+            }
             bob.append("|");
         }
         bob.append("\n");
@@ -93,12 +97,16 @@ public class DataSet<V> implements Iterable<V[]> {
         //Rows
         for(V[] row: rows) {
             bob.append("|");
-            for(V item: row) {
+            for(int i = 0; i < row.length; i++) {
+                V item = row[i];
                 String element = "<null>";
                 if(item != null) {
                     element = item.toString();
                 }
                 bob.append(element);
+                for(int j = element.length(); j < columnSizes.get(i); j++) {
+                    bob.append(" ");
+                }
                 bob.append("|");
             }
             bob.append("\n");
