@@ -125,7 +125,7 @@ public class Schema implements Comparable<Schema> {
 
     @Override
     public String toString() {
-        return getCatalog().getName() + "." + getName();
+        return "Schema{" + getCatalog().getName() + "." + getName() + "}";
     }
 
     @Override

@@ -139,6 +139,6 @@ public abstract class Column implements Comparable<Column> {
 
     @Override
     public String toString() {
-        return getName() + " " + getNativeTypeName() + "(" + getColumnSize() + ")";
+        return "Column{" + getName() + " " + getNativeTypeName() + "(" + getColumnSize() + ")}";
     }
 }

@@ -26,4 +26,9 @@ public class SystemTable extends Table {
     public SystemTable(ServerMetaData metaDataResolver, Schema schema, String tableName) {
         super(metaDataResolver, schema, tableName);
     }
+
+    @Override
+    public String toString() {
+        return super.toString().replaceFirst("Table", "SystemTable");
+    }
 }

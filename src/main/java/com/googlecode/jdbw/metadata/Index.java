@@ -118,6 +118,6 @@ public class Index implements Comparable<Index> {
 
     @Override
     public String toString() {
-        return name + "(" + StringUtils.concatenateStringList(getColumnNames(), ", ") + ")";
+        return "Index{" + name + "(" + StringUtils.concatenateStringList(getColumnNames(), ", ") + ")}";
     }
 }

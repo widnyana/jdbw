@@ -401,7 +401,7 @@ public class DefaultServerMetaData implements ServerMetaData {
     }
 
     protected Function createFunction(Schema schema, String functionName) {
-        return new Function();
+        return new Function(schema, functionName);
     }
 
     protected TableColumn createTableColumn(

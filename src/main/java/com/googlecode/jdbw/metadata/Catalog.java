@@ -63,7 +63,7 @@ public class Catalog implements Comparable<Catalog> {
 
     @Override
     public String toString() {
-        return getName();
+        return "Catalog{" + getName() + "}";
     }
 
     @Override

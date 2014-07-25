@@ -206,6 +206,10 @@ public class Table implements Comparable<Table> {
         return getName().toLowerCase().compareTo(o.getName().toLowerCase());
     }
 
+    /**
+     * Flushes the cache for columns and indexes. These are loaded once and then kept in memory until this method is
+     * called. Use it when you want to force a reload from the database.
+     */
     public void clearCachedData() {
         cachedColumns = null;
         cachedIndexes = null;
@@ -213,6 +217,6 @@ public class Table implements Comparable<Table> {
     
     @Override
     public String toString() {
-        return getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName();
+        return "Table{" + getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName() + "}";
     }
 }

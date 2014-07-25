@@ -23,5 +23,24 @@ package com.googlecode.jdbw.metadata;
  * @author Martin Berglund
  */
 public class Function {
-    //Not implemented yet
+    private final Schema schema;
+    private final String name;
+
+    public Function(Schema schema, String name) {
+        this.schema = schema;
+        this.name = name;
+    }
+
+    public Schema getSchema() {
+        return schema;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "Function{" + getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName() + "}";
+    }
 }

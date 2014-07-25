@@ -109,6 +109,6 @@ public class View implements Comparable<View> {
 
     @Override
     public String toString() {
-        return getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName();
+        return "View{" + getSchema().getCatalog().getName() + "." + getSchema().getName() + "." + getName() + "}";
     }
 }

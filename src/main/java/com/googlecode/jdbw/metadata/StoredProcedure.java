@@ -67,6 +67,6 @@ public class StoredProcedure implements Comparable<StoredProcedure> {
 
     @Override
     public String toString() {
-        return schema.getCatalog().getName() + "." + schema.getName() + "." + getName();
+        return "StoredProcedure{" + schema.getCatalog().getName() + "." + schema.getName() + "." + getName() + "}";
     }
 }
