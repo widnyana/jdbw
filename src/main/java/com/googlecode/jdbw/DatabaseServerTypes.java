@@ -23,6 +23,8 @@ import com.googlecode.jdbw.server.h2.H2ServerType;
 import com.googlecode.jdbw.server.mysql.MySQLServerType;
 import com.googlecode.jdbw.server.postgresql.PostgreSQLServerType;
 import com.googlecode.jdbw.server.sybase.SybaseASEServerType;
+
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -34,7 +36,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class DatabaseServerTypes {
     private DatabaseServerTypes() {}
     
-    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new CopyOnWriteArraySet<DatabaseServerType>();
+    public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new AddOnlySet<DatabaseServerType>();
     
     public static final MySQLServerType MYSQL = MySQLServerType.INSTANCE;
     public static final SybaseASEServerType SYBASE_ASE = SybaseASEServerType.INSTANCE;
@@ -50,5 +52,28 @@ public class DatabaseServerTypes {
         ALL_KNOWN_SERVER_TYPES.add(H2_IN_MEMORY);
         ALL_KNOWN_SERVER_TYPES.add(H2_FILE);
         ALL_KNOWN_SERVER_TYPES.add(H2_NETWORK);
+    }
+
+    private static class AddOnlySet<V> extends CopyOnWriteArraySet<V> {
+        //Prevent removing items
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException("You cannot remove elements from DatabaseServerTypes.ALL_KNOWN_SERVER_TYPES");
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException("You cannot remove elements from DatabaseServerTypes.ALL_KNOWN_SERVER_TYPES");
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("You cannot remove elements from DatabaseServerTypes.ALL_KNOWN_SERVER_TYPES");
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("You cannot remove elements from DatabaseServerTypes.ALL_KNOWN_SERVER_TYPES");
+        }
     }
 }
