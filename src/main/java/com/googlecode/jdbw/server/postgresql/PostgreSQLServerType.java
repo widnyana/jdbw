@@ -29,7 +29,6 @@ public class PostgreSQLServerType extends AbstractDatabaseType {
     public static final PostgreSQLServerType INSTANCE = new PostgreSQLServerType();
     
     private PostgreSQLServerType() {
-        
     }
     
     @Override
