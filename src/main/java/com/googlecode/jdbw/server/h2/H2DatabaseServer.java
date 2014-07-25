@@ -40,9 +40,8 @@ public abstract class H2DatabaseServer extends AbstractDatabaseServer {
         return serverType;
     }
 
-    @Override
-    public H2DatabaseConnectionFactory newConnectionFactory() {
-        return new H2DatabaseConnectionFactory(serverType, getDriverDescriptor().formatJDBCUrl(this), allowMultipleConnections);
+    boolean isAllowMultipleConnections() {
+        return allowMultipleConnections;
     }
 
     abstract String getJDBCUrl(H2JDBCDriverDescriptor driverDescriptor);

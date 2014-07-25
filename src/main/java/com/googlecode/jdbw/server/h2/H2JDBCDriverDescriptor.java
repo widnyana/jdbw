@@ -19,6 +19,7 @@
 
 package com.googlecode.jdbw.server.h2;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
@@ -55,5 +56,17 @@ public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
     @Override
     public String getDriverClassName() {
         return "org.h2.Driver";
+    }
+
+    @Override
+    public DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
+        if(!(databaseServer instanceof H2DatabaseServer)) {
+            throw new IllegalArgumentException("Cannot pass in " + databaseServer + " to " +
+                    "H2JDBCDriverDescriptor.createDatabaseConnectionFactory(..)");
+        }
+        return new H2DatabaseConnectionFactory(
+                (H2ServerType)databaseServer.getServerType(),
+                formatJDBCUrl(databaseServer),
+                ((H2DatabaseServer)databaseServer).isAllowMultipleConnections());
     }
 }
