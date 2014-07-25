@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * This is a very simple implementation of ResultSet which doesn't support many of the method calls but at least
+ * gives you a ResultSet view of a set of row data.
  * @author Martin Berglund
  */
 public class SimpleResultSet implements ResultSet {
