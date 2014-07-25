@@ -23,7 +23,7 @@ import com.googlecode.jdbw.BatchUpdateHandler;
 import java.sql.SQLWarning;
 
 /**
- * This is a convenience class that implements ExecuteResultHandler and provides
+ * This is a convenience class that implements BatchUpdateHandler and provides
  * a default method implementation for this interface. You can then override 
  * only the methods that you care about.
  * @author Martin Berglund
