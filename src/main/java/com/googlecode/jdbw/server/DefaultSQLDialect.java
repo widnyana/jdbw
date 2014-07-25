@@ -118,7 +118,7 @@ public class DefaultSQLDialect implements SQLDialect {
 
     @Override
     public String[] getCreateTableStatement(String schemaName, String name, List<Column> columns, List<Index> indexes) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("getCreateTableStatement(..) is not implemented in " + getClass().getName());
     }
 
     @Override
