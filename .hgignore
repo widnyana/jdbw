@@ -6,3 +6,5 @@
 target
 ^nb-configuration\.xml$
 ^nbactions\.xml$
+^jdbw.iml$
+^.idea
