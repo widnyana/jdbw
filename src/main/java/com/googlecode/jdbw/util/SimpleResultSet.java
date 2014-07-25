@@ -34,19 +34,19 @@ import java.util.Map;
  *
  * @author Martin Berglund
  */
-public class MockResultSet implements ResultSet { 
+public class SimpleResultSet implements ResultSet {
     
     private final Map<String, Integer> nameMap;
     private final List<Object[]> rows;
     private int pointer;
 
-    public MockResultSet() {
+    public SimpleResultSet() {
         this.rows = new ArrayList<Object[]>();
         this.nameMap = new HashMap<String, Integer>();
         this.pointer = -1;
     }
     
-    public MockResultSet(String[] columnNames) {
+    public SimpleResultSet(String[] columnNames) {
         this();
         for(int i = 0; i < columnNames.length; i++) {
             if(columnNames[i] == null) {
@@ -56,17 +56,17 @@ public class MockResultSet implements ResultSet {
         }
     }
     
-    public MockResultSet(Object[] row) {
+    public SimpleResultSet(Object[] row) {
         this();
         this.rows.add(row);
     }    
     
-    public MockResultSet(Collection<Object[]> rows) {
+    public SimpleResultSet(Collection<Object[]> rows) {
         this();
         this.rows.addAll(rows);
     }
     
-    public MockResultSet(String[] columnNames, Collection<Object[]> rows) {
+    public SimpleResultSet(String[] columnNames, Collection<Object[]> rows) {
         this(columnNames);
         this.rows.addAll(rows);
     }

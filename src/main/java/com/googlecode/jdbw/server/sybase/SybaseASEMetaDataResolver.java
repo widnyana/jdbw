@@ -25,8 +25,9 @@ import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.metadata.Schema;
 import com.googlecode.jdbw.metadata.Table;
 import com.googlecode.jdbw.metadata.TableColumn;
-import com.googlecode.jdbw.util.MockResultSet;
+import com.googlecode.jdbw.util.SimpleResultSet;
 import com.googlecode.jdbw.util.SQLWorker;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -90,7 +91,7 @@ class SybaseASEMetaDataResolver extends DefaultServerMetaData {
                 rows.add(new Object[] { null, null, procedureName });
             }
         }
-        return new MockResultSet(rows);
+        return new SimpleResultSet(rows);
     }
 /*
     @Override
