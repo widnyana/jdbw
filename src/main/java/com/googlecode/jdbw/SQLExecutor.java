@@ -65,7 +65,7 @@ public interface SQLExecutor {
 
     /**
      * Executes a batch query where the SQL is structurally the same but parameters 
-     * are different. Usefull for inserting, updating or deleting multiple rows
+     * are different. Useful for inserting, updating or deleting multiple rows
      * from the same table.
      * @param handler Callback interface to use for any results of the query
      * @param SQL SQL to use for all queries, use ? for the parameter substitution
