@@ -35,7 +35,8 @@ import javax.sql.DataSource;
  * in the pool. There is no reconnection logic or anything, it just hands out
  * the same connection to one user at a time. Calling getConnection() on this
  * object while another process is using that connection will block until the
- * connection is returned to the pool.
+ * connection is returned to the pool. Needless to say, <b>don't use this in
+ * a production environment!</b>
  * @author Martin Berglund
  */
 public class OneSharedConnectionDataSource implements DataSource {
@@ -44,8 +45,7 @@ public class OneSharedConnectionDataSource implements DataSource {
         @Override
         public DataSource newDataSource(String jdbcUrl, Properties properties) {
             try {
-                return new OneSharedConnectionDataSource(
-                        DriverManager.getConnection(jdbcUrl, properties));
+                return new OneSharedConnectionDataSource(DriverManager.getConnection(jdbcUrl, properties));
             }
             catch(SQLException e) {
                 throw new RuntimeException(e);
