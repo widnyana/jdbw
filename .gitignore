@@ -1,0 +1,10 @@
+.orig
+.orig..*
+.chg..*
+.rej
+.conflict~
+target
+/nb-configuration.xml
+/nbactions.xml
+/jdbw.iml
+/.idea
