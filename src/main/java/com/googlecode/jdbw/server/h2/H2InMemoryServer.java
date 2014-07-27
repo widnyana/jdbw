@@ -18,29 +18,35 @@
  */
 package com.googlecode.jdbw.server.h2;
 
-import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseServerTypes;
-import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 
 /**
- *
+ * Represents a H2 in-memory database that is normally deleted once all connections have been closed. These are two
+ * separate modes for this, either anonymous or named. In anonymous mode, the database is completely private and can
+ * only be seen by the one connection that connected to it. If you open multiple connections, they will each have one
+ * private database each and cannot see each other. Because of this, database connection pooling is not possible. In
+ * named mode, you create a virtual database in-memory that multiple connections can connect to (any connections opened
+ * using the same name within the same JVM will be pointing at the same database).
  * @author Martin Berglund
  */
 public class H2InMemoryServer extends H2DatabaseServer {
 
     private final String name;
 
+    /**
+     * Defines an anonymous in-memory H2 server
+     */
     public H2InMemoryServer() {
         this(null);
     }
-    
+
+    /**
+     * Defines a named in-memory H2 server (or an anonymous if name is {@code null})
+     * @param name Name of the in-memory server, of {@code null} for an anonymous server
+     */
     public H2InMemoryServer(String name) {
         super(DatabaseServerTypes.H2_IN_MEMORY, name != null);
         this.name = name;
-    }
-    
-    public DatabaseConnection connect() {
-        return newConnectionFactory().connect(new OneSharedConnectionDataSource.Factory());
     }
 
     @Override
