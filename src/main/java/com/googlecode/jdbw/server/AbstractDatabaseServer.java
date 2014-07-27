@@ -36,11 +36,11 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * @see StandardDatabaseServer
  * @author Martin Berglund
  */
-public abstract class AbstractDatabaseServer implements DatabaseServer {
+public abstract class AbstractDatabaseServer<T extends DatabaseConnectionFactory> implements DatabaseServer<T> {
     
-    private final JDBCDriverDescriptor driverDescriptor;
+    private final JDBCDriverDescriptor<T> driverDescriptor;
 
-    public AbstractDatabaseServer(JDBCDriverDescriptor driverDescriptor) {
+    public AbstractDatabaseServer(JDBCDriverDescriptor<T> driverDescriptor) {
         this.driverDescriptor = driverDescriptor;
         registerJDBCDriver(driverDescriptor.getDriverClassName());
     }
@@ -55,12 +55,12 @@ public abstract class AbstractDatabaseServer implements DatabaseServer {
         connectionFactory.connect(new OneSharedConnectionDataSource.Factory()).close();
     }
     
-    protected JDBCDriverDescriptor getDriverDescriptor() {
+    protected JDBCDriverDescriptor<T> getDriverDescriptor() {
         return driverDescriptor;
     }
 
     @Override
-    public DatabaseConnectionFactory newConnectionFactory() {
+    public T newConnectionFactory() {
         return getDriverDescriptor().createDatabaseConnectionFactory(this);
     }
     

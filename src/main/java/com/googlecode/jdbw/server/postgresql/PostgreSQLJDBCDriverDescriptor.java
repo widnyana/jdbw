@@ -18,7 +18,6 @@
  */
 package com.googlecode.jdbw.server.postgresql;
 
-import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
@@ -29,7 +28,7 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  * client driver, {@code org.postgresql.Driver}
  * @author Martin Berglund
  */
-public class PostgreSQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
+public class PostgreSQLJDBCDriverDescriptor implements JDBCDriverDescriptor<AuthenticatingDatabaseConnectionFactory> {
     @Override
     public String formatJDBCUrl(DatabaseServer databaseServer) {
         return formatJDBCUrl(
@@ -48,7 +47,7 @@ public class PostgreSQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
     }
 
     @Override
-    public DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
+    public AuthenticatingDatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
         return new AuthenticatingDatabaseConnectionFactory(PostgreSQLServerType.INSTANCE, formatJDBCUrl(databaseServer));
     }
 }

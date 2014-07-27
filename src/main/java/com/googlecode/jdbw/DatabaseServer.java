@@ -27,7 +27,7 @@ import java.sql.SQLException;
  * {@code DatabaseConnection} to it.
  * @author Martin Berglund
  */
-public interface DatabaseServer {
+public interface DatabaseServer<T extends DatabaseConnectionFactory> {
 
     /**
      * @return Type of the server
@@ -38,7 +38,7 @@ public interface DatabaseServer {
      * Creates a new {@link DatabaseConnectionFactory} that can be used for establishing a JDBC connection to this database.
      * @return A {@link DatabaseConnectionFactory} targeting this database server
      */
-    DatabaseConnectionFactory newConnectionFactory();
+    T newConnectionFactory();
     
     /**
      * Tries to create a new database connection and immediately close it. If there is any 

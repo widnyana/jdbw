@@ -28,7 +28,7 @@ import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
  *
  * @author Martin Berglund
  */
-public abstract class H2DatabaseServer extends AbstractDatabaseServer {
+public abstract class H2DatabaseServer extends AbstractDatabaseServer<H2DatabaseConnectionFactory> {
     private final H2ServerType serverType;
     private final boolean allowMultipleConnections;
 

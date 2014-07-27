@@ -19,7 +19,6 @@
 
 package com.googlecode.jdbw.server.sybase;
 
-import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
@@ -34,7 +33,7 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  * @see StandardDatabaseServer
  * @author Martin Berglund
  */
-public class SybaseASEServer extends StandardDatabaseServer {
+public class SybaseASEServer extends StandardDatabaseServer<SybaseDatabaseConnectionFactory> {
         
     public SybaseASEServer(
             String hostname, 
@@ -45,7 +44,7 @@ public class SybaseASEServer extends StandardDatabaseServer {
     }
 
     protected SybaseASEServer(
-            JDBCDriverDescriptor driverDescriptor, 
+            JDBCDriverDescriptor<SybaseDatabaseConnectionFactory> driverDescriptor,
             String hostname, 
             int port, 
             String catalog) {

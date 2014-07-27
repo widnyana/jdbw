@@ -25,7 +25,7 @@ package com.googlecode.jdbw;
  * @see com.googlecode.jdbw.server.mysql.MySQLJDBCDriverDescriptor
  * @author Martin Berglund
  */
-public interface JDBCDriverDescriptor {
+public interface JDBCDriverDescriptor<T extends DatabaseConnectionFactory> {
     /**
      * @return The full path of the JDBC driver class to be loaded
      */
@@ -40,5 +40,5 @@ public interface JDBCDriverDescriptor {
      */
     String formatJDBCUrl(DatabaseServer databaseServer);
 
-    DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer);
+    T createDatabaseConnectionFactory(DatabaseServer databaseServer);
 }

@@ -19,13 +19,14 @@
 
 package com.googlecode.jdbw.server;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 
 /**
  * A database server which is connected to over TCP/IP network
  * @author Martin Berglund
  */
-public interface NetworkDatabaseServer extends DatabaseServer {
+public interface NetworkDatabaseServer<T extends DatabaseConnectionFactory> extends DatabaseServer<T> {
     String getHostname();
     int getPort();
 }

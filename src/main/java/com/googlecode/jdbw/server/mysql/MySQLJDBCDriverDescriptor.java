@@ -19,7 +19,6 @@
 
 package com.googlecode.jdbw.server.mysql;
 
-import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
@@ -29,7 +28,7 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  * driver. 
  * @author Martin Berglund
  */
-public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
+public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor<MySQLDatabaseConnectionFactory> {
 
     @Override
     public String getDriverClassName() {
@@ -49,7 +48,7 @@ public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor {
     }
 
     @Override
-    public DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
+    public MySQLDatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
         return new MySQLDatabaseConnectionFactory(formatJDBCUrl(databaseServer));
     }
 }

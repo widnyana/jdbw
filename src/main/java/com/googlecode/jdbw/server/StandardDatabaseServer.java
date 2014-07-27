@@ -18,6 +18,7 @@
  */
 package com.googlecode.jdbw.server;
 
+import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
@@ -25,14 +26,16 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
  * methods and some default implementations for the interface methods. 
  * @author Martin Berglund
  */
-public abstract class StandardDatabaseServer extends AbstractDatabaseServer implements NetworkDatabaseServer {
+public abstract class StandardDatabaseServer<T extends DatabaseConnectionFactory>
+        extends AbstractDatabaseServer<T>
+        implements NetworkDatabaseServer<T> {
 
     private final String hostname;
     private final int port;
     private final String defaultCatalog;
 
     protected StandardDatabaseServer(
-            JDBCDriverDescriptor driverDescriptor,
+            JDBCDriverDescriptor<T> driverDescriptor,
             String hostname, 
             int port,
             String defaultCatalog) {

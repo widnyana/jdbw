@@ -28,7 +28,7 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  * TCP/IP network. 
  * @author Martin Berglund
  */
-public class MySQLServer extends StandardDatabaseServer {
+public class MySQLServer extends StandardDatabaseServer<MySQLDatabaseConnectionFactory> {
     
     public static final int DEFAULT_MYSQL_PORT = 3306;
     
@@ -40,7 +40,7 @@ public class MySQLServer extends StandardDatabaseServer {
         this(new MySQLJDBCDriverDescriptor(), hostname, port, catalog);
     }
 
-    protected MySQLServer(JDBCDriverDescriptor driverDescriptor, String hostname, int port, String catalog) {
+    protected MySQLServer(JDBCDriverDescriptor<MySQLDatabaseConnectionFactory> driverDescriptor, String hostname, int port, String catalog) {
         super(driverDescriptor, hostname, port, catalog);
     }
 

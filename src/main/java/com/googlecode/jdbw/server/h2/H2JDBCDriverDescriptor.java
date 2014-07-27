@@ -19,7 +19,6 @@
 
 package com.googlecode.jdbw.server.h2;
 
-import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
@@ -27,7 +26,7 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
  *
  * @author Martin Berglund
  */
-public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
+public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor<H2DatabaseConnectionFactory> {
 
     public String formatJDBCUrlForAnonymousInMemory() {
         return "jdbc:h2:mem:";
@@ -59,7 +58,7 @@ public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor {
     }
 
     @Override
-    public DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
+    public H2DatabaseConnectionFactory createDatabaseConnectionFactory(DatabaseServer databaseServer) {
         if(!(databaseServer instanceof H2DatabaseServer)) {
             throw new IllegalArgumentException("Cannot pass in " + databaseServer + " to " +
                     "H2JDBCDriverDescriptor.createDatabaseConnectionFactory(..)");

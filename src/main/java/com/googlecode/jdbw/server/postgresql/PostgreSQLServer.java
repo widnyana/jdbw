@@ -21,6 +21,7 @@ package com.googlecode.jdbw.server.postgresql;
 import com.googlecode.jdbw.DatabaseServerType;
 import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
+import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
@@ -29,7 +30,7 @@ import com.googlecode.jdbw.server.StandardDatabaseServer;
  * @see StandardDatabaseServer
  * @author Martin Berglund
  */
-public class PostgreSQLServer extends StandardDatabaseServer {
+public class PostgreSQLServer extends StandardDatabaseServer<AuthenticatingDatabaseConnectionFactory> {
     public PostgreSQLServer(
             String hostname,
             int port,
@@ -38,7 +39,7 @@ public class PostgreSQLServer extends StandardDatabaseServer {
     }
 
     protected PostgreSQLServer(
-            JDBCDriverDescriptor driverDescriptor,
+            JDBCDriverDescriptor<AuthenticatingDatabaseConnectionFactory> driverDescriptor,
             String hostname,
             int port,
             String catalog) {
