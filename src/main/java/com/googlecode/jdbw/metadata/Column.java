@@ -19,6 +19,10 @@
 package com.googlecode.jdbw.metadata;
 
 import java.sql.DatabaseMetaData;
+import java.sql.Types;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A column is a part of a database table or a view, holding a specific value for every
@@ -140,5 +144,54 @@ public abstract class Column implements Comparable<Column> {
     @Override
     public String toString() {
         return "Column{" + getName() + " " + getNativeTypeName() + "(" + getColumnSize() + ")}";
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 37 * hash + this.sqlType;
+        hash = 37 * hash + this.columnSize;
+        hash = 37 * hash + this.decimalDigits;
+        hash = 37 * hash + (this.nullable != null ? this.nullable.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass().isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        final Column other = (Column) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.sqlType != other.sqlType) {
+            return false;
+        }
+        final Set<Integer> sizeMatters = 
+                new HashSet<Integer>(
+                        Arrays.asList(
+                                //String types
+                                Types.CHAR, Types.VARCHAR, Types.BINARY, Types.VARBINARY, Types.NCHAR, Types.NVARCHAR,
+                                //Numeric types
+                                Types.DECIMAL, Types.NUMERIC));
+        if(sizeMatters.contains(this.sqlType)) {
+            if (this.columnSize != other.columnSize) {
+                return false;
+            }
+            if(this.sqlType == Types.DECIMAL || this.sqlType == Types.NUMERIC) {
+                if (this.decimalDigits != other.decimalDigits) {
+                    return false;
+                }
+            }
+        }
+        if (this.nullable != other.nullable) {
+            return false;
+        }
+        return true;
     }
 }
