@@ -1,5 +1,6 @@
 package com.googlecode.jdbw;
 
+import com.googlecode.jdbw.metadata.Column;
 import java.sql.ResultSetMetaData;
 import java.util.List;
 
@@ -50,4 +51,12 @@ public interface ResultSetInformation {
      * @throws ArrayIndexOutOfBoundsException If columnIndex was out of bounds
      */
     int getColumnSQLType(int columnIndex) throws ArrayIndexOutOfBoundsException;
+
+    /**
+     * Returns all the columns in the result set in Column format. This representation contains more meta data that
+     * isn't available unless you retrieve the ResultSetMetaData directly.
+     * @return List of the columns in the result set
+     * @see Column
+     */
+    List<Column> getColumns();
 }
