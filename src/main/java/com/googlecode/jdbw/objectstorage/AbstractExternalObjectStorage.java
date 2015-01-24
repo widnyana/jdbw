@@ -144,7 +144,7 @@ public abstract class AbstractExternalObjectStorage extends AbstractObjectStorag
 
     @Override
     public <K, O extends Storable<K>> O remoteGet(Class<O> type, K key) {
-        List<O> objects = remoteGetSome(type, Arrays.asList(key));
+        List<O> objects = remoteGetSome(type, key);
         if(!objects.isEmpty()) {
             return objects.get(0);
         }

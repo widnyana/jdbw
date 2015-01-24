@@ -20,11 +20,11 @@ package com.googlecode.jdbw.objectstorage;
 
 import java.util.Collection;
 
-public interface ObjectCache {
-    Storable get(Object key);
-    Collection<Storable> values();
-    void remove(Collection ids);
+public interface ObjectCache<K, V extends Storable<K>> {
+    V get(K key);
+    Collection<V> values();
+    void remove(Collection<K> ids);
     void removeAll();
-    void put(Storable o);
+    void put(V o);
     int size();
 }

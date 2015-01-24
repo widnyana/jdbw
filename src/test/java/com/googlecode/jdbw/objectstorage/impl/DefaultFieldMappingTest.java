@@ -139,7 +139,7 @@ public class DefaultFieldMappingTest extends TestBase {
     public void testGetFieldTypes() {
         System.out.println("getFieldTypes");
         DefaultFieldMapping instance = new DefaultFieldMapping(Person.class);
-        Set<Class> expResult = new HashSet<Class>(Arrays.asList(int.class, String.class, Date.class));
+        Set<Class> expResult = new HashSet<Class>(Arrays.<Class>asList(int.class, String.class, Date.class));
         Set<Class> result = new HashSet<Class>(instance.getFieldTypes());
         assertEquals(expResult, result);
     }

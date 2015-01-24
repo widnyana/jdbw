@@ -22,18 +22,21 @@ package com.googlecode.jdbw.impl;
 import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Package private class used by {@code DatabaseConnectionImpl} as the 
+ * Package private class used by {@code DatabaseConnectionImpl} as the
  * transaction implementation.
+ *
  * @author Martin Berglund
  */
-class DatabaseTransactionImpl implements DatabaseTransaction
-{
+class DatabaseTransactionImpl implements DatabaseTransaction {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseTransactionImpl.class);
     private final TransactionIsolation transactionIsolation;
     private Connection connection;
     private SQLExecutor executor;
@@ -42,8 +45,7 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     DatabaseTransactionImpl(
             Connection connection,
             SQLExecutor executor,
-            TransactionIsolation transactionIsolation)
-    {
+            TransactionIsolation transactionIsolation) {
         this.connection = connection;
         this.transactionIsolation = transactionIsolation;
         this.executor = executor;
@@ -51,11 +53,10 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     }
 
     @Override
-    public synchronized void commit() throws SQLException
-    {
+    public synchronized void commit() throws SQLException {
         executor = null;
         try {
-            if(initialized) {       
+            if (initialized) {
                 connection.commit();
             }
         }
@@ -63,18 +64,18 @@ class DatabaseTransactionImpl implements DatabaseTransaction
             try {
                 connection.close();
             }
-            catch(SQLException e) {                
+            catch (SQLException e) {
+                LOGGER.error("Cannot close/return the database connection after commit()", e);
             }
         }
         connection = null;
     }
 
     @Override
-    public synchronized void rollback() throws SQLException
-    {
+    public synchronized void rollback() throws SQLException {
         executor = null;
         try {
-            if(initialized) {
+            if (initialized) {
                 connection.rollback();
             }
         }
@@ -82,7 +83,8 @@ class DatabaseTransactionImpl implements DatabaseTransaction
             try {
                 connection.close();
             }
-            catch(SQLException e) {                
+            catch (SQLException e) {
+                LOGGER.error("Cannot close/return the database connection after rollback()", e);
             }
         }
         connection = null;
@@ -100,11 +102,11 @@ class DatabaseTransactionImpl implements DatabaseTransaction
 
     @Override
     public void execute(ExecuteResultHandler handler, int maxRowsToFetch, int queryTimeout, String SQL, Object... parameters) throws SQLException {
-        if(connection == null) {
+        if (connection == null) {
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
         }
 
-        if(!initialized) {
+        if (!initialized) {
             initialize();
         }
 
@@ -117,13 +119,12 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     }
 
     @Override
-    public synchronized void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
-    {
-        if(connection == null) {
+    public synchronized void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException {
+        if (connection == null) {
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
         }
 
-        if(!initialized) {
+        if (!initialized) {
             initialize();
         }
 
@@ -136,21 +137,19 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     }
 
     @Override
-    public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException
-    {
-        if(connection == null) {
+    public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException {
+        if (connection == null) {
             throw new SQLException("Tried to call DefaultDatabaseTransaction.query after commit, rollback or revoked!");
         }
 
-        if(!initialized) {
+        if (!initialized) {
             initialize();
         }
 
         executor.batchWrite(handler, batchedSQL);
     }
 
-    private void initialize() throws SQLException
-    {
+    private void initialize() throws SQLException {
         connection.setAutoCommit(false);
         connection.setTransactionIsolation(transactionIsolation.getConstant());
         initialized = true;

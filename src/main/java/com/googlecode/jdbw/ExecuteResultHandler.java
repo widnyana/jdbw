@@ -20,7 +20,6 @@ package com.googlecode.jdbw;
 
 import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
 import java.sql.SQLWarning;
-import java.util.List;
 
 /**
  * This interface is used to handle results when executing custom SQL code. It 

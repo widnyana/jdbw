@@ -22,7 +22,6 @@ import com.googlecode.jdbw.ExecuteResultHandler;
 import com.googlecode.jdbw.ResultSetInformation;
 
 import java.sql.SQLWarning;
-import java.util.List;
 
 /**
  * This is a convenience class that implements ExecuteResultHandler and provides a default method implementation for

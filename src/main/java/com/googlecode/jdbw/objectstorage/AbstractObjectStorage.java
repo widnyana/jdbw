@@ -27,7 +27,7 @@ public abstract class AbstractObjectStorage implements ObjectStorage {
 
     @Override
     public <K, O extends Storable<K>> O get(Class<O> type, K id) {
-        List<O> result = getSome(type, Arrays.asList(id));
+        List<O> result = getSome(type, id);
         if(result.isEmpty()) {
             return null;
         }

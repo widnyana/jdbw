@@ -21,7 +21,7 @@ package com.googlecode.jdbw.objectstorage.impl;
 import com.googlecode.jdbw.objectstorage.ObjectStorage;
 import com.googlecode.jdbw.objectstorage.TestBase;
 import java.util.Arrays;
-import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

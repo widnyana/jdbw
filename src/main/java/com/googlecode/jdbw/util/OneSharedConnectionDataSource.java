@@ -20,6 +20,8 @@
 package com.googlecode.jdbw.util;
 
 import com.googlecode.jdbw.DataSourceFactory;
+import org.slf4j.LoggerFactory;
+
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,6 +42,8 @@ import javax.sql.DataSource;
  * @author Martin Berglund
  */
 public class OneSharedConnectionDataSource implements DataSource {
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OneSharedConnectionDataSource.class);
     
     public static class Factory implements DataSourceFactory {
         @Override
@@ -70,6 +74,7 @@ public class OneSharedConnectionDataSource implements DataSource {
             connectionQueue.poll().close();
         }
         catch(SQLException e) {
+            LOGGER.error("Unable to close database connection", e);
         }
     }
 

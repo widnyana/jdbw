@@ -189,9 +189,6 @@ public abstract class Column implements Comparable<Column> {
                 }
             }
         }
-        if (this.nullable != other.nullable) {
-            return false;
-        }
-        return true;
+        return this.nullable == other.nullable;
     }
 }

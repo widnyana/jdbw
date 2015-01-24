@@ -24,26 +24,26 @@ import com.googlecode.jdbw.objectstorage.Storable;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConcurrentHashMapObjectCache implements ObjectCache {
+public class ConcurrentHashMapObjectCache<K, V extends Storable<K>> implements ObjectCache<K, V> {
 
-    private final ConcurrentHashMap<Object, Storable> hashMap;
+    private final ConcurrentHashMap<K, V> hashMap;
 
     public ConcurrentHashMapObjectCache() {
-        hashMap = new ConcurrentHashMap<Object, Storable>();
+        hashMap = new ConcurrentHashMap<K, V>();
     }
     
     @Override
-    public Storable get(Object key) {
+    public V get(K key) {
         return hashMap.get(key);
     }
 
     @Override
-    public Collection<Storable> values() {
+    public Collection<V> values() {
         return hashMap.values();
     }
 
     @Override
-    public void remove(Collection ids) {
+    public void remove(Collection<K> ids) {
         hashMap.keySet().removeAll(ids);
     }
 
@@ -53,7 +53,7 @@ public class ConcurrentHashMapObjectCache implements ObjectCache {
     }
 
     @Override
-    public void put(Storable o) {
+    public void put(V o) {
         hashMap.put(o.getId(), o);
     }
 

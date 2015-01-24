@@ -68,7 +68,7 @@ public class ViewColumn extends Column {
         return getView().getSchema().getCatalog().getName().equals(other.getView().getSchema().getCatalog().getName())
                 && getView().getSchema().getName().equals(other.getView().getSchema().getName())
                 && getView().getName().equals(other.getView().getName())
-                && getName().equals(getName());
+                && getName().equals(other.getName());
     }
 
     @Override

@@ -22,6 +22,9 @@ import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.metadata.Catalog;
 import com.googlecode.jdbw.metadata.ServerMetaData;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,7 +37,7 @@ import javax.sql.DataSource;
  * @author Martin Berglund
  */
 public class DatabaseConnectionImpl implements DatabaseConnection {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConnectionImpl.class);
     private final DatabaseServerType databaseServerType;
     private final DataSource dataSource;
     private final DataSourceCloser dataSourceCloser;
@@ -223,14 +226,18 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
                 connection = getConnection();
                 return TransactionIsolation.fromLevel(connection.getTransactionIsolation());
             }
-            catch(SQLException e) {}
+            catch(SQLException e) {
+                LOGGER.warn("Unable to get default transaction isolation", e);
+            }
         }
         finally {
             if(connection != null) {
                 try {
                     connection.close();
                 }
-                catch(SQLException e) {}
+                catch(SQLException e) {
+                    LOGGER.warn("Unable to close the database connection after getting the default transaction isolation", e);
+                }
             }
         }
         return null;
@@ -291,14 +298,18 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
                 connection = getConnection();
                 return connection.getCatalog();
             }
-            catch(SQLException e) {}
+            catch(SQLException e) {
+                LOGGER.warn("Unable to get the default catalog name", e);
+            }
         }
         finally {
             if(connection != null) {
                 try {
                     connection.close();
                 }
-                catch(SQLException e) {}
+                catch(SQLException e) {
+                    LOGGER.warn("Unable to close the database connection after getting the default catalog name", e);
+                }
             }
         }
         return null;

@@ -23,7 +23,7 @@ import com.googlecode.jdbw.DataSourceFactory;
 import com.googlecode.jdbw.DatabaseConnection;
 import com.googlecode.jdbw.DatabaseConnectionFactory;
 import com.googlecode.jdbw.DatabaseServerType;
-import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
+
 import java.util.Properties;
 import javax.sql.DataSource;
 

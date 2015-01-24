@@ -100,7 +100,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         return new DefaultObjectBuilderFactory() {
             @Override
             protected FieldMapping getFieldMapping(Class<? extends Storable> objectType) {
-                if(tableMappings.contains(objectType)) {
+                if(tableMappings.containsKey(objectType)) {
                     return tableMappings.get(objectType);
                 }
                 else {
@@ -256,7 +256,7 @@ public class JDBCObjectStorage extends AbstractObjectStorage {
         
         //Custom detection
         Class candidate = (Class)object.getClass();
-        if(tableMappings.contains(candidate)) {
+        if(tableMappings.containsKey(candidate)) {
            type = candidate; 
         }
         else if(object instanceof Proxy) {

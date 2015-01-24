@@ -231,6 +231,7 @@ public class AutoExecutor implements SQLExecutor {
     private Connection getNewConnection() throws SQLException {
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(true);
+        //noinspection MagicConstant
         connection.setTransactionIsolation(transactionIsolation.getConstant());
         return connection;
     }

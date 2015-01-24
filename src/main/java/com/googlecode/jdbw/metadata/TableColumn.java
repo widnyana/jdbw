@@ -67,7 +67,7 @@ public class TableColumn extends Column {
         return getTable().getSchema().getCatalog().getName().equals(other.getTable().getSchema().getCatalog().getName())
                 && getTable().getSchema().getName().equals(other.getTable().getSchema().getName())
                 && getTable().getName().equals(other.getTable().getName())
-                && getName().equals(getName());
+                && getName().equals(other.getName());
     }
 
     @Override

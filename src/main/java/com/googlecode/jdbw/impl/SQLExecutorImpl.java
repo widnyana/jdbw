@@ -23,6 +23,9 @@ import com.googlecode.jdbw.*;
 import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
 import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
 import com.googlecode.jdbw.util.NullValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Arrays;
@@ -31,22 +34,23 @@ import java.util.List;
 /**
  * This class is an implementation of the {@code SQLExecutor} that provides
  * most of the functionality required for sending queries and receiving data.
- * This class does not deal with setting up and tearing down database 
+ * This class does not deal with setting up and tearing down database
  * connections; rather it expects the user to pass in a valid connection and
  * close it when done.
- * 
- * <p>Normally, you wouldn't use this class directly, but rather through 
+ * <p/>
+ * <p>Normally, you wouldn't use this class directly, but rather through
  * classes such as the {@code AutoExecutor} or the {@code DatabaseTransaction},
- * which is using this class behind the scenes. You call methods on  
+ * which is using this class behind the scenes. You call methods on
  * {@code DatabaseConnection} to get one of those.
- * 
+ *
+ * @author Martin Berglund
  * @see AutoExecutor
  * @see DatabaseTransaction
  * @see DatabaseConnection
- * @author Martin Berglund
  */
-public abstract class SQLExecutorImpl implements SQLExecutor
-{
+public abstract class SQLExecutorImpl implements SQLExecutor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SQLExecutorImpl.class);
+
     protected final Connection connection;
 
     protected SQLExecutorImpl(Connection connection) {
@@ -69,7 +73,7 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         ResultSet resultSet = null;
         try {
             statement = prepareExecuteStatement(SQL);
-            for(int i = 0; i < parameters.length; i++) {
+            for (int i = 0; i < parameters.length; i++) {
                 setParameter(statement, parameters[i], i + 1);
             }
 
@@ -77,9 +81,9 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             setMaxRowsToFetch(statement, maxRowsToFetch);
             execute(statement);
 
-            if(canGetGeneratedKeys(SQL)) {
+            if (canGetGeneratedKeys(SQL)) {
                 ResultSet generatedKeys = getGeneratedKeys(statement);
-                if(generatedKeys != null) {
+                if (generatedKeys != null) {
                     while (generatedKeys.next()) {
                         handler.onGeneratedKey(generatedKeys.getObject(1));
                     }
@@ -88,15 +92,15 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             }
 
             int resultSetCounter = 0;
-            while(true) {
+            while (true) {
                 int updateCount = getUpdateCount(statement);
-                if(updateCount != -1) {
+                if (updateCount != -1) {
                     handler.onUpdateCount(updateCount);
                     statement.getMoreResults();
                     continue;
                 }
                 resultSet = getResultSet(statement);
-                if(resultSet == null) {
+                if (resultSet == null) {
                     if (statement.getMoreResults() == false) {
                         break;
                     }
@@ -105,21 +109,21 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
                 boolean gotCancel = false;
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-                if(!handler.onResultSet(new ResultSetInformationImpl(resultSetMetaData, resultSetCounter++))) {
+                if (!handler.onResultSet(new ResultSetInformationImpl(resultSetMetaData, resultSetCounter++))) {
                     gotCancel = true;
                 }
 
                 SQLWarning warning = getWarnings(resultSet);
-                if(warning != null) {
+                if (warning != null) {
                     handler.onWarning(warning);
                 }
 
-                while(resultSet.next() && !gotCancel) {
-                    Object []row = new Object[resultSetMetaData.getColumnCount()];
-                    for(int i = 0; i < row.length; i++) {
+                while (resultSet.next() && !gotCancel) {
+                    Object[] row = new Object[resultSetMetaData.getColumnCount()];
+                    for (int i = 0; i < row.length; i++) {
                         row[i] = resultSet.getObject(i + 1);
                     }
-                    if(!handler.nextRow(row)) {
+                    if (!handler.nextRow(row)) {
                         gotCancel = true;
                     }
                 }
@@ -128,15 +132,21 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             handler.onDone();
         }
         finally {
-            if(resultSet != null) {
+            if (resultSet != null) {
                 try {
                     close(resultSet);
-                } catch(SQLException e) {}
+                }
+                catch (SQLException e) {
+                    LOGGER.error("Unable to close result set after query", e);
+                }
             }
-            if(statement != null) {
+            if (statement != null) {
                 try {
                     close(statement);
-                } catch(SQLException e) {}
+                }
+                catch (SQLException e) {
+                    LOGGER.error("Unable to close statement after query", e);
+                }
             }
         }
     }
@@ -147,24 +157,23 @@ public abstract class SQLExecutorImpl implements SQLExecutor
     }
 
     @Override
-    public void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
-    {
+    public void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException {
         PreparedStatement statement = null;
         try {
             statement = prepareBatchUpdateStatement(SQL);
 
-            for(Object []row: parameters) {
-                for(int i = 0; i < row.length; i++) {
+            for (Object[] row : parameters) {
+                for (int i = 0; i < row.length; i++) {
                     setParameter(statement, row[i], i + 1);
                 }
                 addBatch(statement);
             }
 
-            int []batchResult = executeBatch(statement);
+            int[] batchResult = executeBatch(statement);
             handler.onBatchResult(batchResult);
 
             ResultSet generatedKeys = getGeneratedKeys(statement);
-            if(generatedKeys != null) {
+            if (generatedKeys != null) {
                 while (generatedKeys.next()) {
                     handler.onGeneratedKey(generatedKeys.getObject(1));
                 }
@@ -172,15 +181,18 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             }
 
             SQLWarning warning = getWarnings(statement);
-            if(warning != null) {
+            if (warning != null) {
                 handler.onWarning(warning);
             }
         }
         finally {
-            if(statement != null) {
+            if (statement != null) {
                 try {
                     close(statement);
-                } catch(SQLException e) {}
+                }
+                catch (SQLException e) {
+                    LOGGER.error("Unable to close statement after batch write", e);
+                }
             }
         }
     }
@@ -191,20 +203,19 @@ public abstract class SQLExecutorImpl implements SQLExecutor
     }
 
     @Override
-    public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException
-    {
+    public void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException {
         Statement statement = null;
         try {
             statement = connection.createStatement();
-            for(String row: batchedSQL) {
+            for (String row : batchedSQL) {
                 addBatch(statement, row);
             }
 
-            int []batchResult = executeBatch(statement);
+            int[] batchResult = executeBatch(statement);
             handler.onBatchResult(Arrays.copyOf(batchResult, batchResult.length));
 
             ResultSet generatedKeys = getGeneratedKeys(statement);
-            if(generatedKeys != null) {
+            if (generatedKeys != null) {
                 while (generatedKeys.next()) {
                     handler.onGeneratedKey(generatedKeys.getObject(1));
                 }
@@ -212,13 +223,18 @@ public abstract class SQLExecutorImpl implements SQLExecutor
             }
 
             SQLWarning warning = getWarnings(statement);
-            if(warning != null) {
+            if (warning != null) {
                 handler.onWarning(warning);
             }
         }
         finally {
-            if(statement != null) {
-                try { close(statement); } catch(SQLException e) {}
+            if (statement != null) {
+                try {
+                    close(statement);
+                }
+                catch (SQLException e) {
+                    LOGGER.error("Unable to close statement after batch write", e);
+                }
             }
         }
     }
@@ -294,25 +310,21 @@ public abstract class SQLExecutorImpl implements SQLExecutor
     protected void execute(PreparedStatement statement) throws SQLException {
         statement.execute();
     }
-    
-    protected PreparedStatement prepareGeneralStatement(String SQL) throws SQLException
-    {
+
+    protected PreparedStatement prepareGeneralStatement(String SQL) throws SQLException {
         return connection.prepareStatement(SQL);
     }
 
-    protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException
-    {
+    protected PreparedStatement prepareInsertStatement(String SQL) throws SQLException {
         return connection.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
     }
 
-    protected PreparedStatement prepareBatchUpdateStatement(String SQL) throws SQLException
-    {
+    protected PreparedStatement prepareBatchUpdateStatement(String SQL) throws SQLException {
         return connection.prepareStatement(SQL, Statement.NO_GENERATED_KEYS);
     }
 
-    private PreparedStatement prepareExecuteStatement(String SQL) throws SQLException
-    {
-        if(canGetGeneratedKeys(SQL)) {
+    private PreparedStatement prepareExecuteStatement(String SQL) throws SQLException {
+        if (canGetGeneratedKeys(SQL)) {
             return prepareInsertStatement(SQL);
         }
         else {
@@ -320,57 +332,74 @@ public abstract class SQLExecutorImpl implements SQLExecutor
         }
     }
 
-    protected void executeUpdate(Statement statement, String SQL) throws SQLException
-    {
+    protected void executeUpdate(Statement statement, String SQL) throws SQLException {
         statement.executeUpdate(SQL, Statement.RETURN_GENERATED_KEYS);
     }
 
-    protected ResultSet getGeneratedKeys(Statement statement) throws SQLException
-    {
+    protected ResultSet getGeneratedKeys(Statement statement) throws SQLException {
         return statement.getGeneratedKeys();
     }
 
-    protected void setParameter(PreparedStatement statement, Object object, int i) throws SQLException
-    {
-        if(object == null)
+    protected void setParameter(PreparedStatement statement, Object object, int i) throws SQLException {
+        if (object == null) {
             statement.setNull(i, java.sql.Types.VARCHAR);
-        else if(object instanceof NullValue.Binary)
+        }
+        else if (object instanceof NullValue.Binary) {
             statement.setNull(i, java.sql.Types.BINARY);
-        else if(object instanceof NullValue.Decimal)
+        }
+        else if (object instanceof NullValue.Decimal) {
             statement.setNull(i, java.sql.Types.DECIMAL);
-        else if(object instanceof NullValue.Double)
+        }
+        else if (object instanceof NullValue.Double) {
             statement.setNull(i, java.sql.Types.DOUBLE);
-        else if(object instanceof NullValue.Integer)
+        }
+        else if (object instanceof NullValue.Integer) {
             statement.setNull(i, java.sql.Types.INTEGER);
-        else if(object instanceof NullValue.String)
+        }
+        else if (object instanceof NullValue.String) {
             statement.setNull(i, java.sql.Types.VARCHAR);
-        else if(object instanceof NullValue.Timestamp)
+        }
+        else if (object instanceof NullValue.Timestamp) {
             statement.setNull(i, java.sql.Types.TIMESTAMP);
-        else if(object instanceof String)
-            statement.setString(i, (String)object);
-        else if(object instanceof Byte)
-            statement.setByte(i, (Byte)object);
-        else if(object instanceof Short)
-            statement.setShort(i, (Short)object);
-        else if(object instanceof Integer)
-            statement.setInt(i, (Integer)object);
-        else if(object instanceof Long)
-            statement.setLong(i, (Long)object);
-        else if(object instanceof BigDecimal)
-            statement.setBigDecimal(i, (BigDecimal)object);
-        else if(object instanceof Date)
-            statement.setDate(i, (Date)object);
-        else if(object instanceof Double)
-            statement.setDouble(i, (Double)object);
-        else if(object instanceof Float)
-            statement.setFloat(i, (Float)object);
-        else if(object instanceof Boolean)
-            statement.setBoolean(i, (Boolean)object);
-        else if(object instanceof Timestamp)
-            statement.setTimestamp(i, (Timestamp)object);
-        else if(object instanceof java.util.Date)
-            statement.setTimestamp(i, new Timestamp(((java.util.Date)object).getTime()));
-        else
+        }
+        else if (object instanceof String) {
+            statement.setString(i, (String) object);
+        }
+        else if (object instanceof Byte) {
+            statement.setByte(i, (Byte) object);
+        }
+        else if (object instanceof Short) {
+            statement.setShort(i, (Short) object);
+        }
+        else if (object instanceof Integer) {
+            statement.setInt(i, (Integer) object);
+        }
+        else if (object instanceof Long) {
+            statement.setLong(i, (Long) object);
+        }
+        else if (object instanceof BigDecimal) {
+            statement.setBigDecimal(i, (BigDecimal) object);
+        }
+        else if (object instanceof Date) {
+            statement.setDate(i, (Date) object);
+        }
+        else if (object instanceof Double) {
+            statement.setDouble(i, (Double) object);
+        }
+        else if (object instanceof Float) {
+            statement.setFloat(i, (Float) object);
+        }
+        else if (object instanceof Boolean) {
+            statement.setBoolean(i, (Boolean) object);
+        }
+        else if (object instanceof Timestamp) {
+            statement.setTimestamp(i, (Timestamp) object);
+        }
+        else if (object instanceof java.util.Date) {
+            statement.setTimestamp(i, new Timestamp(((java.util.Date) object).getTime()));
+        }
+        else {
             statement.setObject(i, object);
+        }
     }
 }

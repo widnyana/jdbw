@@ -18,6 +18,9 @@
  */
 package com.googlecode.jdbw.metadata;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -31,7 +34,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 public class DefaultServerMetaData implements ServerMetaData {
-    
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultServerMetaData.class);
     protected final DataSource dataSource;
 
     public DefaultServerMetaData(DataSource dataSource) {
@@ -87,6 +91,7 @@ public class DefaultServerMetaData implements ServerMetaData {
                     resultSet.close();
                 }
                 catch(SQLException e2) {
+                    LOGGER.error("Failed to close the result set", e2);
                 }
             }
         }
@@ -123,6 +128,7 @@ public class DefaultServerMetaData implements ServerMetaData {
                     resultSet.close();
                 }
                 catch(SQLException e2) {
+                    LOGGER.error("Failed to close the result set", e2);
                 }
             }
         }
@@ -372,6 +378,7 @@ public class DefaultServerMetaData implements ServerMetaData {
                 resultSet.close();
             }
             catch(SQLException e) {
+                LOGGER.error("Failed to close the result set", e);
             }
         }
     }

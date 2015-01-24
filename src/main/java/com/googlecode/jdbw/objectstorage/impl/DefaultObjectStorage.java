@@ -127,7 +127,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return new DefaultObjectBuilderFactory() {
             @Override
             protected FieldMapping getFieldMapping(Class<? extends Storable> objectType) {
-                if(storageCells.contains(objectType)) {
+                if(storageCells.containsKey(objectType)) {
                     return storageCells.get(objectType).getFieldMapping();
                 }
                 else {
@@ -187,7 +187,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         
         //Custom detection
         Class candidate = (Class)object.getClass();
-        if(storageCells.contains(candidate)) {
+        if(storageCells.containsKey(candidate)) {
            type = candidate; 
         }
         else if(object instanceof Proxy) {
@@ -199,9 +199,9 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         return type;
     }
     
-    private static class Cell implements ObjectCache {
+    private static class Cell<K, V extends Storable<K>> implements ObjectCache<K, V> {
         final FieldMapping fieldMapping;
-        final ObjectCache cache;
+        final ObjectCache<K, V> cache;
 
         public Cell(FieldMapping fieldMapping, ObjectCache cache) {
             this.fieldMapping = fieldMapping;
@@ -213,17 +213,17 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         }
         
         @Override
-        public Storable get(Object key) {
+        public V get(K key) {
             return cache.get(key);
         }
 
         @Override
-        public Collection values() {
+        public Collection<V> values() {
             return cache.values();
         }
 
         @Override
-        public void remove(Collection ids) {
+        public void remove(Collection<K> ids) {
             cache.remove(ids);
         }
 
@@ -233,7 +233,7 @@ public class DefaultObjectStorage extends AbstractObjectStorage {
         }
 
         @Override
-        public void put(Storable o) {
+        public void put(V o) {
             cache.put(o);
         }
         

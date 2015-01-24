@@ -22,6 +22,9 @@ import com.googlecode.jdbw.SQLDialect;
 import com.googlecode.jdbw.metadata.Column;
 import com.googlecode.jdbw.metadata.Index;
 import com.googlecode.jdbw.util.NullValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Types;
@@ -40,6 +43,7 @@ import java.util.regex.Pattern;
  */
 public class DefaultSQLDialect implements SQLDialect {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSQLDialect.class);
     private static final Pattern decimalTimestampPattern = Pattern.compile("..............\\...?.?");
     private static final DateFormat decimalTimestampFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
     private static final DateFormat defaultTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -339,7 +343,10 @@ public class DefaultSQLDialect implements SQLDialect {
                 synchronized(decimalTimestampFormat) {
                     return formatDatetime(decimalTimestampFormat.parse(((BigDecimal) value).toPlainString()));
                 }
-            } catch(ParseException e) {
+            }
+            catch(ParseException e) {
+                LOGGER.error("Failed to parse " + ((BigDecimal)value).toPlainString() + " as a date using pattern " +
+                        "YYYYMMDDHHmmss.SSS");
             }
         }
 
