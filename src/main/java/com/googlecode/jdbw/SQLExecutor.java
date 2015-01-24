@@ -37,7 +37,7 @@ public interface SQLExecutor {
      * Sends a query to the database and ignores any results.
      * @param SQL SQL code to send to the database server, use ? for parameter substitution
      * @param parameters List of parameters to insert into the query, must be one for every ? used
-     * @throws SQLException
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void execute(String SQL, Object... parameters) throws SQLException;
 
@@ -46,7 +46,7 @@ public interface SQLExecutor {
      * @param handler Callback interface to use for any results of the query
      * @param SQL SQL code to send to the database server, use ? for parameter substitution
      * @param parameters List of parameters to insert into the query, must be one for every ? used
-     * @throws SQLException 
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException;
 
@@ -59,14 +59,14 @@ public interface SQLExecutor {
      * query hasn't come back yet (0 means no timeout)
      * @param SQL SQL code to send to the database server, use ? for parameter substitution
      * @param parameters List of parameters to insert into the query, must be one for every ? used
-     * @throws SQLException 
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void execute(ExecuteResultHandler handler, int maxRowsToFetch, int queryTimeoutInSeconds, String SQL, Object... parameters) throws SQLException;
 
     /**
      * Executes a list of queries as one batch on the remote database server and ignores any results
      * @param batchedSQL List of SQL to send to the remote server
-     * @throws SQLException
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void batchWrite(List<String> batchedSQL) throws SQLException;
 
@@ -74,7 +74,7 @@ public interface SQLExecutor {
      * Executes a list of queries as one batch on the remote database server
      * @param handler Callback interface to use for any results of the query
      * @param batchedSQL List of SQL to send to the remote server
-     * @throws SQLException 
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void batchWrite(BatchUpdateHandler handler, List<String> batchedSQL) throws SQLException;
 
@@ -84,7 +84,7 @@ public interface SQLExecutor {
      * from the same table. Results are ignored.
      * @param SQL SQL to use for all queries, use ? for the parameter substitution
      * @param parameters List of object arrays, where one array equals one query sent to the server
-     * @throws SQLException
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void batchWrite(String SQL, List<Object[]> parameters) throws SQLException;
 
@@ -95,7 +95,7 @@ public interface SQLExecutor {
      * @param handler Callback interface to use for any results of the query
      * @param SQL SQL to use for all queries, use ? for the parameter substitution
      * @param parameters List of object arrays, where one array equals one query sent to the server
-     * @throws SQLException 
+     * @throws SQLException If an error occurred in the JDBC driver or on the remote database server
      */
     void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException;
 }
