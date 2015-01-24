@@ -105,12 +105,7 @@ public class AutoExecutor implements SQLExecutor {
         assert this.connectionErrorRetryIntervalTimeUnit != null;
     }
 
-    /**
-     * Shortcut for calling execute(new ExecuteResultHandlerAdapter(), SQL, parameters);
-     * @param SQL SQL to execute on the remote database server, with ? marking each parameter
-     * @param parameters List of parameters to substitute each ? in the SQL
-     * @throws java.sql.SQLException
-     */
+    @Override
     public void execute(String SQL, Object... parameters) throws SQLException {
         execute(new ExecuteResultHandlerAdapter(), SQL, parameters);
     }
@@ -148,13 +143,7 @@ public class AutoExecutor implements SQLExecutor {
         }
     }
 
-    /**
-     * Shortcut for calling batchWrite(new BatchUpdateHandlerAdapter(), batchedSQL, parameters);
-     * @param SQL SQL to run on the remote database server, with ? marking a parameter
-     * @param parameters List of parameters for the SQL query. This controls how large the batch will be, each element
-     * in the list corresponds to one write in the batch.
-     * @throws java.sql.SQLException
-     */
+    @Override
     public void batchWrite(String SQL, List<Object[]> parameters) throws SQLException {
         batchWrite(new BatchUpdateHandlerAdapter(), SQL, parameters);
     }
@@ -187,11 +176,7 @@ public class AutoExecutor implements SQLExecutor {
         }
     }
 
-    /**
-     * Shortcut for calling batchWrite(new BatchUpdateHandlerAdapter(), batchedSQL);
-     * @param batchedSQL List SQL to execute on the remote database server in one batch.
-     * @throws java.sql.SQLException
-     */
+    @Override
     public void batchWrite(List<String> batchedSQL) throws SQLException {
         batchWrite(new BatchUpdateHandlerAdapter(), batchedSQL);
     }
