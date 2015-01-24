@@ -20,6 +20,9 @@
 package com.googlecode.jdbw.impl;
 
 import com.googlecode.jdbw.*;
+import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
+import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -86,6 +89,11 @@ class DatabaseTransactionImpl implements DatabaseTransaction
     }
 
     @Override
+    public void execute(String SQL, Object... parameters) throws SQLException {
+        execute(new ExecuteResultHandlerAdapter(), SQL, parameters);
+    }
+
+    @Override
     public void execute(ExecuteResultHandler handler, String SQL, Object... parameters) throws SQLException {
         execute(handler, 0, 0, SQL, parameters);
     }
@@ -103,7 +111,11 @@ class DatabaseTransactionImpl implements DatabaseTransaction
         executor.execute(handler, maxRowsToFetch, queryTimeout, SQL, parameters);
     }
 
-    
+    @Override
+    public void batchWrite(String SQL, List<Object[]> parameters) throws SQLException {
+        batchWrite(new BatchUpdateHandlerAdapter(), SQL, parameters);
+    }
+
     @Override
     public synchronized void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
     {
@@ -116,6 +128,11 @@ class DatabaseTransactionImpl implements DatabaseTransaction
         }
 
         executor.batchWrite(handler, SQL, parameters);
+    }
+
+    @Override
+    public void batchWrite(List<String> batchedSQL) throws SQLException {
+        batchWrite(new BatchUpdateHandlerAdapter(), batchedSQL);
     }
 
     @Override

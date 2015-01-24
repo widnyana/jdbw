@@ -20,6 +20,8 @@
 package com.googlecode.jdbw.impl;
 
 import com.googlecode.jdbw.*;
+import com.googlecode.jdbw.util.BatchUpdateHandlerAdapter;
+import com.googlecode.jdbw.util.ExecuteResultHandlerAdapter;
 import com.googlecode.jdbw.util.NullValue;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -49,6 +51,11 @@ public abstract class SQLExecutorImpl implements SQLExecutor
 
     protected SQLExecutorImpl(Connection connection) {
         this.connection = connection;
+    }
+
+    @Override
+    public void execute(String SQL, Object... parameters) throws SQLException {
+        execute(new ExecuteResultHandlerAdapter(), SQL, parameters);
     }
 
     @Override
@@ -135,6 +142,11 @@ public abstract class SQLExecutorImpl implements SQLExecutor
     }
 
     @Override
+    public void batchWrite(String SQL, List<Object[]> parameters) throws SQLException {
+        batchWrite(new BatchUpdateHandlerAdapter(), SQL, parameters);
+    }
+
+    @Override
     public void batchWrite(BatchUpdateHandler handler, String SQL, List<Object[]> parameters) throws SQLException
     {
         PreparedStatement statement = null;
@@ -171,6 +183,11 @@ public abstract class SQLExecutorImpl implements SQLExecutor
                 } catch(SQLException e) {}
             }
         }
+    }
+
+    @Override
+    public void batchWrite(List<String> batchedSQL) throws SQLException {
+        batchWrite(new BatchUpdateHandlerAdapter(), batchedSQL);
     }
 
     @Override
