@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * This is a very simple implementation of ResultSet which doesn't support many of the method calls but at least
- * gives you a ResultSet view of a set of row data.
+ * gives you a ResultSet view of a set of row data. You can use this to 'mock' result sets.
  * @author Martin Berglund
  */
 public class SimpleResultSet implements ResultSet {
@@ -41,12 +41,19 @@ public class SimpleResultSet implements ResultSet {
     private final List<Object[]> rows;
     private int pointer;
 
+    /**
+     * Creates a new and empty {@code SimpleResultSet}
+     */
     public SimpleResultSet() {
         this.rows = new ArrayList<Object[]>();
         this.nameMap = new HashMap<String, Integer>();
         this.pointer = -1;
     }
-    
+
+    /**
+     * Creates a new {@code SimpleResultSet} with pre-defined set of columns
+     * @param columnNames Names of the columns to pre-create
+     */
     public SimpleResultSet(String[] columnNames) {
         this();
         for(int i = 0; i < columnNames.length; i++) {
@@ -56,22 +63,41 @@ public class SimpleResultSet implements ResultSet {
             nameMap.put(columnNames[i], i);
         }
     }
-    
+
+    /**
+     * Creates a new {@code SimpleResultSet} based on a single row of data
+     * @param row Data row to initialize the result set to
+     */
     public SimpleResultSet(Object[] row) {
         this();
         this.rows.add(row);
-    }    
-    
+    }
+
+    /**
+     * Creates a new {@code SimpleResultSet} based on a number of rows, taken in the same order as they come out when
+     * iterating over the collection.
+     * @param rows Collection of rows to initialize the result set to
+     */
     public SimpleResultSet(Collection<Object[]> rows) {
         this();
         this.rows.addAll(rows);
     }
-    
+
+    /**
+     * Creates a new {@code SimpleResultSet} from a list of column names and a collection of rows. The rows will be
+     * stored in the same order as when iterating over the collection
+     * @param columnNames Names to use for the columns
+     * @param rows Data to pre-initialize the result set with
+     */
     public SimpleResultSet(String[] columnNames, Collection<Object[]> rows) {
         this(columnNames);
         this.rows.addAll(rows);
     }
-    
+
+    /**
+     * Adds a single row to the result set
+     * @param row Data to set the new row to
+     */
     public void addRow(Object[] row) {
         this.rows.add(row);
     }

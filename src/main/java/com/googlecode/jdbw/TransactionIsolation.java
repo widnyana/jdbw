@@ -21,9 +21,8 @@ package com.googlecode.jdbw;
 import java.sql.Connection;
 
 /**
- * This enum contains the various levels of transactional isolation supported by
- * JDBC. These values are all derived from constants on the 
- * {@code java.sql.Connection} class.
+ * This enum contains the various levels of transactional isolation supported by JDBC. These values are all derived from
+ * constants on the {@code java.sql.Connection} class.
  * 
  * For more information, please see
  * <a href="http://en.wikipedia.org/wiki/Transaction_isolation">wikipedia</a>.
@@ -79,6 +78,10 @@ public enum TransactionIsolation {
         this.label = label;
     }
 
+    /**
+     * Returns the integer value repressenting this isolation level in java.sql.Connection
+     * @return Isolation level constant in java.sql.Connection
+     */
     public int getConstant() {
         return level;
     }
@@ -88,21 +91,40 @@ public enum TransactionIsolation {
         return label;
     }
 
+    /**
+     * Given a label (same as what toString() returns), returns the matching isolation level object.
+     * @param label Label to find the isolation level for
+     * @return The isolation level this label is describing, or {@code null} if you passed in {@code null}
+     * @throws IllegalArgumentException If the label passed in wasn't {@code null} and didn't match any of the isolation
+     * levels
+     */
     public static TransactionIsolation fromLabel(String label) {
+        if(label == null) {
+            return null;
+        }
         for(TransactionIsolation isolation : values()) {
             if(label.equals(isolation.label)) {
                 return isolation;
             }
         }
-        return null;
+        throw new IllegalArgumentException("'" + label + "' is not a valid transaction isolation level");
     }
 
+    /**
+     * Returns the isolation level associated with an integer constant in java.sql.Connection describing isolation
+     * levels. Will throw IllegalArgumentException if the level didn't match any of the constants in Connection.
+     * @param level Level to get the {@TransactionIsolation} for
+     * @return The isolation level object associated with this value
+     * @throw IllegalArgumentException If the integer value passed in doesn't match any of the isolation level constants
+     * in java.sql.Connection.
+     */
     public static TransactionIsolation fromLevel(int level) {
         for(TransactionIsolation isolation : values()) {
             if(level == isolation.level) {
                 return isolation;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Integer value " + level + " doesn't match any transaction isolation level in " +
+                "java.sql.Connection");
     }
 }

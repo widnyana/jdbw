@@ -55,6 +55,10 @@ public abstract class StandardDatabaseServer<T extends DatabaseConnectionFactory
         return port;
     }
 
+    /**
+     * Returns the default catalog of this database server
+     * @return Default catalog of this database server
+     */
     public String getDefaultCatalog() {
         return defaultCatalog;
     }

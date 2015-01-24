@@ -20,28 +20,25 @@
 package com.googlecode.jdbw.util;
 
 import com.googlecode.jdbw.BatchUpdateHandler;
+
 import java.sql.SQLWarning;
 
 /**
- * This is a convenience class that implements BatchUpdateHandler and provides
- * a default method implementation for this interface. You can then override 
- * only the methods that you care about.
+ * This is a convenience class that implements BatchUpdateHandler and provides a default method implementation for this
+ * interface. You can then override only the methods that you care about.
+ *
  * @author Martin Berglund
  */
-public class BatchUpdateHandlerAdapter implements BatchUpdateHandler
-{
+public class BatchUpdateHandlerAdapter implements BatchUpdateHandler {
     @Override
-    public void onGeneratedKey(Object object)
-    {
+    public void onGeneratedKey(Object object) {
     }
 
     @Override
-    public void onWarning(SQLWarning warning)
-    {
+    public void onWarning(SQLWarning warning) {
     }
 
     @Override
-    public void onBatchResult(int[] returnCodes)
-    {
+    public void onBatchResult(int[] returnCodes) {
     }
 }

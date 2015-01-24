@@ -49,6 +49,13 @@ public class Table implements Comparable<Table> {
     private List<TableColumn> cachedColumns;
     private List<Index> cachedIndexes;
 
+    /**
+     * Creates a new table object based on a specified schema that it belongs to, a name and a meta-data resolving
+     * object to be used when loading further details about this table
+     * @param metaDataResolver
+     * @param schema
+     * @param tableName
+     */
     public Table(ServerMetaData metaDataResolver, Schema schema, String tableName) {
         this.metaDataResolver = metaDataResolver;
         this.schema = schema;
@@ -58,6 +65,7 @@ public class Table implements Comparable<Table> {
     }
 
     /**
+     * Returns the name of the table this object is representing
      * @return Name of the table
      */
     public String getName() {
@@ -65,6 +73,7 @@ public class Table implements Comparable<Table> {
     }
 
     /**
+     * Return the schema that this table belongs to
      * @return The schema which owns the table
      */
     public Schema getSchema() {
@@ -72,13 +81,11 @@ public class Table implements Comparable<Table> {
     }
 
     /**
-     * This method will return you the primary key if there is one, otherwise
-     * scan through the list of indexes and return the first available unique
-     * index. If none is found, it returns null.
+     * This method will return you the primary key if there is one, otherwise scan through the list of indexes and
+     * return the first available unique index. If none is found, it returns {@code null}.
      * 
      * @return First available unique index or null
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public Index getUniqueKey() throws SQLException {
         if(getPrimaryKey() != null) {
@@ -93,10 +100,10 @@ public class Table implements Comparable<Table> {
     }
 
     /**
-     * @return The primary key of this table, represented as an {@code Index}
-     * or {@code null} if there is no primary key
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * This method returns the primary key of the table, if there is one, otherwise it returns {@code null}.
+     *
+     * @return The primary key of this table, represented as an {@code Index} or {@code null} if there is no primary key
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public Index getPrimaryKey() throws SQLException {
         for(Index index : getIndexes()) {
@@ -108,9 +115,10 @@ public class Table implements Comparable<Table> {
     }
 
     /**
+     * Loads all the columns in this table, creates {@code Column} objects for them and returns those in a list order
+     * in the same order as the columns appear in the table.
      * @return List of columns in the table, expected to be in order
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public List<TableColumn> getColumns() throws SQLException {
         List<TableColumn> cache = this.cachedColumns;
@@ -121,9 +129,10 @@ public class Table implements Comparable<Table> {
     }
 
     /**
+     * Loads all the indexes in this table, creates {@code Index} objects for them and returns those in a list. This
+     * will include the primary key of the table, if there is one.
      * @return All indexes, including the primary key, on this table
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public List<Index> getIndexes() throws SQLException {
         List<Index> cache = this.cachedIndexes;
@@ -134,10 +143,10 @@ public class Table implements Comparable<Table> {
     }
 
     /**
-     * @return Map (index name to {@code Index} object) of all indexes in this
-     * table, including the primary key
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * Loads all the indexes, creates {@code Index} object for each one and then puts them into a map where the key is
+     * the name of the index and the value is the index itself. This will include the primary key, if there is one.
+     * @return Map (index name to {@code Index} object) of all indexes in this table, including the primary key
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public Map<String, Index> getIndexMap() throws SQLException {
         Map<String, Index> indexMap = new TreeMap<String, Index>();
@@ -148,12 +157,10 @@ public class Table implements Comparable<Table> {
     }
 
     /**
-     * Looks up one column
+     * Loads one column in the table, specified by its name, and returns a {@code TableColumn} object representing it
      * @param columnName Name of the column to retrieve
-     * @return {@code Column} representing the column or {@code null} if there
-     * was no column by this name in the table
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * @return {@code Column} representing the column or {@code null} if there was no column by this name in the table
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public TableColumn getColumn(String columnName) throws SQLException {
         for(TableColumn column: getColumns()) {
@@ -165,24 +172,22 @@ public class Table implements Comparable<Table> {
     }
 
     /**
-     * Retrieves a column by index
-     * the database
+     * Loads one column in the table, specified by its index, and returns a {@code TableColumn} object representing it
      * @param columnIndex Index of the column (starting from 0)
      * @return Column representing the column at this index in the table
-     * @throws SQLException In an error occurred while reading information from
-     * the database
-     * @throws IndexOutOfBoundsException When the {@code columnIndex} is less than 0 or larger
-     * than the number of columns in the table
+     * @throws SQLException In an error occurred while reading information from the database
+     * @throws IndexOutOfBoundsException When the {@code columnIndex} is less than 0 or larger than the number of
+     * columns in the table
      */
     public TableColumn getColumn(int columnIndex) throws SQLException {
         return getColumns().get(columnIndex);
     }
 
     /**
-     * @return Map (column name to {@code Column} object) of all columns in this
-     * table
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * Loads all the columns, creates {@code TableColumn} object for each one and then puts them into a map where the
+     * key is the name of the column and the value is the column itself.
+     * @return Map (column name to {@code Column} object) of all columns in this table
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public Map<String, TableColumn> getColumnMap() throws SQLException {
         Map<String, TableColumn> columnMap = new TreeMap<String, TableColumn>();
@@ -193,6 +198,7 @@ public class Table implements Comparable<Table> {
     }
 
     /**
+     * Returns the number of columns in this table
      * @return Number of columns this table has
      * @throws SQLException In an error occurred while reading information from
      * the database

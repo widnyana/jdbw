@@ -22,8 +22,8 @@ package com.googlecode.jdbw.util;
 import java.util.List;
 
 /**
- * You shouldn't need to care about this class, we're just using it internally
- * for some common string operations.
+ * You shouldn't need to care about this class, we're just using it internally for some common string operations. There
+ * doesn't seem to be any good way to do this using the standard API until Java 8.
  * @author Martin Berglund
  */
 public class StringUtils

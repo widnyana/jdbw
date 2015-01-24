@@ -27,7 +27,7 @@ import java.sql.Connection;
 import javax.sql.DataSource;
 
 /**
- * A MySQL database server
+ * DatabaseServerType implementation for MySQL/MariaDB and compatible derivatives
  * @author Martin Berglund
  */
 public class MySQLServerType extends AbstractDatabaseType {

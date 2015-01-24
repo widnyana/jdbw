@@ -19,7 +19,9 @@
 package com.googlecode.jdbw;
 
 /**
- * Factory interface for creating DatabaseConnection:s.
+ * Factory interface for creating DatabaseConnection:s. Using this factory, you can customize the connection parameters
+ * used when creating a DataSource, though usually you would not use this interface directly but through one of several
+ * sub-interfaces or implementing classes tuned for a particular JDBC driver and/or database server.
  * @author Martin Berglund
  */
 public interface DatabaseConnectionFactory {

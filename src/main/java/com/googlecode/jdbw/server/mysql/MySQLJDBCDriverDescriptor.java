@@ -24,8 +24,7 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
- * This driver descriptor is designed to be used with the official MySQL JDBC
- * driver. 
+ * This driver descriptor is designed to be used with the official MySQL JDBC driver.
  * @author Martin Berglund
  */
 public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor<MySQLDatabaseConnectionFactory> {
@@ -43,6 +42,13 @@ public class MySQLJDBCDriverDescriptor implements JDBCDriverDescriptor<MySQLData
                 ((StandardDatabaseServer)databaseServer).getDefaultCatalog());
     }
 
+    /**
+     * Creates a JDBC url based on supplied values
+     * @param host Host where the database server is running
+     * @param port Port the database server is listening on
+     * @param defaultCatalog What catalog to use as the default for this connection
+     * @return A JDBC url which can be used to connect to
+     */
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:mysql://" + host + ":" + port + "/" + defaultCatalog;
     }

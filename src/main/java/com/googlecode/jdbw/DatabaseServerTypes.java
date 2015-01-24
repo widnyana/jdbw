@@ -29,20 +29,50 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * This is a repository of known database server types. You can add your own
- * types at runtime if you need to.
+ * This is a repository of known database server types. If you have created your own database server type, you can add
+ * it in here to the {@ALL_KNOWN_SERVER_TYPES} constants (this isn't required though).
  * @author Martin Berglund
  */
 public class DatabaseServerTypes {
     private DatabaseServerTypes() {}
-    
+
+    /**
+     * This constant keeps track of all known database server types. The list is statically defined but you can add your
+     * own types to it if you wish; the Set can be added to.
+     */
     public static final Set<DatabaseServerType> ALL_KNOWN_SERVER_TYPES = new AddOnlySet<DatabaseServerType>();
-    
+
+    /**
+     * DatabaseServerType implementation for MySQL (mostly compatible with MariaDB and other derivatives)
+     */
     public static final MySQLServerType MYSQL = MySQLServerType.INSTANCE;
+
+    /**
+     * DatabaseServerType implementation for Sybase ASE
+     */
     public static final SybaseASEServerType SYBASE_ASE = SybaseASEServerType.INSTANCE;
+
+    /**
+     * DatabaseServerType implementation for PostgreSQL
+     */
     public static final PostgreSQLServerType POSTGRESQL = PostgreSQLServerType.INSTANCE;
+
+    /**
+     * DatabaseServerType implementation for the H2 database, using its in-memory mode that is operating without any
+     * disk persistence.
+     */
     public static final H2ServerType H2_IN_MEMORY = H2ServerType.InMemory.INSTANCE;
+
+    /**
+     * DatabaseServerType implementation for the H2 database, using its file-based mode that stores the database in a
+     * file and allows only a single database connection to it at any time.
+     */
     public static final H2ServerType H2_FILE = H2ServerType.FileBased.INSTANCE;
+
+    /**
+     * DatabaseServerType implementation for the H2 database, using its network mode where it connects to a database
+     * server over TCP/IP, much like traditional database servers.
+     */
     public static final H2ServerType H2_NETWORK = H2ServerType.Network.INSTANCE;
     
     static {

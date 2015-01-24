@@ -27,18 +27,35 @@ import com.googlecode.jdbw.DatabaseServerType;
  */
 public class AuthenticatingDatabaseConnectionFactory extends BasicDatabaseConnectionFactory {
 
+    /**
+     * Creates a new connection factory with a specified type and JDBC url
+     * @param databaseServerType What type of database server this connection factory creates connections for
+     * @param jdbcUrl The URL to use when creating connections to this database server
+     */
     public AuthenticatingDatabaseConnectionFactory(
             DatabaseServerType databaseServerType, 
             String jdbcUrl) {
         
         super(databaseServerType, jdbcUrl);
     }
-    
+
+    /**
+     * Sets the username property to a specific value, this is generally what's used when logging in to remote database
+     * servers that requires authentication
+     * @param username What username to use
+     * @return Itself
+     */
     public AuthenticatingDatabaseConnectionFactory setUsername(String username) {
         setConnectionProperty("user", username);
         return this;
     }
-    
+
+    /**
+     * Sets the password property to a specific value, this is generally what's used when logging in to remote database
+     * servers that requires authentication
+     * @param password What password to use
+     * @return Itself
+     */
     public AuthenticatingDatabaseConnectionFactory setPassword(String password) {
         setConnectionProperty("password", password);
         return this;

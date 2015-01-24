@@ -22,14 +22,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * A database catalog, sometimes known as a "database" on the database server.
- * This is normally the highest level of organization in the database, where
- * each data domain is assigned a distinct catalog. A catalog will in turn
- * consist of one or more <i>schemas</i> that divides the objects further.
+ * A database catalog, sometimes known as a "database" on the database server. This is normally the highest level of
+ * organization in the database, where each data domain is assigned a distinct catalog. A catalog will in turn consist
+ * of one or more <i>schemas</i> that divides the objects further.
  * 
- * <p>Some database servers only supports one catalog. If the concept of catalog
- * doesn't exist in the terminology of the server you are using, JDBW can be
- * expected to create a "dummy" catalog object for you.
+ * <p/>Some database servers only supports one catalog. If the concept of catalog doesn't exist in the terminology of
+ * the server you are using, JDBW can be expected to create a "dummy" catalog object for you.
  * 
  * @see Schema
  * @author Martin Berglund
@@ -39,19 +37,42 @@ public class Catalog implements Comparable<Catalog> {
     private final ServerMetaData metaDataResolver;
     private final String name;
 
+    /**
+     * Creates a new object representing a database catalog with a particular name and a meta-data resolver object to
+     * use when going deeper in the hierarchy
+     * @param metaDataResolver Meta-data object to use when loading the content of this catalog
+     * @param name Name of the catalog we are representing
+     */
     public Catalog(ServerMetaData metaDataResolver, String name) {
         this.metaDataResolver = metaDataResolver;
         this.name = name;
     }
 
+    /**
+     * Name of the catalog
+     * @return Name of this catalog
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Schemas are the level below catalogs in order of organization, as exposed by JDBC. This method returns all
+     * schemas that are under the catalog this object represents.
+     * @return List of schemas under this catalog
+     * @throws SQLException If there was a database error when loading schemas
+     */
     public List<Schema> getSchemas() throws SQLException {
         return metaDataResolver.getSchemas(this);
     }
 
+    /**
+     * Returns a particular Schema that lies under this catalog, based on name
+     * @param schemaName Name of the schema we want to retrieve
+     * @return A Schema object representing the schema specified, or {@code null} if no such schema existed under this
+     * catalog
+     * @throws SQLException If there was a database error when loading schema information
+     */
     public Schema getSchema(String schemaName) throws SQLException {
         return metaDataResolver.getSchema(this, schemaName);
     }

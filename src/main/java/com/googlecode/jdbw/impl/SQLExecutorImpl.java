@@ -32,15 +32,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class is an implementation of the {@code SQLExecutor} that provides
- * most of the functionality required for sending queries and receiving data.
- * This class does not deal with setting up and tearing down database
- * connections; rather it expects the user to pass in a valid connection and
- * close it when done.
+ * This class is an implementation of the {@code SQLExecutor} that provides most of the functionality required for
+ * sending queries and receiving data. This class does not deal with setting up and tearing down database connections;
+ * rather it expects the user to pass in a valid connection and close it when done.
  * <p/>
- * <p>Normally, you wouldn't use this class directly, but rather through
- * classes such as the {@code AutoExecutor} or the {@code DatabaseTransaction},
- * which is using this class behind the scenes. You call methods on
+ * <p/>Normally, you wouldn't use this class directly, but rather through classes such as the {@code AutoExecutor} or
+ * the {@code DatabaseTransaction}, which is using this class behind the scenes. You call methods on
  * {@code DatabaseConnection} to get one of those.
  *
  * @author Martin Berglund

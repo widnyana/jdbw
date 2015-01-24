@@ -23,24 +23,46 @@ import com.googlecode.jdbw.DatabaseServer;
 import com.googlecode.jdbw.JDBCDriverDescriptor;
 
 /**
- *
+ * This is a driver descriptor for the H2 driver,
+ * {@code org.h2.Driver}.
  * @author Martin Berglund
  */
 public class H2JDBCDriverDescriptor implements JDBCDriverDescriptor<H2DatabaseConnectionFactory> {
 
-    public String formatJDBCUrlForAnonymousInMemory() {
+    /**
+     * Creates a JDBC url for connecting to an anonymous H2 in-memory database
+     * @return JDBC url for connecting to an anonymous H2 in-memory database
+     */
+    public static String formatJDBCUrlForAnonymousInMemory() {
         return "jdbc:h2:mem:";
     }
-    
-    public String formatJDBCUrlForInMemory(String name) {
+
+    /**
+     * Creates a JDBC url for connecting to a "named" H2 in-memory database
+     * @param name Symbolic name to use for the database
+     * @return JDBC url for connecting to a "named" H2 in-memory database
+     */
+    public static String formatJDBCUrlForInMemory(String name) {
         return "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1";
     }
-    
-    public String formatJDBCUrlForFile(String databaseFilePrefix) {
+
+    /**
+     * Creates a JDBC url for connecting to a file-based H2 database
+     * @param databaseFilePrefix Path and file name to use for the database on disk
+     * @return JDBC url for connecting to a file-based H2 database
+     */
+    public static String formatJDBCUrlForFile(String databaseFilePrefix) {
         return "jdbc:h2:file:" + databaseFilePrefix;
     }
 
-    public String formatJDBCUrlForRemoteServer(String host, int port, String defaultCatalog) {
+    /**
+     * Creates a JDBC url for connecting to a remote H2 database over TCP/IP
+     * @param host Hostname of where the database server is running
+     * @param port Port the database server is listening on
+     * @param defaultCatalog Default catalog to use on the remote database server
+     * @return JDBC url for connecting to a remote H2 database over TCP/IP
+     */
+    public static String formatJDBCUrlForRemoteServer(String host, int port, String defaultCatalog) {
         return "jdbc:h2:tcp://" + host + ":" + port + "/" + defaultCatalog; //What to do about the path to the database???
     }
     

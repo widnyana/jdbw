@@ -33,18 +33,19 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
- * Very primitive database connection source which only keeps one connection
- * in the pool. There is no reconnection logic or anything, it just hands out
- * the same connection to one user at a time. Calling getConnection() on this
- * object while another process is using that connection will block until the
- * connection is returned to the pool. Needless to say, <b>don't use this in
- * a production environment!</b>
+ * Very primitive database connection source which only keeps one connection in the pool. There is no reconnection logic
+ * or anything, it just hands out the same connection to one user at a time. Calling getConnection() on this object
+ * while another process is using that connection will block until the connection is returned to the pool. Needless to
+ * say, <b>don't use this in a production environment!</b>
  * @author Martin Berglund
  */
 public class OneSharedConnectionDataSource implements DataSource {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OneSharedConnectionDataSource.class);
-    
+
+    /**
+     * A {@code DataSourceFactory} implementation that will create {@code OneSharedConnectionDataSource} objects
+     */
     public static class Factory implements DataSourceFactory {
         @Override
         public DataSource newDataSource(String jdbcUrl, Properties properties) {
@@ -64,11 +65,20 @@ public class OneSharedConnectionDataSource implements DataSource {
     
     private final ArrayBlockingQueue<Connection> connectionQueue;
 
+    /**
+     * Creates a {@code OneSharedConnectionDataSource} object based on a {@code Connection} passed in.
+     * @param connection Connection that the new {@code OneSharedConnectionDataSource} will use
+     */
     public OneSharedConnectionDataSource(Connection connection) {
         this.connectionQueue = new ArrayBlockingQueue<Connection>(1);
         this.connectionQueue.add(connection);
     }
 
+    /**
+     * Closes the underlying database connection, once it's not used by any other thread. You don't have to call this
+     * method if you close the connection externally, there is no state inside this object that requires to be cleared
+     * out except for the actual connection.
+     */
     public void close() {
         try {
             connectionQueue.poll().close();

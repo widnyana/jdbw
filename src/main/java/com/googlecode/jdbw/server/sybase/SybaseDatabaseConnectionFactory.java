@@ -22,7 +22,7 @@ import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
 
 /**
- *
+ * Connection factory with some additional properties unique for Sybase ASE
  * @author Martin Berglund
  */
 public class SybaseDatabaseConnectionFactory extends AuthenticatingDatabaseConnectionFactory {

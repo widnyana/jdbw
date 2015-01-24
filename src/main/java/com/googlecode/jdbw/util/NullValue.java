@@ -20,31 +20,29 @@
 package com.googlecode.jdbw.util;
 
 /**
- * This class is a null value representation when dealing with SQL parameters.
- * The reason why this is needed is that some database servers requires you to
- * supply what 'type' of null (as in, is it a {@code varchar} null, an {@code int} 
- * null or something else) you are giving. Trying to assign null of a wrong type 
- * will give you an SQLException. 
- * 
- * <p>Since the Java {@code null} keyword has no type information, when you supply
- * it to a JDBW class database method (for example, {@code SQLWorker.query(...)} 
- * or {@code SQLExecutor.execute(...)}) in the parameter list, type 
- * {@code varchar} will be associated with this null. If this is incompatible
- * with your database server/table/column, you can instead of null pass in an
- * instance of one of the subclasses of this class. There isn't a subclass for 
- * every conceivable datatype, but there should be one that is compatible with
- * what you need.
+ * This class is a null value representation when dealing with SQL parameters. The reason why this is needed is that
+ * some database servers requires you to supply what 'type' of null (as in, is it a {@code varchar} null, an {@code int}
+ * null or something else) you are giving. Trying to assign null of a wrong type will give you an SQLException.
+ * <p/>
+ * <p/>Since the Java {@code null} keyword has no type information, when you supply it to a JDBW class database method
+ * (for example, {@code SQLWorker.query(...)} or {@code SQLExecutor.execute(...)}) in the parameter list, type
+ * {@code varchar} will be associated with this null. If this is incompatible with your database server/table/column,
+ * you can instead of null pass in an instance of one of the subclasses of this class. There isn't a subclass for every
+ * conceivable datatype, but there should be one that is compatible with what you need.
+ *
  * @author Martin Berglund
  */
-public class NullValue
-{
-    private NullValue()
-    {
+public class NullValue {
+    private NullValue() {
     }
 
-    public static Object fromSqlType(int sqlType)
-    {
-        switch(sqlType) {
+    /**
+     * Given an SQL type constant from java.sql.Types, returns the appropriate "Null-Object" for this type.
+     * @param sqlType Type constant (from java.sql.Types) get the "Null-Object" for
+     * @return Object which is be substituted for NULL when used as a parameter in a parameterized query
+     */
+    public static Object fromSqlType(int sqlType) {
+        switch (sqlType) {
             case java.sql.Types.TINYINT:
             case java.sql.Types.SMALLINT:
             case java.sql.Types.INTEGER:
@@ -83,55 +81,49 @@ public class NullValue
 
     /**
      * Represents a {@code null} integer value.
-     * 
+     *
      * @see NullValue
      */
-    public static class Integer extends NullValue
-    {
+    public static class Integer extends NullValue {
     }
 
     /**
      * Represents a {@code null} double value.
-     * 
+     *
      * @see NullValue
      */
-    public static class Double extends NullValue
-    {
+    public static class Double extends NullValue {
     }
 
     /**
      * Represents a {@code null} varchar value.
-     * 
+     *
      * @see NullValue
      */
-    public static class String extends NullValue
-    {
+    public static class String extends NullValue {
     }
 
     /**
      * Represents a {@code null} decimal value.
-     * 
+     *
      * @see NullValue
      */
-    public static class Decimal extends NullValue
-    {
+    public static class Decimal extends NullValue {
     }
 
     /**
      * Represents a {@code null} timestamp value.
-     * 
+     *
      * @see NullValue
      */
-    public static class Timestamp extends NullValue
-    {
+    public static class Timestamp extends NullValue {
     }
 
     /**
      * Represents a {@code null} binary value.
-     * 
+     *
      * @see NullValue
      */
-    public static class Binary extends NullValue
-    {
+    public static class Binary extends NullValue {
     }
 }

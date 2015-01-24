@@ -6,7 +6,8 @@ import java.util.List;
 
 /**
  * This interface contains extracted values from ResultSetMetaData describing a ResultSet that JDBW has received. It can
- * be safely examined without requiring to catch SQLExceptions.
+ * be safely examined without requiring to catch SQLExceptions and it doesn't do any round-trips to the database server
+ * for any of these method calls.
  * @author Martin Berglund
  */
 public interface ResultSetInformation {

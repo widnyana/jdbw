@@ -30,8 +30,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Package private class used by {@code DatabaseConnectionImpl} as the
- * transaction implementation.
+ * Package private class used by {@code DatabaseConnectionImpl} as the transaction implementation.
  *
  * @author Martin Berglund
  */

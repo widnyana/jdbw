@@ -32,7 +32,7 @@ import java.util.Set;
  * have the {@code null} value, representing the absence of a value) or <i>not
  * nullable</i> (trying to assign {@code null} will give an error). 
  * 
- * <p>Normally you don't construct {@code Column} objects yourself, rather you
+ * <p/>Normally you don't construct {@code Column} objects yourself, rather you
  * get them by using methods on other objects that holds columns.
  * 
  * @see Table
@@ -53,6 +53,21 @@ public abstract class Column implements Comparable<Column> {
     private final Nullability nullable;
     private final String autoIncrement;
 
+    /**
+     * Creates a new column object based on specified values. This constructor is designed to match the output of the
+     * JDBC's ResultSetMetaData so it's not very friendly to use manually.
+     * @param ordinalPosition Index of the column in the table, where 1 means the first column
+     * @param columnName Name of the column
+     * @param sqlType Data type of the column
+     * @param typeName Name of the data type, this is database server specific
+     * @param columnSize Size of the column (length of strings, precision of decimals, etc), or 0 if not applicable
+     * @param decimalDigits For decimal columns, this defines the scale (number of digits to the right of the dot),
+     *                      otherwise 0
+     * @param nullable If the column is nullable or not, use one of the two constants
+     *                  {@code DatabaseMetaData.columnNullable} and {@code DatabaseMetaData.columnNoNulls}
+     * @param autoIncrement The value to use for auto-increment, if the column is auto-incremented then you should
+     *                      probably set "YES" here
+     */
     public Column(int ordinalPosition, String columnName, int sqlType, String typeName,
             int columnSize, int decimalDigits, int nullable, String autoIncrement) {
         this.ordinalPosition = ordinalPosition;
@@ -72,6 +87,9 @@ public abstract class Column implements Comparable<Column> {
     }
 
     /**
+     * Returns the auto increment value for the column, which is somewhat database server specific. In general, it seems
+     * like "YES" is the normal value for auto-incremented columns and anything else should probably be assumed to mean
+     * "no".
      * @return The JDBC value of IS_AUTOINCREMENT for this column
      */
     public String getAutoIncrement() {
@@ -79,6 +97,7 @@ public abstract class Column implements Comparable<Column> {
     }
 
     /**
+     * Returns the name of the column
      * @return Name of the column
      */
     public String getName() {
@@ -86,23 +105,26 @@ public abstract class Column implements Comparable<Column> {
     }
 
     /**
-     * @return The max size of the column, for string type columns, or the max
-     * total number of digits for decimal types. For all other types, this is 
-     * undefined.
+     * Returns the max size of this column. For string type columns it means number of characters supported and for
+     * decimal columns it means the total precision. For all other types, this is undefined (see JDBC documentation).
+     * @return The max size of the column
      */
     public int getColumnSize() {
         return columnSize;
     }
 
     /**
-     * @return For decimal or numeric columns, the max number of fractional 
-     * digits, for all other types undefined
+     * For decimal or numeric columns, this value is the max number of fractional digits, for all other types undefined.
+     * @return The scale part of decimal/numeric columns
      */
     public int getDecimalDigits() {
         return decimalDigits;
     }
 
     /**
+     * Returns a value for whether the column can be null or not. Please note that there is a third value that may come
+     * out from this method, unknown, which can show up if your database server is cruel or you are inspecting a column
+     * that in some way the database cannot inspect the nullability of.
      * @return Nullability of this column
      */
     public Nullability getNullable() {
@@ -110,16 +132,16 @@ public abstract class Column implements Comparable<Column> {
     }
 
     /**
-     * @return Index of this column in its table, where the first column has 
-     * index 1
+     * Gives back the index this column has in the table, indexed from 1 so the first column has ordinal 1, the second
+     * has 2, and so on.
+     * @return Index of this column in its table, where the first column has index 1
      */
     public Integer getOrdinalPosition() {
         return ordinalPosition;
     }
 
     /**
-     * Returns the datatype of this column, expressed as an integer which 
-     * matches a constant in java.sql.Types.
+     * Returns the data type of this column, expressed as an integer which matches a constant in java.sql.Types.
      * 
      * @see java.sql.Types
      * @return Datatype of the column, matching a JDBC constant in {@code java.sql.Types}.
@@ -129,8 +151,9 @@ public abstract class Column implements Comparable<Column> {
     }
 
     /**
-     * @return The native name of the data type for this column, as the server
-     * presents it to the JDBC driver
+     * Returns what the database server calls this data type in its native domain. This value is generally not always
+     * cross-compatible as different servers may use their own names for certain data types.
+     * @return The native name of the data type for this column, as the server presents it to the JDBC driver
      */
     public String getNativeTypeName() {
         return typeName;

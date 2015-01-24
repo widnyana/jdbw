@@ -315,6 +315,10 @@ public class DatabaseConnectionImpl implements DatabaseConnection {
         return null;
     }
 
+    /**
+     * Creates a {@code ServerMetaData} object by requesting one through the database server type
+     * @return {@code ServerMetaData} for this database server using the same data source
+     */
     protected ServerMetaData createMetaDataResolver() {
         return getServerType().createMetaDataResolver(dataSource);
     }

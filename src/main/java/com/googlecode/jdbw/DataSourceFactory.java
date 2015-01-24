@@ -23,28 +23,24 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 /**
- * This interface is used by a {@code DatabaseServer} to construct a {@code 
- * DataSource} from its configuration. Implementations of this class will 
- * typically use the configuration (jdbc url and extra properties) in 
- * combination with a third-party database connection pool library to 
- * instantiate a {@code DataSource} object. The implementation must also 
- * provide a way to close this data source.
+ * This interface is used by a {@code DatabaseServer} to construct a {@code DataSource} from its configuration.
+ * Implementations of this class will typically use the configuration (jdbc url and extra properties) in combination
+ * with a third-party database connection pool library to instantiate a {@code DataSource} object. The implementor
+ * of this interface must also provide a way to close any data sources created.
  * @author Martin Berglund
  */
 public interface DataSourceFactory {
     /**
      * Creates a new {@code DataSource} using supplied connection configuration
      * @param jdbcUrl JDBC url to connect to
-     * @param properties Extra connection properties (should contain username
-     * and password, at least). These are passed to the JDBC driver so what
-     * values to use depend on the driver.
+     * @param properties Extra connection properties (should contain username and password, at least). These are passed
+     *                   to the JDBC driver so what values to use depend on the driver.
      * @return DataSource implementation created from the supplied configuration
      */
     DataSource newDataSource(String jdbcUrl, Properties properties);
     
     /**
-     * Closes a {@code DataSource} previously created by newDataSource on this
-     * object. 
+     * Closes a {@code DataSource} previously created by newDataSource on this object.
      * @param previouslyConstructedDataSource Data source to close
      */
     void close(DataSource previouslyConstructedDataSource);

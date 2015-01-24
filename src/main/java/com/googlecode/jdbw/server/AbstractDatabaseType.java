@@ -27,8 +27,7 @@ import java.sql.*;
 import javax.sql.DataSource;
 
 /**
- * Includes some fundamental checks for connection errors and default 
- * implementations for some JDBW objects
+ * Includes some fundamental checks for connection errors and default implementations for some JDBW objects
  * @author Martin Berglund
  */
 public abstract class AbstractDatabaseType implements DatabaseServerType {

@@ -25,7 +25,10 @@ import com.googlecode.jdbw.server.AbstractDatabaseServer;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 
 /**
- *
+ * Base class for all H2 server types
+ * @see com.googlecode.jdbw.server.h2.H2FileBasedServer
+ * @see com.googlecode.jdbw.server.h2.H2InMemoryServer
+ * @see com.googlecode.jdbw.server.h2.H2NetworkServer
  * @author Martin Berglund
  */
 public abstract class H2DatabaseServer extends AbstractDatabaseServer<H2DatabaseConnectionFactory> {
@@ -66,6 +69,10 @@ public abstract class H2DatabaseServer extends AbstractDatabaseServer<H2Database
         return serverType;
     }
 
+    /**
+     * Can we have multiple concurrent connections to this database server?
+     * @return {@code true} if we can have multiple open connections
+     */
     boolean isAllowMultipleConnections() {
         return allowMultipleConnections;
     }

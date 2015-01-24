@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * H2 SQL dialect specific traits
  * @author Martin Berglund
  */
 public class H2SQLDialect extends DefaultSQLDialect {

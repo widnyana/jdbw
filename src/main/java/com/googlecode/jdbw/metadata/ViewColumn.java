@@ -36,6 +36,22 @@ package com.googlecode.jdbw.metadata;
 public class ViewColumn extends Column {
     private final View view;
 
+    /**
+     * Creates a ViewColumn object based on manually entered information
+     * @param view View the column belongs to
+     * @param ordinalPosition Index of the column in the view, where 1 means the first column
+     * @param columnName Name of the column
+     * @param sqlType Data type of the column, please use constants from java.sql.Types
+     * @param typeName Native name of the data type, as the database server understands it
+     * @param columnSize Maximum size of the column, such as maximum number of characters for String-type columns and
+     *                   maximum precision for decimal/numeric type column
+     * @param decimalDigits Only relevant for decimal type columns, this value signifies number of digits to the right
+     *                      of the dot (the "scale") that this column uses
+     * @param nullable  If the column is nullable or not, use one of the two constants
+     *                  {@code DatabaseMetaData.columnNullable} and {@code DatabaseMetaData.columnNoNulls}
+     * @param autoIncrement The value to use for auto-increment, if the column is auto-incremented then you should
+     *                      probably set "YES" here
+     */
     public ViewColumn(
             View view, 
             int ordinalPosition, 
@@ -52,7 +68,8 @@ public class ViewColumn extends Column {
     }
 
     /**
-     * @return The table owning this column
+     * Returns the view that is containing this column
+     * @return The view owning this column
      */
     public View getView() {
         return view;

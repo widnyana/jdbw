@@ -21,7 +21,7 @@ package com.googlecode.jdbw.server.postgresql;
 import com.googlecode.jdbw.server.AbstractDatabaseType;
 
 /**
- *
+ * DatabaseServerType implementation for PostgreSQL
  * @author Martin Berglund
  */
 public class PostgreSQLServerType extends AbstractDatabaseType {

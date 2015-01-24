@@ -23,18 +23,24 @@ import com.googlecode.jdbw.DatabaseServerTypes;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 
 /**
- *
+ * H2 database server which stores the data on disk. Can be closed and opened without losing data, but only supports
+ * one concurrent connection.
  * @author Martin Berglund
  */
 public class H2FileBasedServer extends H2DatabaseServer {
 
     private final String databaseFilePrefix;
-    
+
+    /**
+     * New H2 file based database server definition with a supplied location for the database on disk
+     * @param databaseFilePrefix Location on disk, including a filename (without extension) to use
+     */
     public H2FileBasedServer(String databaseFilePrefix) {
         super(DatabaseServerTypes.H2_FILE, false);
         this.databaseFilePrefix = databaseFilePrefix;
     }
-    
+
+    @Override
     public DatabaseConnection connect() {
         return newConnectionFactory().connect(new OneSharedConnectionDataSource.Factory());
     }

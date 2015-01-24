@@ -24,8 +24,8 @@ import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
- * JDBC driver descriptor designed to work with the official PostgreSQL JDBC
- * client driver, {@code org.postgresql.Driver}
+ * JDBC driver descriptor designed to work with the official PostgreSQL JDBC client driver,
+ * {@code org.postgresql.Driver}
  * @author Martin Berglund
  */
 public class PostgreSQLJDBCDriverDescriptor implements JDBCDriverDescriptor<AuthenticatingDatabaseConnectionFactory> {
@@ -37,6 +37,13 @@ public class PostgreSQLJDBCDriverDescriptor implements JDBCDriverDescriptor<Auth
                 ((StandardDatabaseServer)databaseServer).getDefaultCatalog());
     }
 
+    /**
+     * Creates a JDBC url based on supplied values
+     * @param host Host where the database server is running
+     * @param port Port the database server is listening on
+     * @param defaultCatalog What catalog to use as the default for this connection
+     * @return A JDBC url which can be used to connect to
+     */
     public String formatJDBCUrl(String host, int port, String defaultCatalog) {
         return "jdbc:postgresql://" + host + ":" + port + "/" + defaultCatalog;
     }

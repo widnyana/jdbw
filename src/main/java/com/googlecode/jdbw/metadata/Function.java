@@ -19,7 +19,7 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- * Will hold metadata information about a function
+ * Will hold metadata information about a function, this class is currently not implemented
  * @author Martin Berglund
  */
 public class Function {

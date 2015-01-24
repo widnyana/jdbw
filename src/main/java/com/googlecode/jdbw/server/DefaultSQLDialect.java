@@ -37,8 +37,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
- * A default implementation of {@code SQLDialect} providing some functionality
- * which is common to most database servers.
+ * A default implementation of {@code SQLDialect} providing some functionality which is common to most database servers.
  * @author Martin Berglund
  */
 public class DefaultSQLDialect implements SQLDialect {

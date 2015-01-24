@@ -30,8 +30,8 @@ import java.util.List;
  * This utility class can be very helpful when sending simple queries to the database and you don't want to get too
  * involved in the details. It will help you to send queries and get result back in simple and familiar formats, as well
  * as grabbing only limited parts of the result set.
- *
- * You normally create an SQLWorker on top of an auto-executor, but you can also use a normal transaction.
+ * <p/>
+ * You create an SQLWorker on top of an SQLExecutor, so it supports both using AutoExecutor and using transactions.
  *
  * @author Martin Berglund
  */
@@ -293,6 +293,14 @@ public class SQLWorker {
         }
     }
 
+    /**
+     * Sends a query to the database and returns the whole result as a {@code DataSet} of only Strings.
+     *
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @return The whole result set converted into Strings and read into a {@code DataSet}
+     * @throws SQLException If any database error occurred
+     */
     public DataSet<String> dataSetOfStrings(String SQL, Object... parameters) throws SQLException {
         return dataSet(String.class, new ObjectMapper<Object, String>() {
             @Override
@@ -302,6 +310,14 @@ public class SQLWorker {
         }, SQL, parameters);
     }
 
+    /**
+     * Sends a query to the database and returns the whole result as a {@code DataSet} of only Longs.
+     *
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @return The whole result set converted into Longs and read into a {@code DataSet}
+     * @throws SQLException If any database error occurred
+     */
     public DataSet<Long> dataSetOfLong(String SQL, Object... parameters) throws SQLException {
         return dataSet(Long.class, new ObjectMapper<Object, Long>() {
             @Override
@@ -316,12 +332,27 @@ public class SQLWorker {
         }, SQL, parameters);
     }
 
+    /**
+     * Sends a query to the database and returns the whole result as a {@code DataSet} of a specified type.
+     *
+     * @param typeClass What type build the {@code DataSet} of
+     * @param mapper Converter to use when converting the result set values into the target type
+     * @param SQL SQL to send to the database server
+     * @param parameters Parameters to substitute ?:s for in the SQL string
+     * @return The whole result set converted into the specified format and read into a {@code DataSet}
+     * @throws SQLException If any database error occurred
+     */
     public <V> DataSet<V> dataSet(Class<V> typeClass, ObjectMapper<Object, V> mapper, String SQL, Object... parameters) throws SQLException {
         ResultSetConverter<V> converter = new ResultSetConverter(typeClass, mapper);
         executor.execute(converter, SQL, parameters);
         return converter.builder.build();
     }
 
+    /**
+     * Interface for declaring how to convert from one type to another
+     * @param <S> Type to go from
+     * @param <T> Type to go to
+     */
     public static interface ObjectMapper<S, T> {
         T invoke(S param);
     }

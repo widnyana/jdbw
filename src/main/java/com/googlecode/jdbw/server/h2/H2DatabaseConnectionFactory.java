@@ -24,7 +24,8 @@ import com.googlecode.jdbw.impl.AuthenticatingDatabaseConnectionFactory;
 import com.googlecode.jdbw.util.OneSharedConnectionDataSource;
 
 /**
- *
+ * Connection factory for H2 that automatically deals with certain connections not supporting more than one simultaneous
+ * connection.
  * @author Martin Berglund
  */
 public class H2DatabaseConnectionFactory extends AuthenticatingDatabaseConnectionFactory {

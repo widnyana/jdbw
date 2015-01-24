@@ -22,11 +22,9 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * The SQLExecutor is the object sending the query to the remote database server
- * and using a callback interface to process the result. This query will take care
- * of creating Statements and ResultSets and make sure to close everything when done.
- * This object is most frequently used through the sub-interface DatabaseTransaction
- * or AutoExecutor.
+ * The SQLExecutor is the object sending the query to the remote database server and using a callback interface to
+ * process the result. This query will take care of creating Statements and ResultSets and make sure to close everything
+ * when done. This object is most frequently used through the sub-interface DatabaseTransaction or AutoExecutor.
  * @see DatabaseTransaction
  * @see AutoExecutor
  * @author Martin Berglund

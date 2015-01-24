@@ -19,10 +19,18 @@
 package com.googlecode.jdbw.metadata;
 
 /**
- * Will hold metadata information about a system table
+ * A system table is similar to a normal table, the JDBC driver may or may not decide that a particular table is a
+ * system table or not. In general though, system tables are such that have a special meaning to the database and are
+ * not used by applications.
  * @author Martin Berglund
  */
 public class SystemTable extends Table {
+    /**
+     * Creates a SystemTable object from manually specified values
+     * @param metaDataResolver Meta data resolver to be used when loading more properties of the table
+     * @param schema Schema the table belongs to
+     * @param tableName Name of the table
+     */
     public SystemTable(ServerMetaData metaDataResolver, Schema schema, String tableName) {
         super(metaDataResolver, schema, tableName);
     }

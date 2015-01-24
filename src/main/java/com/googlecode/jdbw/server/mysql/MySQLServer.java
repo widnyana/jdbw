@@ -24,8 +24,7 @@ import com.googlecode.jdbw.JDBCDriverDescriptor;
 import com.googlecode.jdbw.server.StandardDatabaseServer;
 
 /**
- * This class represents a MySQL database server that is connected to over a
- * TCP/IP network. 
+ * This class represents a MySQL database server that is connected to over a TCP/IP network.
  * @author Martin Berglund
  */
 public class MySQLServer extends StandardDatabaseServer<MySQLDatabaseConnectionFactory> {

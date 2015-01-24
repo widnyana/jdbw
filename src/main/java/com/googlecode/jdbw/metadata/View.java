@@ -40,6 +40,12 @@ public class View implements Comparable<View> {
     private final Schema schema;
     private final String name;
 
+    /**
+     * Creates a new view from manually inputted values
+     * @param metaDataResolver Meta data resolver to use when loading more information about the view
+     * @param schema Schema the view belongs to
+     * @param name Name of the view
+     */
     public View(ServerMetaData metaDataResolver, Schema schema, String name) {
         this.metaDataResolver = metaDataResolver;
         this.schema = schema;
@@ -47,6 +53,7 @@ public class View implements Comparable<View> {
     }
 
     /**
+     * Returns the name of the view
      * @return Name of the view
      */
     public String getName() {
@@ -54,6 +61,7 @@ public class View implements Comparable<View> {
     }
 
     /**
+     * Returns the schema the view is belonging to
      * @return Schema owning this view
      */
     public Schema getSchema() {
@@ -61,17 +69,20 @@ public class View implements Comparable<View> {
     }
 
     /**
-     * @return Catalog this view is sorted under, i.e. the owner of the view's 
-     * Schema.
+     * Returns the columns that this view contains
+     * @return List of columns that this view contains
+     * @throws SQLException If there was a database error when loading the columns
      */
-    public Catalog getCatalog() {
-        return schema.getCatalog();
-    }
-
     public List<ViewColumn> getColumns() throws SQLException {
         return metaDataResolver.getColumns(this);
     }
 
+    /**
+     * Returns a single column contained in this view based on name
+     * @param columnName Name of the column to return
+     * @return Column in the view with the specified name, or {@code null} if none with that name existed
+     * @throws SQLException If there was a database error when loading the columns
+     */
     public ViewColumn getColumn(String columnName) throws SQLException {
         for(ViewColumn column: metaDataResolver.getColumns(this)) {
             if(column.getName().equals(columnName)) {
@@ -81,10 +92,11 @@ public class View implements Comparable<View> {
         return null;
     }
 
-    public ViewColumn getColumn(int columnIndex) throws SQLException {
-        return getColumns().get(columnIndex);
-    }
-
+    /**
+     * Creates a map where keys are column names and values are the matching column value
+     * @return Map with column name to column object mapping
+     * @throws SQLException If there was a database error when loading the columns
+     */
     public Map<String, ViewColumn> getColumnMap() throws SQLException {
         Map<String, ViewColumn> columnMap = new TreeMap<String, ViewColumn>();
         for(ViewColumn column : getColumns()) {
@@ -94,9 +106,9 @@ public class View implements Comparable<View> {
     }
 
     /**
-     * @return Number of columns this table has
-     * @throws SQLException In an error occurred while reading information from
-     * the database
+     * Returns the number of columns in this view
+     * @return Number of columns this voew has
+     * @throws SQLException In an error occurred while reading information from the database
      */
     public int getColumnCount() throws SQLException {
         return getColumns().size();

@@ -37,7 +37,12 @@ public abstract class BasicDatabaseConnectionFactory implements DatabaseConnecti
     private final String jdbcUrl;
     private final Properties connectionProperties;
 
-    public BasicDatabaseConnectionFactory(
+    /**
+     * Creates a new connection factory with a specified type and JDBC url
+     * @param databaseServerType What type of database server this connection factory creates connections for
+     * @param jdbcUrl The URL to use when creating connections to this database server
+     */
+    protected BasicDatabaseConnectionFactory(
             DatabaseServerType databaseServerType,
             String jdbcUrl) {
         this.databaseServerType = databaseServerType;

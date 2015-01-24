@@ -24,10 +24,10 @@ package com.googlecode.jdbw.metadata;
  * format, to be executed by a specific command. Normally this code is some kind 
  * of imperative SQL-like language, but could really be anything.
  * 
- * <p>A stored procedure may or may not have input parameters and some database
+ * <p/>A stored procedure may or may not have input parameters and some database
  * servers also supports output parameters to give data back to the caller.
  * 
- * <p>You normally won't create instances of this class yourself, but rather
+ * <p/>You normally won't create instances of this class yourself, but rather
  * will be supplied with them by asking a {@code Schema} to give you the list 
  * of stored procedures it has.
  * 
@@ -40,6 +40,12 @@ public class StoredProcedure implements Comparable<StoredProcedure> {
     private final Schema schema;
     private final String name;
 
+    /**
+     * Creates a new stored procedure object from manually specified values
+     * @param metaDataResolver Meta data resolver to use when reading inner properties of the stored procedure
+     * @param schema What schema the stored procedure belongs to
+     * @param name Name of the stored procedure
+     */
     public StoredProcedure(ServerMetaData metaDataResolver, Schema schema, String name) {
         this.metaDataResolver = metaDataResolver;
         this.schema = schema;
@@ -47,6 +53,7 @@ public class StoredProcedure implements Comparable<StoredProcedure> {
     }
 
     /**
+     * Returns the name of this stored procedure
      * @return Name of the stored procedure
      */
     public String getName() {
@@ -54,6 +61,7 @@ public class StoredProcedure implements Comparable<StoredProcedure> {
     }
 
     /**
+     * Returns the schema that this stored procedure belongs to
      * @return Schema that owns this stored procedure
      */
     public Schema getSchema() {

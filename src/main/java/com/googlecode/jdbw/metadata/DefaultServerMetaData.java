@@ -33,11 +33,23 @@ import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
+/**
+ * A default implementation of ServerMetaData that uses JDBC DatabaseMetaData to read information on the database and
+ * convert it to the data model in this package. If you are creating support for a new database server, some of the
+ * methods in here may not work as the JDBC driver may not fully implement all functionality of DatabaseMetaData (this
+ * is more common than one would expect...). In this case, you may want to extern from this class and override the
+ * methods that are not working and implement this using custom code to get the information.
+ */
 public class DefaultServerMetaData implements ServerMetaData {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultServerMetaData.class);
     protected final DataSource dataSource;
 
+    /**
+     * Creates a new meta data resolver based on a DataSource passed in that will be used to drawing connections on
+     * every operation that requires a call to the database.
+     * @param dataSource What data source to use when talking to the database
+     */
     public DefaultServerMetaData(DataSource dataSource) {
         this.dataSource = dataSource;
     }

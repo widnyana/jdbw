@@ -24,7 +24,7 @@ import com.googlecode.jdbw.server.AbstractDatabaseType;
 import javax.sql.DataSource;
 
 /**
- *
+ * Abstract DatabaseServerType implementation for H2, see inner classes
  * @author Martin Berglund
  */
 public abstract class H2ServerType extends AbstractDatabaseType {
@@ -41,7 +41,10 @@ public abstract class H2ServerType extends AbstractDatabaseType {
     public ServerMetaData createMetaDataResolver(DataSource dataSource) {
         return new H2MetaDataResolver(dataSource);
     }
-    
+
+    /**
+     * DatabaseServerType implementation for in-memory H2
+     */
     public static class InMemory extends H2ServerType {
         
         public static final InMemory INSTANCE = new InMemory();
@@ -52,6 +55,10 @@ public abstract class H2ServerType extends AbstractDatabaseType {
             return "H2 in-memory";
         }        
     }
+
+    /**
+     * DatabaseServerType implementation for local file-based H2
+     */
     public static class FileBased extends H2ServerType {
         
         public static final FileBased INSTANCE = new FileBased();        
@@ -62,6 +69,10 @@ public abstract class H2ServerType extends AbstractDatabaseType {
             return "H2 file based";
         }        
     }
+
+    /**
+     * DatabaseServerType implementation for H2 server accessed over network
+     */
     public static class Network extends H2ServerType {
         
         public static final Network INSTANCE = new Network();        
